@@ -24,8 +24,8 @@ class ConvBlock(tf.keras.layers.Layer):
         self.bn = batch_norm()
         self.relu = relu()
         self.conv = conv1d(filters=self.num_channels, kernel_size=1)
-        self.bn1 = tf.keras.layers.BatchNormalization()
-        self.relu1 = tf.keras.layers.ReLU()
+        self.bn1 = batch_norm()
+        self.relu1 = relu()
         self.conv1 = conv1d(filters=self.num_channels)
 
         self.listLayers = [self.bn, self.relu, self.conv, self.bn1, self.relu1, self.conv1]
