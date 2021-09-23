@@ -23,7 +23,7 @@ class ConvBlock(tf.keras.layers.Layer):
     def build(self, input_shape):
         self.bn = batch_norm()
         self.relu = relu()
-        self.conv = conv1d(self.num_channels, kernel_size=1)
+        self.conv = conv1d(filters=self.num_channels, kernel_size=1)
         self.bn1 = tf.keras.layers.BatchNormalization()
         self.relu1 = tf.keras.layers.ReLU()
         self.conv1 = conv1d(filters=self.num_channels)
