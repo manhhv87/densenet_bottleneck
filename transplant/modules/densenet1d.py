@@ -77,7 +77,7 @@ class TransitionBlock(tf.keras.layers.Layer):
 
 
 class DenseNet(tf.keras.Model):
-    def __init__(self, num_outputs=1, num_convs_in_dense_blocks=(4, 4, 4, 4),
+    def __init__(self, num_outputs=1, num_convs_in_dense_blocks=(6, 12, 24, 16),
                  first_num_channels=64, growth_rate=(32, 32, 32, 32),
                  block_fn1=DenseBlock, block_fn2=TransitionBlock,
                  include_top=True, **kwargs):  # constructor
