@@ -128,7 +128,7 @@ if __name__ == '__main__':
             print('Loading weights from file {} ...'.format(args.weights_file))
             model.load_weights(str(args.weights_file))
 
-        model.compile(optimizer=tf.keras.optimizers.Adam(),
+        model.compile(optimizer=tf.keras.optimizers.Adamax(),   # new change from Adam()
                       loss=loss,
                       metrics=[accuracy])
 
@@ -169,6 +169,11 @@ if __name__ == '__main__':
         callbacks.append(checkpoint)
 
         if val:
+            # new adding
+            rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5,
+                                                               verbose=1, min_lr=1e-7)
+            callbacks.append(rl_stopping)
+
             early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, verbose=1)
             callbacks.append(early_stopping)
 
