@@ -28,8 +28,8 @@ def get_challenge20_data(db_dir, fs=None, pad=None, normalize=False, verbose=Fal
 
 
 def get_ptb_xl_data(db_dir, fs=None, pad=None, normalize=False, category='rhythm', folds=None, verbose=False):
-    records, labels = physionet.read_ptb_xl_data( db_dir=db_dir, fs='hr', category=category,
-                                                  remove_empty=True, folds=folds, verbose=verbose)
+    records, labels = physionet.read_ptb_xl_data(db_dir=db_dir, fs='hr', category=category,
+                                                 remove_empty=True, folds=folds, verbose=verbose)
     if normalize:
         normalize = functools.partial(physionet.normalize_ptb_xl, inplace=True)
 
