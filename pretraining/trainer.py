@@ -191,7 +191,8 @@ if __name__ == '__main__':
     with strategy.scope():
         print('Building model ...')
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
-
+        model.add(tf.keras.layers.BatchNormalization())     # new adding
+        model.add(tf.keras.layers.ReLU())   # new adding
         model.compile(optimizer=tf.keras.optimizers.Adamax(beta_1=0.9, beta_2=0.98, epsilon=1e-9),  # change from Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9)
                       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
