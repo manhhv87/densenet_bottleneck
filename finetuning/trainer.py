@@ -117,7 +117,10 @@ if __name__ == '__main__':
         model = ecg_feature_extractor(arch=args.arch)    # not include fc layer
         model.add(tf.keras.layers.BatchNormalization())     # new adding
         model.add(tf.keras.layers.Dropout(0.2))     # new adding
-        model.add(tf.keras.layers.Dense(units=num_classes, activation=activation, kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4)))   # new adding
+        model.add(tf.keras.layers.Dense(units=num_classes, activation=activation,
+                                        kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4),    # new adding
+                                        bias_regularizer=regularizers.l1_l2(l1=0.01, l2=0.01)   # new adding
+                                        ))  # new adding
 
         # initialize the weights of the model
         inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
