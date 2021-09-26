@@ -115,12 +115,12 @@ if __name__ == '__main__':
 
         # add classification layer on top of the ecg feature extractor
         model = ecg_feature_extractor(arch=args.arch)    # not include fc layer
-        model.add(tf.keras.layers.BatchNormalization())     # new adding
-        model.add(tf.keras.layers.Dropout(0.2))     # new adding
-        model.add(tf.keras.layers.Dense(units=num_classes, activation=activation,
-                                        kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4),    # new adding
-                                        bias_regularizer=regularizers.l1_l2(l1=0.01, l2=0.01)   # new adding
-                                        ))  # new adding
+
+        model.add(tf.keras.layers.BatchNormalization())         # new adding
+        model.add(tf.keras.layers.ReLU())                       # new adding
+        model.add(tf.keras.layers.GlobalAveragePooling1D())     # new adding
+
+        model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
 
         # initialize the weights of the model
         inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
@@ -176,11 +176,11 @@ if __name__ == '__main__':
 
         if val:
             # new adding
-            rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5,
+            rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=7,
                                                                verbose=1, min_lr=1e-7)
             callbacks.append(rl_stopping)
 
-            early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, verbose=1)
+            early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=9, verbose=1)
             callbacks.append(early_stopping)
 
         model.fit(train_data, epochs=args.epochs, verbose=2, validation_data=val_data, callbacks=callbacks)
