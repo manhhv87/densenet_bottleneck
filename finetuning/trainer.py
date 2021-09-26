@@ -176,7 +176,7 @@ if __name__ == '__main__':
                                                                verbose=1, min_lr=1e-7)
             callbacks.append(rl_stopping)
 
-            early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=9, verbose=1)
+            early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30, verbose=1)
             callbacks.append(early_stopping)
 
         model.fit(train_data, epochs=args.epochs, verbose=2, validation_data=val_data, callbacks=callbacks)
