@@ -9,9 +9,9 @@ def relu():
     return tf.keras.layers.ReLU()
 
 
-def conv1d(filters, kernel_size=3, strides=1):
+def conv1d(filters, kernel_size=3, strides=1, padding='same'):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
-                                  padding='same', use_bias=False,
+                                  padding=padding, use_bias=False,
                                   kernel_initializer=tf.keras.initializers.VarianceScaling())  # initial weights matrix
 
 
@@ -23,7 +23,7 @@ class ConvBlock(tf.keras.layers.Layer):
     def build(self, input_shape):
         self.bn = batch_norm()
         self.relu = relu()
-        self.conv = conv1d(filters=self.num_channels, kernel_size=1)
+        self.conv = conv1d(filters=self.num_channels, kernel_size=1, padding='valid')
         self.bn1 = batch_norm()
         self.relu1 = relu()
         self.conv1 = conv1d(filters=self.num_channels)
