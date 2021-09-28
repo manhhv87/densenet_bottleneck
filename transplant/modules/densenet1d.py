@@ -15,20 +15,27 @@ def conv1d(filters, kernel_size=3, strides=1, padding='same'):
                                   kernel_initializer=tf.keras.initializers.VarianceScaling())  # initial weights matrix
 
 
+def dropout(dropout_rate=0.2):
+    return tf.keras.layers.Dropout(rate=dropout_rate)
+
+
 class ConvBlock(tf.keras.layers.Layer):
-    def __init__(self, num_channels, **kwargs):  # constructor
+    def __init__(self, num_channels, dropout_rate, **kwargs):  # constructor
         super().__init__(**kwargs)
         self.num_channels = num_channels
+        self.dropout_rate = dropout_rate
 
     def build(self, input_shape):
         self.bn = batch_norm()
         self.relu = relu()
         self.conv = conv1d(filters=self.num_channels, kernel_size=1, padding='valid')
+        self.drop = dropout(dropout_rate=self.dropout_rate)
         self.bn1 = batch_norm()
         self.relu1 = relu()
         self.conv1 = conv1d(filters=self.num_channels)
+        self.drop1 = dropout(dropout_rate=self.dropout_rate)
 
-        self.listLayers = [self.bn, self.relu, self.conv, self.bn1, self.relu1, self.conv1]
+        self.listLayers = [self.bn, self.relu, self.conv, self.drop, self.bn1, self.relu1, self.conv1, self.drop1]
         super().build(input_shape)
 
     def call(self, x, **kwargs):
@@ -40,15 +47,16 @@ class ConvBlock(tf.keras.layers.Layer):
 
 
 class DenseBlock(tf.keras.layers.Layer):
-    def __init__(self, num_convs, num_channels, **kwargs):  # constructor
+    def __init__(self, num_convs, num_channels, dropout_rate, **kwargs):  # constructor
         super().__init__(**kwargs)
         self.num_convs = num_convs
         self.num_channels = num_channels
+        self.dropout_rate = dropout_rate
 
     def build(self, input_shape):
         self.listLayers = []
         for _ in range(self.num_convs):
-            self.listLayers.append(ConvBlock(self.num_channels))
+            self.listLayers.append(ConvBlock(self.num_channels, self.dropout_rate))
         super().build(input_shape)
 
     def call(self, x, **kwargs):
@@ -58,14 +66,16 @@ class DenseBlock(tf.keras.layers.Layer):
 
 
 class TransitionBlock(tf.keras.layers.Layer):
-    def __init__(self, num_channels, **kwargs):
+    def __init__(self, num_channels, dropout_rate, **kwargs):
         super().__init__(**kwargs)
         self.num_channels = num_channels
+        self.dropout_rate = dropout_rate
 
     def build(self, input_shape):
         self.bn = batch_norm()
         self.relu = relu()
         self.conv = conv1d(self.num_channels, kernel_size=1)
+        self.drop = dropout(self.dropout_rate)
         self.avg_pool = tf.keras.layers.AvgPool1D(pool_size=2, strides=2)
         super().build(input_shape)
 
@@ -73,13 +83,14 @@ class TransitionBlock(tf.keras.layers.Layer):
         x = self.bn(x)
         x = self.relu(x)
         x = self.conv(x)
+        x = self.drop(x)
         return self.avg_pool(x)
 
 
 class DenseNet(tf.keras.Model):
     def __init__(self, num_outputs=1, num_convs_in_dense_blocks=(6, 12, 24, 16),
                  first_num_channels=64, growth_rate=(32, 32, 32, 32),
-                 block_fn1=DenseBlock, block_fn2=TransitionBlock,
+                 block_fn1=DenseBlock, block_fn2=TransitionBlock, dropout_rate=0.2,
                  include_top=True, **kwargs):  # constructor
 
         super().__init__(**kwargs)
@@ -94,7 +105,9 @@ class DenseNet(tf.keras.Model):
         self.blocks = []
         num_channels = first_num_channels
         for stage, _ in enumerate(num_convs_in_dense_blocks):  # stage = [0,1,2,3] and _=[4,4,4,4]
-            dnet_block = block_fn1(num_convs_in_dense_blocks[stage], growth_rate[stage])
+            dnet_block = block_fn1(num_convs=num_convs_in_dense_blocks[stage],
+                                   num_channels=growth_rate[stage],
+                                   dropout_rate=dropout_rate)
             self.blocks.append(dnet_block)
 
             # This is the number of output channels in the previous dense block
@@ -104,7 +117,7 @@ class DenseNet(tf.keras.Model):
             # between the dense blocks
             if stage != len(num_convs_in_dense_blocks) - 1:
                 num_channels //= 2
-                tran_block = block_fn2(num_channels)
+                tran_block = block_fn2(num_channels=num_channels, dropout_rate=dropout_rate)
                 self.blocks.append(tran_block)
 
         # include top layer (full connected layer)
