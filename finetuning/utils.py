@@ -12,17 +12,17 @@ def ecg_feature_extractor(arch=None, stages=None):
     if arch is None or arch == 'resnet18':
         resnet = DenseNet(num_outputs=None,
                           num_convs_in_dense_blocks=(6, 12, 24, 16)[:stages],
-                          growth_rate=(32, 32, 32, 32)[:stages],
+                          growth_rate=(32, 32, 32, 32)[:stages], dropout_rate=0.5,
                           include_top=False)  # not include fc layer
     elif arch == 'resnet34':
         resnet = DenseNet(num_outputs=None,
                           num_convs_in_dense_blocks=(6, 12, 24, 16)[:stages],
-                          growth_rate=(32, 32, 32, 32)[:stages],
+                          growth_rate=(32, 32, 32, 32)[:stages], dropout_rate=0.5,
                           include_top=False)  # not include fc layer
     elif arch == 'resnet50':
         resnet = DenseNet(num_outputs=None,
                           num_convs_in_dense_blocks=(6, 12, 24, 16)[:stages],
-                          growth_rate=(32, 32, 32, 32)[:stages],
+                          growth_rate=(32, 32, 32, 32)[:stages], dropout_rate=0.5,
                           include_top=False)  # not include fc layer
     else:
         raise ValueError('unknown architecture: {}'.format(arch))

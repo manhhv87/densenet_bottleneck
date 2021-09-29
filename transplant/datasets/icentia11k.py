@@ -591,6 +591,8 @@ def get_beat_label(labels):
     beat_counts = np.bincount(labels, minlength=len(ds_beat_names))
 
     most_hp_beats = np.argmax(beat_counts[_HI_PRIO_BEATS])  # Return (2, 3, or 4) that have maximum value in beat_counts
+                                                            # Neu co 2 gia tri max thi tra ve index cua gia tri dau
+                                                            # -> chon loai bat thuong dau tien dai dien cho segment
     if beat_counts[_HI_PRIO_BEATS][most_hp_beats] > 0:  # Check value at index (2, 3, or 4) that have maximum value if present
         y = _HI_PRIO_BEATS[most_hp_beats]   # return label corresponding to most_hp_beats (2,3,4)
     else:   # If no abnormality is found, the frame is labeled as normal beat.
