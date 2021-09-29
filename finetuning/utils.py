@@ -12,7 +12,7 @@ def ecg_feature_extractor(arch=None, stages=None):
     if arch is None or arch == 'resnet18':
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 24, 16)[:stages],
-                           irst_num_channels=64,
+                           first_num_channels=64,
                            growth_rate=32,
                            kernel_size=(7, 5, 5, 3),
                            dropout_rate=0.2,
@@ -20,7 +20,7 @@ def ecg_feature_extractor(arch=None, stages=None):
     elif arch == 'resnet34':
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 24, 16)[:stages],
-                           irst_num_channels=64,
+                           first_num_channels=64,
                            growth_rate=32,
                            kernel_size=(7, 5, 5, 3),
                            dropout_rate=0.2,
@@ -28,7 +28,7 @@ def ecg_feature_extractor(arch=None, stages=None):
     elif arch == 'resnet50':
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 24, 16)[:stages],
-                           irst_num_channels=64,
+                           first_num_channels=64,
                            growth_rate=32,
                            kernel_size=(7, 5, 5, 3),
                            dropout_rate=0.2,
