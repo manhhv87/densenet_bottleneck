@@ -2,7 +2,7 @@ import numpy as np
 import sklearn.model_selection
 import tensorflow as tf
 
-from transplant.modules.densenet1d import DenseNet
+from transplant.modules.densenet1d import _DenseNet
 
 
 def ecg_feature_extractor(arch=None, stages=None):
@@ -10,20 +10,29 @@ def ecg_feature_extractor(arch=None, stages=None):
     # which we have observed to outperform the suggested smaller 3 × 3 filters.
     # See Table 1 in Deep Residual Learning for Image Recognition
     if arch is None or arch == 'resnet18':
-        resnet = DenseNet(num_outputs=None,
-                          num_convs_in_dense_blocks=(6, 12, 24, 16)[:stages],
-                          growth_rate=(32, 32, 32, 32)[:stages], dropout_rate=0.5,
-                          include_top=False)  # not include fc layer
+        resnet = _DenseNet(num_outputs=None,
+                           blocks=(6, 12, 24, 16)[:stages],
+                           irst_num_channels=64,
+                           growth_rate=32,
+                           kernel_size=(7, 5, 5, 3),
+                           dropout_rate=0.2,
+                           include_top=False)  # not include fc layer
     elif arch == 'resnet34':
-        resnet = DenseNet(num_outputs=None,
-                          num_convs_in_dense_blocks=(6, 12, 24, 16)[:stages],
-                          growth_rate=(32, 32, 32, 32)[:stages], dropout_rate=0.5,
-                          include_top=False)  # not include fc layer
+        resnet = _DenseNet(num_outputs=None,
+                           blocks=(6, 12, 24, 16)[:stages],
+                           irst_num_channels=64,
+                           growth_rate=32,
+                           kernel_size=(7, 5, 5, 3),
+                           dropout_rate=0.2,
+                           include_top=False)  # not include fc layer
     elif arch == 'resnet50':
-        resnet = DenseNet(num_outputs=None,
-                          num_convs_in_dense_blocks=(6, 12, 24, 16)[:stages],
-                          growth_rate=(32, 32, 32, 32)[:stages], dropout_rate=0.5,
-                          include_top=False)  # not include fc layer
+        resnet = _DenseNet(num_outputs=None,
+                           blocks=(6, 12, 24, 16)[:stages],
+                           irst_num_channels=64,
+                           growth_rate=32,
+                           kernel_size=(7, 5, 5, 3),
+                           dropout_rate=0.2,
+                           include_top=False)  # not include fc layer
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
 
