@@ -245,5 +245,11 @@ if __name__ == '__main__':
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
+        # Disable AutoShard.
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
+        train_data = train_data.with_options(options)
+        validation_data = validation_data.with_options(options)
+
         model.fit(x=train_data, steps_per_epoch=steps_per_epoch, verbose=2, epochs=args.epochs,
                   validation_data=validation_data, callbacks=[checkpoint, logger])

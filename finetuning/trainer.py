@@ -117,6 +117,9 @@ if __name__ == '__main__':
         model = ecg_feature_extractor(arch=args.arch)
 
         # add classification layer on top of the ecg feature extractor
+        model.add(tf.keras.layers.BatchNormalization())  # new adding
+        model.add(tf.keras.layers.ReLU())  # new adding
+        model.add(tf.keras.layers.GlobalAvgPool1D())
         model.add(tf.keras.layers.Dense(units=64, activation='relu'))
         model.add(tf.keras.layers.ReLU())
         model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
