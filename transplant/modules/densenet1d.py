@@ -110,6 +110,8 @@ class _DenseNet(tf.keras.Model):
         self.bn1 = tf.keras.layers.BatchNormalization()
         self.relu1 = tf.keras.layers.ReLU()
         self.maxpool1 = tf.keras.layers.MaxPool1D(pool_size=3, strides=2, padding='same')  # 3×3 max pool, stride 2
+        self.bn2 = tf.keras.layers.BatchNormalization()
+        self.relu2 = tf.keras.layers.ReLU()
 
         # Built Dense Blocks and Transition layers
         self.densenet_blocks = []
@@ -153,6 +155,10 @@ class _DenseNet(tf.keras.Model):
         # Built other layers
         for dnet_block in self.densenet_blocks:
             x = dnet_block(x)
+
+        x = self.bn2(x)
+        x = self.relu2(x)
+        x = self.global_pool(x)
 
         # include top layer (full connected layer)
         if include_top:
