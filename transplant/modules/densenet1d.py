@@ -156,10 +156,6 @@ class _DenseNet(tf.keras.Model):
         for dnet_block in self.densenet_blocks:
             x = dnet_block(x)
 
-        x = self.bn2(x)
-        x = self.relu2(x)
-        x = self.global_pool(x)
-
         # include top layer (full connected layer)
         if include_top:
             x = self.global_pool(x)
