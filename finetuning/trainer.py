@@ -113,8 +113,10 @@ if __name__ == '__main__':
             loss = tf.keras.losses.CategoricalCrossentropy()
             accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
 
+        # not include fc layer
+        model = ecg_feature_extractor(arch=args.arch)
+
         # add classification layer on top of the ecg feature extractor
-        model = ecg_feature_extractor(arch=args.arch)    # not include fc layer
         model.add(tf.keras.layers.Dense(units=64, activation='relu'))
         model.add(tf.keras.layers.ReLU())
         model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
@@ -131,7 +133,7 @@ if __name__ == '__main__':
             print('Loading weights from file {} ...'.format(args.weights_file))
             model.load_weights(str(args.weights_file))
 
-        model.compile(optimizer=tf.keras.optimizers.Adamax(),   # new change from Adam()
+        model.compile(optimizer=tf.keras.optimizers.Adam(),   # new change from Adam()
                       loss=loss,
                       metrics=[accuracy])
 
