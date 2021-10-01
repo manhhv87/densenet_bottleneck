@@ -12,7 +12,8 @@ def relu():
 def conv1d(filters, kernel_size=1, strides=1, padding='same'):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
                                   padding=padding, use_bias=False,
-                                  kernel_initializer=tf.keras.initializers.VarianceScaling())  # initial weights matrix
+                                  kernel_initializer=tf.keras.initializers.VarianceScaling(),
+                                  kernel_regularizer=tf.keras.regularizers.l2(0.01))  # initial weights matrix
 
 
 class _DenseLayer(tf.keras.layers.Layer):
@@ -106,12 +107,10 @@ class _DenseNet(tf.keras.Model):
         super().__init__(**kwargs)
 
         # Built Convolution layer
-        self.conv1 = conv1d(filters=64, kernel_size=7, strides=2)  # 7×7, 64, stride 2
+        self.conv1 = conv1d(filters=64, kernel_size=32, strides=2)  # 7×7, 64, stride 2
         self.bn1 = tf.keras.layers.BatchNormalization()
         self.relu1 = tf.keras.layers.ReLU()
         self.maxpool1 = tf.keras.layers.MaxPool1D(pool_size=3, strides=2, padding='same')  # 3×3 max pool, stride 2
-        self.bn2 = tf.keras.layers.BatchNormalization()
-        self.relu2 = tf.keras.layers.ReLU()
 
         # Built Dense Blocks and Transition layers
         self.densenet_blocks = []

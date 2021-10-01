@@ -193,15 +193,15 @@ if __name__ == '__main__':
 
         # Adding local features learning part
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
-        model.add(tf.keras.layers.BatchNormalization())     # new adding
-        model.add(tf.keras.layers.ReLU())   # new adding
+        # model.add(tf.keras.layers.BatchNormalization())     # new adding
+        # model.add(tf.keras.layers.ReLU())   # new adding
 
         # # Adding global features learning part (new adding)
         # tf.keras.layers.LSTM(units=64, dropout=0.2, recurrent_dropout=0.1, return_sequences=True)
         # tf.keras.layers.GlobalAvgPool1D()
 
         # change from Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9)
-        model.compile(optimizer=tf.keras.optimizers.SGD(),
+        model.compile(optimizer=tf.keras.optimizers.Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
@@ -244,12 +244,6 @@ if __name__ == '__main__':
             raise ValueError('Unknown metric: {}'.format(args.val_metric))
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
-
-        # Disable AutoShard.
-        options = tf.data.Options()
-        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
-        train_data = train_data.with_options(options)
-        validation_data = validation_data.with_options(options)
 
         model.fit(x=train_data, steps_per_epoch=steps_per_epoch, verbose=2, epochs=args.epochs,
                   validation_data=validation_data, callbacks=[checkpoint, logger])
