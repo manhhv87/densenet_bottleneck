@@ -200,9 +200,9 @@ if __name__ == '__main__':
         # tf.keras.layers.LSTM(units=64, dropout=0.2, recurrent_dropout=0.1, return_sequences=True)
         # tf.keras.layers.GlobalAvgPool1D()
 
-        # change from Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9)
-        model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.0001),
-                      #optimizer=tf.keras.optimizers.Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9),
+        # change from tf.keras.optimizers.RMSprop(learning_rate=0.0001)
+        model.compile(#optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.0001),
+                      optimizer=tf.keras.optimizers.Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
