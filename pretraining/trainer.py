@@ -201,7 +201,7 @@ if __name__ == '__main__':
         # tf.keras.layers.GlobalAvgPool1D()
 
         # change from Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9)
-        model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001),
+        model.compile(optimizer=tf.keras.optimizers.Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                       #optimizer=tf.keras.optimizers.Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
