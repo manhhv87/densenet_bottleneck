@@ -193,14 +193,15 @@ if __name__ == '__main__':
 
         # Adding local features learning part
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
-        model.add(tf.keras.layers.BatchNormalization())     # new adding
-        model.add(tf.keras.layers.ReLU())   # new adding
+        # model.add(tf.keras.layers.BatchNormalization())     # new adding
+        # model.add(tf.keras.layers.ReLU())   # new adding
 
         # # Adding global features learning part (new adding)
         # tf.keras.layers.LSTM(units=64, dropout=0.2, recurrent_dropout=0.1, return_sequences=True)
         # tf.keras.layers.GlobalAvgPool1D()
 
-        model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.00001),
+        # change from tf.keras.optimizers.RMSprop(learning_rate=0.0001)
+        model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.0001),
                       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
