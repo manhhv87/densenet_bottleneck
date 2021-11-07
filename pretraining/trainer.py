@@ -201,7 +201,7 @@ if __name__ == '__main__':
         # tf.keras.layers.GlobalAvgPool1D()
 
         # change from tf.keras.optimizers.RMSprop(learning_rate=0.0001)
-        model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.0001, momentum=0.3),
+        model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.0001, momentum=0.1),
                       loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
