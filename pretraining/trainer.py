@@ -204,11 +204,8 @@ if __name__ == '__main__':
 
         # change from tf.keras.optimizers.RMSprop(learning_rate=0.0001)
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adam(),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
-
-        # create a learning rate callback
-        lr_scheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-4 * 10**(epoch/20))
 
         # initialize the weights of the model
         # Returns the output shapes for elements of the input dataset / iterator.
@@ -254,16 +251,5 @@ if __name__ == '__main__':
                                      steps_per_epoch=steps_per_epoch,
                                      epochs=args.epochs,
                                      validation_data=validation_data,
-                                     callbacks=[lr_scheduler, checkpoint, logger],
+                                     callbacks=[checkpoint, logger],
                                      verbose=2)
-
-        # Checkout history
-        pd.DataFrame(history_training.history).plot(figsize=(10, 7), xlabel="epochs")
-
-        # Plot the learning rate verse the loss
-        lrs = 1e-4 * (10 ** (tf.range(args.epochs)/20))
-        plt.figure(figsize=(10, 7))
-        plt.semilogx(lrs, history_training.history["loss"])
-        plt.xlabel("Learning Rate")
-        plt.ylabel("Loss")
-        plt.title("Learning rate vs. Loss")
