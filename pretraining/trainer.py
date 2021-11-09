@@ -261,7 +261,7 @@ if __name__ == '__main__':
         pd.DataFrame(history_training.history).plot(figsize=(10, 7), xlabel="epochs")
 
         # Plot the learning rate verse the loss
-        lrs = 1e-4 * (10 ** (tf.range(100)/20))
+        lrs = 1e-4 * (10 ** (tf.range(args.epochs)/20))
         plt.figure(figsize=(10, 7))
         plt.semilogx(lrs, history_training.history["loss"])
         plt.xlabel("Learning Rate")
