@@ -247,9 +247,9 @@ if __name__ == '__main__':
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
-        history_training = model.fit(x=train_data,
-                                     steps_per_epoch=steps_per_epoch,
-                                     epochs=args.epochs,
-                                     validation_data=validation_data,
-                                     callbacks=[checkpoint, logger],
-                                     verbose=2)
+        model.fit(x=train_data,
+                  steps_per_epoch=steps_per_epoch,
+                  epochs=args.epochs,
+                  validation_data=validation_data,
+                  callbacks=[checkpoint, logger],
+                  verbose=2)
