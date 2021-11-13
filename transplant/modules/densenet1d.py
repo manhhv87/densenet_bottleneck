@@ -12,8 +12,8 @@ def relu():
 def conv1d(filters, kernel_size=1, strides=1, padding='same'):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
                                   padding=padding, use_bias=False,
-                                  #kernel_initializer=tf.keras.initializers.VarianceScaling())
-                                  kernel_initializer=tf.keras.initializers.he_uniform())
+                                  kernel_initializer=tf.keras.initializers.VarianceScaling())
+                                  #kernel_initializer=tf.keras.initializers.he_uniform())
 
 
 class _DenseLayer(tf.keras.layers.Layer):
