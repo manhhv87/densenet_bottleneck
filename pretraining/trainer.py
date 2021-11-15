@@ -247,7 +247,7 @@ if __name__ == '__main__':
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
-        lr_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', factor=0.5,
+        lr_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.5,
                                                            patience=5, verbose=1, min_lr=1e-7)
         model.fit(x=train_data,
                   steps_per_epoch=steps_per_epoch,
