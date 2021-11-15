@@ -24,17 +24,17 @@ class _DenseLayer(tf.keras.layers.Layer):
         self.drop_rate = drop_rate
 
     def build(self, input_shape):
-        self.relu = relu()
         self.bn = batch_norm()
+        self.relu = relu()
         self.conv = conv1d(filters=self.growth_rate, padding='valid')
         self.drop = tf.keras.layers.Dropout(rate=self.drop_rate)
 
-        self.relu1 = relu()
         self.bn1 = batch_norm()
+        self.relu1 = relu()
         self.conv1 = conv1d(filters=self.growth_rate, kernel_size=self.kernel_size)
         self.drop1 = tf.keras.layers.Dropout(rate=self.drop_rate)
 
-        self.listLayers = [self.relu, self.bn, self.conv, self.drop, self.relu1, self.bn1, self.conv1, self.drop1]
+        self.listLayers = [self.bn, self.relu, self.conv, self.drop, self.bn1, self.relu1, self.conv1, self.drop1]
         super().build(input_shape)
 
     def call(self, x, **kwargs):
@@ -70,8 +70,8 @@ class _TransitionBlock(tf.keras.layers.Layer):
         self.drop_rate = drop_rate
 
     def build(self, input_shape):
-        self.relu = relu()
         self.bn = batch_norm()
+        self.relu = relu()
         self.conv = conv1d(self.num_channels)
         self.drop = tf.keras.layers.Dropout(rate=self.drop_rate)
 
@@ -79,8 +79,8 @@ class _TransitionBlock(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, x, **kwargs):
-        x = self.relu(x)
         x = self.bn(x)
+        x = self.relu(x)
         x = self.conv(x)
         x = self.drop(x)
         return self.avg_pool(x)
@@ -108,8 +108,8 @@ class _DenseNet(tf.keras.Model):
 
         # Built Convolution layer
         self.conv1 = conv1d(filters=64, kernel_size=7, strides=2)  # 7×7, 64, stride 2
-        self.relu1 = tf.keras.layers.ReLU()
         self.bn1 = tf.keras.layers.BatchNormalization()
+        self.relu1 = tf.keras.layers.ReLU()
         self.maxpool1 = tf.keras.layers.MaxPool1D(pool_size=3, strides=2, padding='same')  # 3×3 max pool, stride 2
 
         # Built Dense Blocks and Transition layers
@@ -146,8 +146,8 @@ class _DenseNet(tf.keras.Model):
             include_top = self.include_top
 
         # Built conv1 layer
-        x = self.relu1(x)
         x = self.bn1(x)
+        x = self.relu1(x)
         x = self.conv1(x)
         x = self.maxpool1(x)
 
