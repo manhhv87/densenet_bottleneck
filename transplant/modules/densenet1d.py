@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 def batch_norm():
-    return tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
+    return tf.keras.layers.BatchNormalization()
 
 
 def relu():
