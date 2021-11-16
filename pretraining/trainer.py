@@ -204,7 +204,7 @@ if __name__ == '__main__':
 
         # change from tf.keras.optimizers.RMSprop(learning_rate=0.0001)
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5, beta_1=0.9, beta_2=0.999, decay=0.0),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, decay=0.0),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
@@ -247,11 +247,11 @@ if __name__ == '__main__':
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
-        # lr_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.5,
-        #                                                    patience=5, verbose=1, min_lr=1e-7)
+        lr_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.5,
+                                                           patience=5, verbose=1, min_lr=1e-7)
         model.fit(x=train_data,
                   steps_per_epoch=steps_per_epoch,
                   epochs=args.epochs,
                   validation_data=validation_data,
-                  callbacks=[checkpoint, logger],
+                  callbacks=[checkpoint, logger, lr_callback],
                   verbose=2)
