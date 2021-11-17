@@ -12,44 +12,49 @@ def relu():
 def conv1d(filters, kernel_size=1, strides=1, padding='same'):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
                                   padding=padding, use_bias=False,
-                                  kernel_initializer=tf.keras.initializers.he_uniform())
+                                  kernel_initializer=tf.keras.initializers.VarianceScaling())
+                                  #kernel_initializer=tf.keras.initializers.he_uniform())
 
 
 class _DenseLayer(tf.keras.layers.Layer):
-    def __init__(self, growth_rate, kernel_size, **kwargs):  # constructor
+    def __init__(self, growth_rate, kernel_size, drop_rate=0.2, **kwargs):  # constructor
         super().__init__(**kwargs)
         self.growth_rate = growth_rate
         self.kernel_size = kernel_size
+        self.drop_rate = drop_rate
 
     def build(self, input_shape):
         self.bn = batch_norm()
         self.relu = relu()
-        self.conv = conv1d(filters=4*self.growth_rate)
+        self.conv = conv1d(filters=self.growth_rate, padding='valid')
+        self.drop = tf.keras.layers.Dropout(rate=self.drop_rate)
 
         self.bn1 = batch_norm()
         self.relu1 = relu()
         self.conv1 = conv1d(filters=self.growth_rate, kernel_size=self.kernel_size)
+        self.drop1 = tf.keras.layers.Dropout(rate=self.drop_rate)
 
-        self.listLayers = [self.conv, self.bn, self.relu, self.conv1, self.bn1, self.relu1]
+        self.listLayers = [self.bn, self.relu, self.conv, self.drop, self.bn1, self.relu1, self.conv1, self.drop1]
         super().build(input_shape)
 
     def call(self, x, **kwargs):
         y = x
         for layer in self.listLayers.layers:
             y = layer(y)
-        x = tf.keras.layers.concatenate([y, x])
-        return x
+        y = tf.keras.layers.concatenate([x, y], axis=-1)
+        return y
 
 
 class _DenseBlock(tf.keras.layers.Layer):
-    def __init__(self, growth_rate, kernel_size, **kwargs):  # constructor
+    def __init__(self, growth_rate, kernel_size, drop_rate=0.2, **kwargs):  # constructor
         super().__init__(**kwargs)
         self.growth_rate = growth_rate
         self.kernel_size = kernel_size
+        self.drop_rate = drop_rate
 
     def build(self, input_shape):
         self.listLayers = []
-        self.listLayers.append(_DenseLayer(self.growth_rate, self.kernel_size))
+        self.listLayers.append(_DenseLayer(self.growth_rate, self.kernel_size, self.drop_rate))
         super().build(input_shape)
 
     def call(self, x, **kwargs):
@@ -59,22 +64,25 @@ class _DenseBlock(tf.keras.layers.Layer):
 
 
 class _TransitionBlock(tf.keras.layers.Layer):
-    def __init__(self, num_channels, **kwargs):
+    def __init__(self, num_channels, drop_rate=0.2, **kwargs):
         super().__init__(**kwargs)
         self.num_channels = num_channels
+        self.drop_rate = drop_rate
 
     def build(self, input_shape):
         self.bn = batch_norm()
         self.relu = relu()
         self.conv = conv1d(self.num_channels)
+        self.drop = tf.keras.layers.Dropout(rate=self.drop_rate)
 
-        self.avg_pool = tf.keras.layers.AvgPool1D(pool_size=2, strides=2, padding='same')
+        self.avg_pool = tf.keras.layers.AvgPool1D(pool_size=2, strides=2)
         super().build(input_shape)
 
     def call(self, x, **kwargs):
-        x = self.conv(x)
         x = self.bn(x)
         x = self.relu(x)
+        x = self.conv(x)
+        x = self.drop(x)
         return self.avg_pool(x)
 
 
@@ -89,18 +97,19 @@ class _DenseNet(tf.keras.Model):
         growth_rate (int) - how many filters to add each dense-layer (`k` in paper)
         block_fn1 - dense block
         block_fn2 - transition block
+        drop_rate (float) - dropout rate after each dense layer
         include_top (bool) - yes or no include top layer
     """
     def __init__(self, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
                  kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
-                 include_top=True, **kwargs):  # constructor
+                 drop_rate=0.2, include_top=True, **kwargs):  # constructor
 
         super().__init__(**kwargs)
 
         # Built Convolution layer
-        self.conv1 = conv1d(filters=64, kernel_size=7, strides=2, padding='same')  # 7×7, 64, stride 2
-        self.bn1 = batch_norm()
-        self.relu1 = relu()
+        self.conv1 = conv1d(filters=64, kernel_size=7, strides=2)  # 7×7, 64, stride 2
+        self.bn1 = tf.keras.layers.BatchNormalization()
+        self.relu1 = tf.keras.layers.ReLU()
         self.maxpool1 = tf.keras.layers.MaxPool1D(pool_size=3, strides=2, padding='same')  # 3×3 max pool, stride 2
 
         # Built Dense Blocks and Transition layers
@@ -108,7 +117,9 @@ class _DenseNet(tf.keras.Model):
         num_channel_trans = first_num_channels
         for stage, _ in enumerate(blocks):  # stage = [0,1,2,3] and _ = [6, 12, 24, 16]
             for block in range(blocks[stage]):
-                dnet_block = block_fn1(growth_rate=growth_rate, kernel_size=kernel_size[stage])
+                dnet_block = block_fn1(growth_rate=growth_rate,
+                                       kernel_size=kernel_size[stage],
+                                       drop_rate=drop_rate)
                 self.densenet_blocks.append(dnet_block)
 
             # This is the number of output channels in the previous dense block
@@ -118,7 +129,8 @@ class _DenseNet(tf.keras.Model):
             # between the dense blocks
             if stage != len(blocks) - 1:
                 num_channel_trans //= 2
-                tran_block = block_fn2(num_channels=num_channel_trans)
+                tran_block = block_fn2(num_channels=num_channel_trans,
+                                       drop_rate=drop_rate)
                 self.densenet_blocks.append(tran_block)
 
         # include top layer (full connected layer)
@@ -134,9 +146,9 @@ class _DenseNet(tf.keras.Model):
             include_top = self.include_top
 
         # Built conv1 layer
-        x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu1(x)
+        x = self.conv1(x)
         x = self.maxpool1(x)
 
         # Built other layers

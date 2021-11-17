@@ -204,7 +204,7 @@ if __name__ == '__main__':
 
         # change from tf.keras.optimizers.RMSprop(learning_rate=0.0001)
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adagrad(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, decay=0.0),
+                      optimizer=tf.keras.optimizers.Adam(),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
