@@ -81,7 +81,6 @@ class _TransitionBlock(tf.keras.layers.Layer):
 class _DenseNet(tf.keras.Model):
     """"
     Densenet-BC model class, based "Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>
-
     Args:
         num_outputs (int) - number of classification classes
         blocks (list of 3 or 4 ints) - how many dense layers in each dense block

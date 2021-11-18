@@ -2,7 +2,7 @@ import numpy as np
 import sklearn.model_selection
 import tensorflow as tf
 
-from transplant.modules.densenet1d_old import _DenseNet
+from transplant.modules.densenet1d import _DenseNet
 
 
 def ecg_feature_extractor(arch=None, stages=None):
@@ -15,7 +15,6 @@ def ecg_feature_extractor(arch=None, stages=None):
                            first_num_channels=64,
                            growth_rate=32,
                            kernel_size=(3, 3, 3, 3),
-                           drop_rate=0,
                            include_top=False)  # not include fc layer
     elif arch == 'resnet34':
         resnet = _DenseNet(num_outputs=None,
@@ -23,7 +22,6 @@ def ecg_feature_extractor(arch=None, stages=None):
                            first_num_channels=32,
                            growth_rate=16,
                            kernel_size=(7, 5, 5, 3),
-                           drop_rate=0,
                            include_top=False)  # not include fc layer
     elif arch == 'resnet50':
         resnet = _DenseNet(num_outputs=None,
@@ -31,7 +29,6 @@ def ecg_feature_extractor(arch=None, stages=None):
                            first_num_channels=64,
                            growth_rate=32,
                            kernel_size=(7, 5, 5, 3),
-                           drop_rate=0,
                            include_top=False)  # not include fc layer
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
