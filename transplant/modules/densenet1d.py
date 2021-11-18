@@ -30,7 +30,7 @@ class _DenseLayer(tf.keras.layers.Layer):
         self.relu1 = relu()
         self.conv1 = conv1d(filters=self.growth_rate, kernel_size=self.kernel_size)
 
-        self.listLayers = [self.conv, self.bn, self.relu, self.conv1, self.bn1, self.relu1]
+        self.listLayers = [self.bn, self.relu, self.conv, self.bn1, self.relu1, self.conv1]
         super().build(input_shape)
 
     def call(self, x, **kwargs):
@@ -72,9 +72,9 @@ class _TransitionBlock(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, x, **kwargs):
-        x = self.conv(x)
         x = self.bn(x)
         x = self.relu(x)
+        x = self.conv(x)
         return self.avg_pool(x)
 
 
