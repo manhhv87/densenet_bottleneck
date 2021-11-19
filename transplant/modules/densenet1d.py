@@ -50,12 +50,12 @@ class _DenseBlock(tf.keras.layers.Layer):
 class _TransitionBlock(tf.keras.layers.Layer):
     def __init__(self, num_filters, **kwargs):
         super().__init__(**kwargs)
-        self.num_channels = num_filters
+        self.num_filters = num_filters
 
     def build(self, input_shape):
         self.bn = batch_norm()
         self.relu = relu()
-        self.conv = conv1d(self.num_channels)
+        self.conv = conv1d(self.num_filters)
 
         self.avg_pool = tf.keras.layers.AvgPool1D(pool_size=2, strides=2, padding='same')
         super().build(input_shape)
