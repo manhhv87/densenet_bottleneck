@@ -12,7 +12,7 @@ def relu():
 def conv1d(filters, kernel_size=1, strides=1):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
                                   padding='same', use_bias=False,
-                                  kernel_initializer=tf.keras.initializers.VarianceScaling())
+                                  kernel_initializer=tf.keras.initializers.he_uniform())
 
 
 class _DenseBlock(tf.keras.layers.Layer):
@@ -57,7 +57,7 @@ class _TransitionBlock(tf.keras.layers.Layer):
         self.relu = relu()
         self.conv = conv1d(self.num_filters)
 
-        self.avg_pool = tf.keras.layers.AvgPool1D(pool_size=2, strides=2, padding='same')
+        self.avg_pool = tf.keras.layers.AveragePooling1D(pool_size=2, strides=2, padding='same')
         super().build(input_shape)
 
     def call(self, x, **kwargs):
@@ -82,7 +82,7 @@ class _DenseNet(tf.keras.Model):
     """
     def __init__(self, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
                  kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
-                 include_top=True, **kwargs):  # constructor
+                 bottleneck=True, include_top=True, **kwargs):  # constructor
 
         super().__init__(**kwargs)
 
@@ -97,7 +97,7 @@ class _DenseNet(tf.keras.Model):
         num_channel_trans = first_num_channels
         for stage, _ in enumerate(blocks):  # stage = [0,1,2,3] and _ = [6, 12, 24, 16]
             for block in range(blocks[stage]):
-                dnet_block = block_fn1(num_filters=growth_rate, kernel_size=kernel_size[stage], bottleneck=True)
+                dnet_block = block_fn1(num_filters=growth_rate, kernel_size=kernel_size[stage], bottleneck=bottleneck)
                 self.densenet_blocks.append(dnet_block)
 
             # This is the number of output channels in the previous dense block
