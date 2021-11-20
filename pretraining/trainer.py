@@ -15,6 +15,8 @@ from transplant.evaluation import CustomCheckpoint, f1
 from transplant.modules.utils import build_input_tensor_from_shape
 from transplant.utils import (matches_spec, load_pkl, save_pkl)
 
+from clr_callback import *
+
 
 def _create_dataset_from_generator(patient_ids, samples_per_patient=None):
     samples_per_patient = samples_per_patient or args.samples_per_patient
