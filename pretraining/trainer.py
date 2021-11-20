@@ -206,7 +206,7 @@ if __name__ == '__main__':
 
         # change from tf.keras.optimizers.RMSprop(learning_rate=0.0001)
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-7),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
@@ -253,7 +253,7 @@ if __name__ == '__main__':
         #                                                    patience=5, verbose=1, min_lr=1e-7)
         # You are using the triangular learning rate policy and
         #  base_lr (initial learning rate which is the lower boundary in the cycle) is 1e-4
-        clr_triangular = CyclicLR(base_lr=1e-5, max_lr=1e-3, step_size=2000, mode='triangular')
+        clr_triangular = CyclicLR(base_lr=1e-4, max_lr=1e-7, step_size=2000, mode='triangular')
 
         model.fit(x=train_data,
                   steps_per_epoch=steps_per_epoch,
