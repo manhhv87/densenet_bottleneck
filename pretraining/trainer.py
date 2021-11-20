@@ -253,7 +253,7 @@ if __name__ == '__main__':
         #                                                    patience=5, verbose=1, min_lr=1e-7)
         # You are using the triangular learning rate policy and
         #  base_lr (initial learning rate which is the lower boundary in the cycle) is 1e-4
-        clr_triangular = CyclicLR(base_lr=1e-4, max_lr=1e-3, step_size=1500, mode='triangular')
+        clr_triangular = CyclicLR(base_lr=1e-4, max_lr=5e-4, step_size=500, mode='triangular')
 
         model.fit(x=train_data,
                   steps_per_epoch=steps_per_epoch,
