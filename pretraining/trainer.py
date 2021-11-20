@@ -15,7 +15,7 @@ from transplant.evaluation import CustomCheckpoint, f1
 from transplant.modules.utils import build_input_tensor_from_shape
 from transplant.utils import (matches_spec, load_pkl, save_pkl)
 
-from clr_callback import *
+from clr.clr_callback import *
 
 
 def _create_dataset_from_generator(patient_ids, samples_per_patient=None):
@@ -251,9 +251,13 @@ if __name__ == '__main__':
 
         # lr_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.5,
         #                                                    patience=5, verbose=1, min_lr=1e-7)
+        # You are using the triangular learning rate policy and
+        #  base_lr (initial learning rate which is the lower boundary in the cycle) is 0.1
+        clr_triangular = CyclicLR(base_lr=1e-4, max_lr=1e-3, step_size=1000, mode='triangular')
+
         model.fit(x=train_data,
                   steps_per_epoch=steps_per_epoch,
                   epochs=args.epochs,
                   validation_data=validation_data,
-                  callbacks=[checkpoint, logger],
+                  callbacks=[checkpoint, logger, clr_triangular],
                   verbose=2)
