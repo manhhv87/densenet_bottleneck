@@ -206,7 +206,7 @@ if __name__ == '__main__':
 
         # change from tf.keras.optimizers.RMSprop(learning_rate=0.0001)
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
@@ -259,5 +259,5 @@ if __name__ == '__main__':
                   steps_per_epoch=steps_per_epoch,
                   epochs=args.epochs,
                   validation_data=validation_data,
-                  callbacks=[checkpoint, logger, clr_triangular],
+                  callbacks=[checkpoint, logger],
                   verbose=2)
