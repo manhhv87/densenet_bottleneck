@@ -2,9 +2,6 @@ import argparse
 import os
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 import sklearn.model_selection
 import tensorflow as tf
 
@@ -15,7 +12,18 @@ from transplant.evaluation import CustomCheckpoint, f1
 from transplant.modules.utils import build_input_tensor_from_shape
 from transplant.utils import (matches_spec, load_pkl, save_pkl)
 
-from clr.clr_callback import *
+# set the matplotlib backend so figures can be saved in the background
+from clr.learningratefinder import LearningRateFinder
+from clr.clr_callback import CyclicLR
+from clr import config
+import matplotlib.pyplot as plt
+import numpy as np
+import argparse
+import cv2
+import sys
+
+import matplotlib
+matplotlib.use("Agg")
 
 
 def _create_dataset_from_generator(patient_ids, samples_per_patient=None):
@@ -95,6 +103,8 @@ if __name__ == '__main__':
     parser.add_argument('--val-metric', default='loss', help='Performance metric: either `loss`, `acc` or `f1`.')
     parser.add_argument('--data-parallelism', type=int, default=1, help='Number of data loaders running in parallel.')
     parser.add_argument('--seed', type=int, default=None, help='Random state.')
+    parser.add_argument("-f", "--lr-find", type=int, default=0, help="whether or not to find optimal learning rate")
+
     args, _ = parser.parse_known_args()
 
     if args.val_metric not in ['loss', 'acc', 'f1']:
@@ -197,16 +207,9 @@ if __name__ == '__main__':
 
         # Adding local features learning part
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
-        #model.add(tf.keras.layers.BatchNormalization())     # new adding
-        #model.add(tf.keras.layers.ReLU())   # new adding
 
-        # # Adding global features learning part (new adding)
-        # tf.keras.layers.LSTM(units=64, dropout=0.2, recurrent_dropout=0.1, return_sequences=True)
-        # tf.keras.layers.GlobalAvgPool1D()
-
-        # change from tf.keras.optimizers.RMSprop(learning_rate=0.0001)
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-7),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
@@ -251,13 +254,33 @@ if __name__ == '__main__':
 
         # lr_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.5,
         #                                                    patience=5, verbose=1, min_lr=1e-7)
-        # You are using the triangular learning rate policy and
-        #  base_lr (initial learning rate which is the lower boundary in the cycle) is 1e-4
-        clr_triangular = CyclicLR(base_lr=1e-4, max_lr=1e-7, step_size=2000, mode='triangular')
 
-        model.fit(x=train_data,
-                  steps_per_epoch=steps_per_epoch,
-                  epochs=args.epochs,
-                  validation_data=validation_data,
-                  callbacks=[checkpoint, logger],
-                  verbose=2)
+        # check to see if we are attempting to find an optimal learning rate
+        # before training for the full number of epochs
+        if args.lr_find > 0:
+            # initialize the learning rate finder and then train with learning
+            # rates ranging from 1e-10 to 1e+1
+            print("[INFO] finding learning rate...")
+            lrf = LearningRateFinder(model)
+            lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1, epochs=3)
+
+            # plot the loss for the various learning rates and save the
+            # resulting plot to disk
+            lrf.plot_loss()
+            plt.savefig(config.LRFIND_PLOT_PATH)
+
+            # gracefully exit the script so we can adjust our learning rates
+            # in the config and then train the network for our full set of
+            # epochs
+            print("[INFO] learning rate finder complete")
+            print("[INFO] examine plot and adjust learning rates before training")
+            sys.exit(0)
+
+        #
+        #
+        # model.fit(x=train_data,
+        #           steps_per_epoch=steps_per_epoch,
+        #           epochs=args.epochs,
+        #           validation_data=validation_data,
+        #           callbacks=[checkpoint, logger],
+        #           verbose=2)
