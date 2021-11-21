@@ -39,8 +39,7 @@ class LearningRateFinder:
 	def is_data_iter(self, data):
 		# define the set of class types we will check for
 		iterClasses = ["NumpyArrayIterator", "DirectoryIterator",
-					   "Iterator", "Sequence", "_create_dataset_from_generator",
-					   "_create_dataset_from_data"]
+					   "Iterator", "Sequence"]
 
 		# return whether our data is an iterator
 		return data.__class__.__name__ in iterClasses
@@ -111,7 +110,8 @@ class LearningRateFinder:
 		elif not useGen:
 			# grab the number of samples in the training data and
 			# then derive the number of steps per epoch
-			numSamples = len(trainData[0])
+			# numSamples = len(trainData[0])
+			numSamples = len(trainData)
 			stepsPerEpoch = np.ceil(numSamples / float(batchSize))
 
 		# if no number of training epochs are supplied, compute the
