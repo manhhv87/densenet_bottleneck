@@ -26,46 +26,48 @@ import matplotlib
 matplotlib.use("Agg")
 
 
-def _create_dataset_from_generator(patient_ids, samples_per_patient=None):
-    samples_per_patient = samples_per_patient or args.samples_per_patient
+class CustomGenerator:
+    def _create_dataset_from_generator(sefl, patient_ids, samples_per_patient=None):
+        samples_per_patient = samples_per_patient or args.samples_per_patient
 
-    if args.task == 'rhythm':
-        dataset = datasets.rhythm_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
-                                          unzipped=args.unzipped, samples_per_patient=samples_per_patient)
-    elif args.task == 'beat':
-        dataset = datasets.beat_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
-                                        unzipped=args.unzipped, samples_per_patient=samples_per_patient)
-    elif args.task == 'hr':
-        dataset = datasets.heart_rate_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
+        if args.task == 'rhythm':
+            dataset = datasets.rhythm_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
                                               unzipped=args.unzipped, samples_per_patient=samples_per_patient)
-    # elif args.task == 'cpc':
-    #     dataset = datasets.cpc_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
-    #                                    context_size=args.context_size, ns=args.ns, context_overlap=args.context_overlap,
-    #                                    positive_offset=args.positive_offset, num_buffered_patients=16,
-    #                                    unzipped=args.unzipped, samples_per_patient=samples_per_patient)
-    else:
-        raise ValueError('unknown task: {}'.format(args.task))
-    return dataset
+        elif args.task == 'beat':
+            dataset = datasets.beat_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
+                                            unzipped=args.unzipped, samples_per_patient=samples_per_patient)
+        elif args.task == 'hr':
+            dataset = datasets.heart_rate_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
+                                                  unzipped=args.unzipped, samples_per_patient=samples_per_patient)
+        # elif args.task == 'cpc':
+        #     dataset = datasets.cpc_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
+        #                                    context_size=args.context_size, ns=args.ns, context_overlap=args.context_overlap,
+        #                                    positive_offset=args.positive_offset, num_buffered_patients=16,
+        #                                    unzipped=args.unzipped, samples_per_patient=samples_per_patient)
+        else:
+            raise ValueError('unknown task: {}'.format(args.task))
+        return dataset
 
 
-def _create_dataset_from_data(data):
-    x, y = data['x'], data['y']
+class CustomFromData:
+    def _create_dataset_from_data(data):
+        x, y = data['x'], data['y']
 
-    if args.task in ['rhythm', 'beat', 'hr']:
-        spec = (tf.TensorSpec((None, args.frame_size, 1), tf.float32),
-                tf.TensorSpec((None,), tf.int32))
-    # elif args.task == 'cpc':
-    #     spec = ({'context': tf.TensorSpec((None, args.context_size, args.frame_size, 1), tf.float32),
-    #              'samples': tf.TensorSpec((None, args.ns + 1, args.frame_size, 1), tf.float32)},
-    #             tf.TensorSpec((None,), tf.int32))
-    else:
-        raise ValueError('unknown task: {}'.format(args.task))
+        if args.task in ['rhythm', 'beat', 'hr']:
+            spec = (tf.TensorSpec((None, args.frame_size, 1), tf.float32),
+                    tf.TensorSpec((None,), tf.int32))
+        # elif args.task == 'cpc':
+        #     spec = ({'context': tf.TensorSpec((None, args.context_size, args.frame_size, 1), tf.float32),
+        #              'samples': tf.TensorSpec((None, args.ns + 1, args.frame_size, 1), tf.float32)},
+        #             tf.TensorSpec((None,), tf.int32))
+        else:
+            raise ValueError('unknown task: {}'.format(args.task))
 
-    if not matches_spec((x, y), spec, ignore_batch_dim=True):
-        raise ValueError('data does not match the required spec: {}'.format(spec))
+        if not matches_spec((x, y), spec, ignore_batch_dim=True):
+            raise ValueError('data does not match the required spec: {}'.format(spec))
 
-    dataset = tf.data.Dataset.from_tensor_slices((x, y))
-    return dataset
+        dataset = tf.data.Dataset.from_tensor_slices((x, y))
+        return dataset
 
 
 if __name__ == '__main__':
@@ -131,7 +133,7 @@ if __name__ == '__main__':
     if args.val_file:   # Using val_file
         print('Loading validation data from file {} ...'.format(args.val_file))
         val = load_pkl(str(args.val_file))  # read data from val_file
-        validation_data = _create_dataset_from_data(val)    # create validation dataset
+        validation_data = CustomGenerator._create_dataset_from_generator(val)    # create validation dataset
     else:
         val = None
         validation_data = None
@@ -154,12 +156,12 @@ if __name__ == '__main__':
             # remove training examples of patients who belong to the validation set
             val_mask = np.isin(train['patient_ids'], val_patients_ids)
             val = {key: array[val_mask] for key, array in train.items()}    # create dictionaries
-            validation_data = _create_dataset_from_data(val)    # create validation dataset
+            validation_data = CustomFromData._create_dataset_from_data(val)    # create validation dataset
             train_mask = ~val_mask
             train = {key: array[train_mask] for key, array in train.items()}
         train_size = len(train['y'])
         steps_per_epoch = None
-        train_data = _create_dataset_from_data(train).shuffle(train_size)   # creat train dataset
+        train_data = CustomFromData._create_dataset_from_data(train).shuffle(train_size)   # creat train dataset
     else:   # not file
         print('Building train data generators')
         train_patient_ids = icentia11k.ds_patient_ids   # return patient's id
@@ -173,24 +175,24 @@ if __name__ == '__main__':
             # validation size is one validation epoch by default
             val_size = args.val_size or (len(val_patient_ids) * args.val_samples_per_patient)
             print('Collecting {} validation samples ...'.format(val_size))
-            validation_data = _create_dataset_from_generator(patient_ids=val_patient_ids,
+            validation_data = CustomGenerator._create_dataset_from_generator(patient_ids=val_patient_ids,
                                                              samples_per_patient=args.val_samples_per_patient)
             val_x, val_y = next(validation_data.batch(val_size).as_numpy_iterator())
             val = {'x': val_x, 'y': val_y, 'patient_ids': val_patient_ids}
             if args.cache_val:
                 print('Caching the validation set in {} ...'.format(args.cache_val))
                 save_pkl(str(args.cache_val), x=val_x, y=val_y, patient_ids=val_patient_ids)
-            validation_data = _create_dataset_from_data(data=val)
+            validation_data = CustomFromData._create_dataset_from_data(data=val)
         steps_per_epoch = args.steps_per_epoch
         if args.data_parallelism > 1:
             split = len(train_patient_ids) // args.data_parallelism
             train_patient_ids = tf.convert_to_tensor(train_patient_ids)
             train_data = tf.data.Dataset.range(args.data_parallelism).interleave(
-                lambda i: _create_dataset_from_generator(train_patient_ids[i * split:(i + 1) * split],
+                lambda i: CustomGenerator._create_dataset_from_generator(train_patient_ids[i * split:(i + 1) * split],
                                                          args.samples_per_patient),
                 num_parallel_calls=tf.data.experimental.AUTOTUNE)
         else:
-            train_data = _create_dataset_from_generator(patient_ids=train_patient_ids,
+            train_data = CustomGenerator._create_dataset_from_generator(patient_ids=train_patient_ids,
                                                         samples_per_patient=args.samples_per_patient)
         buffer_size = 16 * args.samples_per_patient  # data from 16 patients
         train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
