@@ -39,8 +39,8 @@ class LearningRateFinder:
 	def is_data_iter(self, data):
 		# define the set of class types we will check for
 		iterClasses = ["NumpyArrayIterator", "DirectoryIterator",
-					   "Iterator", "Sequence", "CustomFromData",
-					   "CustomGenerator"]
+					   "Iterator", "Sequence", "_create_dataset_from_generator",
+					   "_create_dataset_from_data"]
 
 		# return whether our data is an iterator
 		return data.__class__.__name__ in iterClasses

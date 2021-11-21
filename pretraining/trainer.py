@@ -26,8 +26,8 @@ import matplotlib
 matplotlib.use("Agg")
 
 
-class CustomGenerator:
-    def _create_dataset_from_generator(sefl, patient_ids, samples_per_patient=None):
+class _create_dataset_from_generator:
+    def __init__(self, patient_ids, samples_per_patient=None):
         samples_per_patient = samples_per_patient or args.samples_per_patient
 
         if args.task == 'rhythm':
@@ -49,8 +49,8 @@ class CustomGenerator:
         return dataset
 
 
-class CustomFromData:
-    def _create_dataset_from_data(data):
+class _create_dataset_from_data:
+    def __init__(self, data):
         x, y = data['x'], data['y']
 
         if args.task in ['rhythm', 'beat', 'hr']:
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     if args.val_file:   # Using val_file
         print('Loading validation data from file {} ...'.format(args.val_file))
         val = load_pkl(str(args.val_file))  # read data from val_file
-        validation_data = CustomGenerator._create_dataset_from_generator(val)    # create validation dataset
+        validation_data = _create_dataset_from_data(val)    # create validation dataset
     else:
         val = None
         validation_data = None
@@ -156,12 +156,12 @@ if __name__ == '__main__':
             # remove training examples of patients who belong to the validation set
             val_mask = np.isin(train['patient_ids'], val_patients_ids)
             val = {key: array[val_mask] for key, array in train.items()}    # create dictionaries
-            validation_data = CustomFromData._create_dataset_from_data(val)    # create validation dataset
+            validation_data = _create_dataset_from_data(val)    # create validation dataset
             train_mask = ~val_mask
             train = {key: array[train_mask] for key, array in train.items()}
         train_size = len(train['y'])
         steps_per_epoch = None
-        train_data = CustomFromData._create_dataset_from_data(train).shuffle(train_size)   # creat train dataset
+        train_data = _create_dataset_from_data(train).shuffle(train_size)   # creat train dataset
     else:   # not file
         print('Building train data generators')
         train_patient_ids = icentia11k.ds_patient_ids   # return patient's id
@@ -175,24 +175,24 @@ if __name__ == '__main__':
             # validation size is one validation epoch by default
             val_size = args.val_size or (len(val_patient_ids) * args.val_samples_per_patient)
             print('Collecting {} validation samples ...'.format(val_size))
-            validation_data = CustomGenerator._create_dataset_from_generator(patient_ids=val_patient_ids,
+            validation_data = _create_dataset_from_generator(patient_ids=val_patient_ids,
                                                              samples_per_patient=args.val_samples_per_patient)
             val_x, val_y = next(validation_data.batch(val_size).as_numpy_iterator())
             val = {'x': val_x, 'y': val_y, 'patient_ids': val_patient_ids}
             if args.cache_val:
                 print('Caching the validation set in {} ...'.format(args.cache_val))
                 save_pkl(str(args.cache_val), x=val_x, y=val_y, patient_ids=val_patient_ids)
-            validation_data = CustomFromData._create_dataset_from_data(data=val)
+            validation_data = _create_dataset_from_data(data=val)
         steps_per_epoch = args.steps_per_epoch
         if args.data_parallelism > 1:
             split = len(train_patient_ids) // args.data_parallelism
             train_patient_ids = tf.convert_to_tensor(train_patient_ids)
             train_data = tf.data.Dataset.range(args.data_parallelism).interleave(
-                lambda i: CustomGenerator._create_dataset_from_generator(train_patient_ids[i * split:(i + 1) * split],
+                lambda i: _create_dataset_from_generator(train_patient_ids[i * split:(i + 1) * split],
                                                          args.samples_per_patient),
                 num_parallel_calls=tf.data.experimental.AUTOTUNE)
         else:
-            train_data = CustomGenerator._create_dataset_from_generator(patient_ids=train_patient_ids,
+            train_data = _create_dataset_from_generator(patient_ids=train_patient_ids,
                                                         samples_per_patient=args.samples_per_patient)
         buffer_size = 16 * args.samples_per_patient  # data from 16 patients
         train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
