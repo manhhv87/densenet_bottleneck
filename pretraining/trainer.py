@@ -27,7 +27,7 @@ matplotlib.use("Agg")
 
 
 class _create_dataset_from_generator:
-    def __init__(self, patient_ids, samples_per_patient=None):
+    def _create_dataset_from_generator(self, patient_ids, samples_per_patient=None):
         samples_per_patient = samples_per_patient or args.samples_per_patient
 
         if args.task == 'rhythm':
@@ -50,7 +50,7 @@ class _create_dataset_from_generator:
 
 
 class _create_dataset_from_data:
-    def __init__(self, data):
+    def _create_dataset_from_data(self, data):
         x, y = data['x'], data['y']
 
         if args.task in ['rhythm', 'beat', 'hr']:
