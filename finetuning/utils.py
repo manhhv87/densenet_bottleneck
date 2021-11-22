@@ -2,32 +2,41 @@ import numpy as np
 import sklearn.model_selection
 import tensorflow as tf
 
-from transplant.modules.densenet1d import ResNet
+from transplant.modules.densenet1d import _DenseNet
 
 
 def ecg_feature_extractor(arch=None, stages=None):
+    # Furthermore, we use larger filter sizes (7, 5, 5, 3) at each stage respectively,
+    # which we have observed to outperform the suggested smaller 3 × 3 filters.
+    # See Table 1 in Deep Residual Learning for Image Recognition
     if arch is None or arch == 'resnet18':
-        resnet = ResNet(num_outputs=None,
-                        blocks=(2, 2, 2, 2)[:stages],
-                        kernel_size=(7, 5, 5, 3),
-                        include_top=False)
+        resnet = _DenseNet(num_outputs=None,
+                           blocks=(1, 0, 0, 0)[:stages],
+                           first_num_channels=64,
+                           growth_rate=32,
+                           kernel_size=(7, 5, 5, 3),
+                           bottleneck=True,
+                           include_top=False)  # not include fc layer
     elif arch == 'resnet34':
-        resnet = ResNet(num_outputs=None,
-                        blocks=(3, 4, 6, 3)[:stages],
-                        kernel_size=(7, 5, 5, 3),
-                        include_top=False)
+        resnet = _DenseNet(num_outputs=None,
+                           blocks=(6, 12, 24, 16)[:stages],
+                           first_num_channels=32,
+                           growth_rate=16,
+                           kernel_size=(7, 5, 5, 3),
+                           bottleneck=True,
+                           include_top=False)  # not include fc layer
     elif arch == 'resnet50':
-        resnet = ResNet(num_outputs=None,
-                        blocks=(3, 4, 6, 3)[:stages],
-                        kernel_size=(7, 5, 5, 3),
-                        block_fn=BottleneckBlock,
-                        include_top=False)
+        resnet = _DenseNet(num_outputs=None,
+                           blocks=(6, 12, 24, 16)[:stages],
+                           first_num_channels=64,
+                           growth_rate=32,
+                           kernel_size=(7, 5, 5, 3),
+                           bottleneck=True,
+                           include_top=False)  # not include fc layer
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
-    feature_extractor = tf.keras.Sequential([
-        resnet,
-        tf.keras.layers.GlobalAveragePooling1D()
-    ])
+
+    feature_extractor = tf.keras.Sequential([resnet, tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
     return feature_extractor
 
 

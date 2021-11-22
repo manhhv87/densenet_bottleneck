@@ -9,110 +9,112 @@ def relu():
     return tf.keras.layers.ReLU()
 
 
-def conv1d(filters, kernel_size=3, strides=1):
-    return tf.keras.layers.Conv1D(
-        filters, kernel_size, strides=strides, padding='same', use_bias=False,
-        kernel_initializer=tf.keras.initializers.VarianceScaling())
+def conv1d(filters, kernel_size=1, strides=1):
+    return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
+                                  padding='same', use_bias=False,
+                                  kernel_initializer=tf.keras.initializers.VarianceScaling(),
+                                  kernel_regularizer=tf.keras.regularizers.l1_l2(l1=0.01, l2=0.01))
 
 
-class ResidualBlock(tf.keras.layers.Layer):
-    def __init__(self, filters, kernel_size=3, strides=1, **kwargs):
+class _DenseBlock(tf.keras.layers.Layer):
+    def __init__(self, num_filters, kernel_size, bottleneck=True, **kwargs):  # constructor
         super().__init__(**kwargs)
-        self.filters = filters
+        self.num_filters = num_filters
         self.kernel_size = kernel_size
-        self.strides = strides
+        self.bottleneck = bottleneck
 
     def build(self, input_shape):
-        num_chan = input_shape[-1]
-        self.conv1 = conv1d(self.filters, self.kernel_size, self.strides)
+        if self.bottleneck:
+            self.bn = batch_norm()
+            self.relu = relu()
+            self.conv = conv1d(filters=4 * self.num_filters)
+
         self.bn1 = batch_norm()
         self.relu1 = relu()
-        self.conv2 = conv1d(self.filters, self.kernel_size, 1)
-        self.bn2 = batch_norm()
-        self.relu2 = relu()
-        if num_chan != self.filters or self.strides > 1:
-            self.proj_conv = conv1d(self.filters, 1, self.strides)
-            self.proj_bn = batch_norm()
-            self.projection = True
+        self.conv1 = conv1d(filters=self.num_filters, kernel_size=self.kernel_size)
+
+        if self.bottleneck:
+            self.listLayers = [self.bn, self.relu, self.conv, self.bn1, self.relu1, self.conv1]
         else:
-            self.projection = False
+            self.listLayers = [self.bn1, self.relu1, self.conv1]
+
         super().build(input_shape)
 
     def call(self, x, **kwargs):
-        shortcut = x
-        if self.projection:
-            shortcut = self.proj_conv(shortcut)
-            shortcut = self.proj_bn(shortcut)
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu1(x)
-        x = self.conv2(x)
-        x = self.bn2(x)
-        x = self.relu2(x + shortcut)
-        return x
+        y = x
+        for layer in self.listLayers.layers:
+            y = layer(y)
+        y = tf.keras.layers.concatenate([x, y], axis=-1)
+        return y
 
 
-class BottleneckBlock(tf.keras.layers.Layer):
-    def __init__(self, filters, kernel_size=3, strides=1, expansion=4, **kwargs):
+class _TransitionBlock(tf.keras.layers.Layer):
+    def __init__(self, num_filters, **kwargs):
         super().__init__(**kwargs)
-        self.filters = filters
-        self.kernel_size = kernel_size
-        self.strides = strides
-        self.expansion = expansion
+        self.num_filters = num_filters
 
     def build(self, input_shape):
-        num_chan = input_shape[-1]
-        self.conv1 = conv1d(self.filters, 1, 1)
-        self.bn1 = batch_norm()
-        self.relu1 = relu()
-        self.conv2 = conv1d(self.filters, self.kernel_size, self.strides)
-        self.bn2 = batch_norm()
-        self.relu2 = relu()
-        self.conv3 = conv1d(self.filters * self.expansion, 1, 1)
-        self.bn3 = batch_norm()
-        self.relu3 = relu()
-        if num_chan != self.filters * self.expansion or self.strides > 1:
-            self.proj_conv = conv1d(self.filters * self.expansion, 1, self.strides)
-            self.proj_bn = batch_norm()
-            self.projection = True
-        else:
-            self.projection = False
+        self.bn = batch_norm()
+        self.relu = relu()
+        self.conv = conv1d(self.num_filters)
+
+        self.avg_pool = tf.keras.layers.AveragePooling1D(pool_size=2, strides=2, padding='same')
         super().build(input_shape)
 
     def call(self, x, **kwargs):
-        shortcut = x
-        if self.projection:
-            shortcut = self.proj_conv(shortcut)
-            shortcut = self.proj_bn(shortcut)
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu1(x)
-        x = self.conv2(x)
-        x = self.bn2(x)
-        x = self.relu2(x)
-        x = self.conv3(x)
-        x = self.bn3(x)
-        x = self.relu3(x + shortcut)
-        return x
+        x = self.bn(x)
+        x = self.relu(x)
+        x = self.conv(x)
+        return self.avg_pool(x)
 
 
-class ResNet(tf.keras.Model):
-    def __init__(self, num_outputs=1, blocks=(2, 2, 2, 2),
-                 filters=(64, 128, 256, 512), kernel_size=(3, 3, 3, 3),
-                 block_fn=ResidualBlock, include_top=True, **kwargs):
+class _DenseNet(tf.keras.Model):
+    """"
+    Densenet-BC model class, based "Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>
+
+    Args:
+        num_outputs (int) - number of classification classes
+        blocks (list of 3 or 4 ints) - how many dense layers in each dense block
+        first_num_channels (int) - the number of filters to learn in the first convolution layer
+        growth_rate (int) - how many filters to add each dense-layer (`k` in paper)
+        block_fn1 - dense block
+        block_fn2 - transition block
+        include_top (bool) - yes or no include top layer
+    """
+    def __init__(self, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
+                 kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
+                 bottleneck=True, include_top=True, **kwargs):  # constructor
+
         super().__init__(**kwargs)
-        self.conv1 = conv1d(64, 7, 2)
+
+        # Built Convolution layer
+        self.conv1 = conv1d(filters=64, kernel_size=7, strides=2)  # 7×7, 64, stride 2
         self.bn1 = batch_norm()
         self.relu1 = relu()
-        self.maxpool1 = tf.keras.layers.MaxPooling1D(3, 2, padding='same')
-        self.blocks = []
-        for stage, num_blocks in enumerate(blocks):
-            for block in range(num_blocks):
-                strides = 2 if block == 0 and stage > 0 else 1
-                res_block = block_fn(filters[stage], kernel_size[stage], strides)
-                self.blocks.append(res_block)
+        self.maxpool1 = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding='same')  # 3×3 max pool, stride 2
+
+        # Built Dense Blocks and Transition layers
+        self.densenet_blocks = []
+        num_channel_trans = first_num_channels
+        for stage, _ in enumerate(blocks):  # stage = [0,1,2,3] and _ = [6, 12, 24, 16]
+            for block in range(blocks[stage]):
+                dnet_block = block_fn1(num_filters=growth_rate, kernel_size=kernel_size[stage], bottleneck=bottleneck)
+                self.densenet_blocks.append(dnet_block)
+
+            # This is the number of output channels in the previous dense block
+            num_channel_trans += blocks[stage] * growth_rate
+
+            # A transition layer that halves the number of channels is added
+            # between the dense blocks
+            if stage != len(blocks) - 1:
+                num_channel_trans //= 2
+                tran_block = block_fn2(num_filters=num_channel_trans)
+                self.densenet_blocks.append(tran_block)
+
+        # include top layer (full connected layer)
         self.include_top = include_top
         if include_top:
+            # average pool, 1-d fc, sigmoid
             self.global_pool = tf.keras.layers.GlobalAveragePooling1D()
             out_act = 'sigmoid' if num_outputs == 1 else 'softmax'
             self.classifier = tf.keras.layers.Dense(num_outputs, out_act)
@@ -120,12 +122,18 @@ class ResNet(tf.keras.Model):
     def call(self, x, include_top=None, **kwargs):
         if include_top is None:
             include_top = self.include_top
+
+        # Built conv1 layer
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu1(x)
         x = self.maxpool1(x)
-        for res_block in self.blocks:
-            x = res_block(x)
+
+        # Built other layers
+        for dnet_block in self.densenet_blocks:
+            x = dnet_block(x)
+
+        # include top layer (full connected layer)
         if include_top:
             x = self.global_pool(x)
             x = self.classifier(x)

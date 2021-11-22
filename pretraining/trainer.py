@@ -62,6 +62,10 @@ class CustomFromData:
         if args.task in ['rhythm', 'beat', 'hr']:
             spec = (tf.TensorSpec((None, args.frame_size, 1), tf.float32),
                     tf.TensorSpec((None,), tf.int32))
+        # elif args.task == 'cpc':
+        #     spec = ({'context': tf.TensorSpec((None, args.context_size, args.frame_size, 1), tf.float32),
+        #              'samples': tf.TensorSpec((None, args.ns + 1, args.frame_size, 1), tf.float32)},
+        #             tf.TensorSpec((None,), tf.int32))
         else:
             raise ValueError('unknown task: {}'.format(args.task))
 
@@ -115,10 +119,10 @@ if __name__ == '__main__':
         raise ValueError('Unknown metric: {}'.format(args.val_metric))
 
     os.makedirs(str(args.job_dir), exist_ok=True)
-    print('Creating working directory in {}'.format(args.job_dir))
+    print('[INFO] Creating working directory in {}'.format(args.job_dir))
 
     seed = args.seed or np.random.randint(2 ** 16)
-    print('Setting random state {}'.format(seed))
+    print('[INFO] Setting random state {}'.format(seed))
     np.random.seed(seed)
 
     # Number of data points that are sampled from a validation patient file once it is read
@@ -133,7 +137,7 @@ if __name__ == '__main__':
             args.val_patients = int(args.val_patients)
 
     if args.val_file:   # Using val_file
-        print('Loading validation data from file {} ...'.format(args.val_file))
+        print('[INFO] Loading validation data from file {} ...'.format(args.val_file))
         val = load_pkl(str(args.val_file))  # read data from val_file
         validation_data = CustomFromData(val)._create_dataset_from_data()    # create validation dataset
     else:
@@ -141,7 +145,7 @@ if __name__ == '__main__':
         validation_data = None
 
     if args.train.is_file():    # used to check 'train' if the entry is a file or not.
-        print('Loading train data from file {} ...'.format(args.train))
+        print('[INFO] Loading train data from file {} ...'.format(args.train))
         train = load_pkl(str(args.train))   # read 'train' data file
         if val:     # if validation dataset is also data file
             # remove training examples of patients who belong to the validation set
@@ -152,7 +156,7 @@ if __name__ == '__main__':
             #     print('--val-patients is ignored when train is a pickled file because the negative samples '
             #           'in the validation set cannot be guaranteed to come from only the validation patients.')
             # else:
-            print('Splitting data into train and validation')
+            print('[INFO] Splitting data into train and validation')
             _, val_patients_ids = sklearn.model_selection.train_test_split(np.unique(train['patient_ids']),
                                                                            test_size=args.val_patients)
             # remove training examples of patients who belong to the validation set
@@ -165,24 +169,24 @@ if __name__ == '__main__':
         steps_per_epoch = None
         train_data = CustomFromData(train)._create_dataset_from_data().shuffle(train_size)   # creat train dataset
     else:   # not file
-        print('Building train data generators')
+        print('[INFO] Building train data generators')
         train_patient_ids = icentia11k.ds_patient_ids   # return patient's id
         if val:     # if validation set is a file
             # remove patients who belong to the validation set from train data
             train_patient_ids = np.setdiff1d(ar1=train_patient_ids, ar2=val['patient_ids'])
         elif args.val_patients:     # using number of patient
-            print('Splitting patients into train and validation')
+            print('[INFO] Splitting patients into train and validation')
             train_patient_ids, val_patient_ids = sklearn.model_selection.train_test_split(train_patient_ids,
                                                                                           test_size=args.val_patients)
             # validation size is one validation epoch by default
             val_size = args.val_size or (len(val_patient_ids) * args.val_samples_per_patient)
-            print('Collecting {} validation samples ...'.format(val_size))
+            print('[INFO] Collecting {} validation samples ...'.format(val_size))
             validation_data = CustomFromGenerator(val_patient_ids,
                                                   args.val_samples_per_patient)._create_dataset_from_generator()
             val_x, val_y = next(validation_data.batch(val_size).as_numpy_iterator())
             val = {'x': val_x, 'y': val_y, 'patient_ids': val_patient_ids}
             if args.cache_val:
-                print('Caching the validation set in {} ...'.format(args.cache_val))
+                print('[INFO] Caching the validation set in {} ...'.format(args.cache_val))
                 save_pkl(str(args.cache_val), x=val_x, y=val_y, patient_ids=val_patient_ids)
             validation_data = CustomFromData(val)._create_dataset_from_data()
         steps_per_epoch = args.steps_per_epoch
@@ -199,7 +203,7 @@ if __name__ == '__main__':
         buffer_size = 16 * args.samples_per_patient  # data from 16 patients
         train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
 
-    #train_data = train_data.batch(args.batch_size)  # train dataset
+    train_data = train_data.batch(args.batch_size)  # train dataset
 
     if val:
         validation_data = validation_data.batch(args.batch_size)    # validation dataset
@@ -207,7 +211,7 @@ if __name__ == '__main__':
     strategy = tf.distribute.MirroredStrategy()
 
     with strategy.scope():
-        print('Building model ...')
+        print('[INFO] Building model ...')
 
         # Adding local features learning part
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
@@ -226,10 +230,10 @@ if __name__ == '__main__':
         inputs = build_input_tensor_from_shape(shape=input_shape, dtype=input_dtype, ignore_batch_dim=True)
         model(inputs)
 
-        print('# model parameters: {:,d}'.format(model.count_params()))
+        print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
 
         if args.weights_file:
-            print('Loading weights from file {} ...'.format(args.weights_file))
+            print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
             model.load_weights(filepath=str(args.weights_file))
 
         if args.val_metric in ['loss', 'acc']:
@@ -256,6 +260,9 @@ if __name__ == '__main__':
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
+        # lr_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.5,
+        #                                                    patience=5, verbose=1, min_lr=1e-7)
+
         # check to see if we are attempting to find an optimal learning rate
         # before training for the full number of epochs
         if args.lr_find > 0:
@@ -263,8 +270,7 @@ if __name__ == '__main__':
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] finding learning rate...")
             lrf = LearningRateFinder(model)
-            lrf.find(trainData=train_data.batch(args.batch_size),
-                     startLR=1e-10, endLR=1e+1, epochs=3)
+            lrf.find(trainData=train_data, stepsPerEpoch=steps_per_epoch, startLR=1e-10, endLR=1e+1, epochs=3)
 
             # plot the loss for the various learning rates and save the
             # resulting plot to disk
