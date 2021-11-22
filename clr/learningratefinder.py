@@ -38,8 +38,7 @@ class LearningRateFinder:
 
 	def is_data_iter(self, data):
 		# define the set of class types we will check for
-		iterClasses = ["NumpyArrayIterator", "DirectoryIterator", "Iterator", "Sequence",
-					   "CustomFromGenerator", "CustomFromData"]
+		iterClasses = ["NumpyArrayIterator", "DirectoryIterator", "Iterator", "Sequence", "BatchDataset"]
 
 		print('[INFO] data.__class__.__name__: {}'.format(data.__class__.__name__))
 
@@ -100,6 +99,8 @@ class LearningRateFinder:
 
 		# determine if we are using a data generator or a raw NumPy array.
 		useGen = self.is_data_iter(trainData)
+
+		print('[INFO] Using a data generator or not: {}'.format(useGen))
 
 		# if we're using a data generator and stepsPerEpoch variable supplied,
 		# raise an exception since we cannot possibly determine the stepsPerEpoch from a generator

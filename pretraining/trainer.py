@@ -268,14 +268,14 @@ if __name__ == '__main__':
         # check to see if we are attempting to find an optimal learning rate
         # before training for the full number of epochs
         if args.lr_find > 0:
-            train_data = np.stack(list(train_data))
-            validation_data = np.stack(list(validation_data))
+            # train_data = np.stack(list(train_data))
+            # validation_data = np.stack(list(validation_data))
 
             # initialize the learning rate finder and then train with learning
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] Finding learning rate...")
             lrf = LearningRateFinder(model)
-            lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1, epochs=3)
+            lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1, stepsPerEpoch=steps_per_epoch, epochs=3)
 
             # plot the loss for the various learning rates and save the
             # resulting plot to disk
