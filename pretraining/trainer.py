@@ -187,11 +187,12 @@ if __name__ == '__main__':
                 num_parallel_calls=tf.data.experimental.AUTOTUNE)
         else:
             train_data = _create_dataset_from_generator(train_patient_ids, args.samples_per_patient)
+
+        train_data_len = train_data.__len__()
+        print('[INFO] Train data len: {}'.format(train_data_len))
+
         buffer_size = 16 * args.samples_per_patient  # data from 16 patients
         train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
-
-    train_data_len = len(train_data)    #.__len__()
-    print('[INFO] Train data len: {}'.format(train_data_len))
 
     train_data = train_data.batch(args.batch_size)  # train dataset
 
