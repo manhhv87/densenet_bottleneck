@@ -268,7 +268,7 @@ if __name__ == '__main__':
         if args.lr_find > 0:
             # initialize the learning rate finder and then train with learning
             # rates ranging from 1e-10 to 1e+1
-            print("[INFO] finding learning rate...")
+            print("[INFO] Finding learning rate...")
             lrf = LearningRateFinder(model)
             lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1, epochs=3)
 

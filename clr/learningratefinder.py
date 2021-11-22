@@ -99,6 +99,8 @@ class LearningRateFinder:
 		# determine if we are using a data generator or a raw NumPy array.
 		useGen = self.is_data_iter(trainData)
 
+		print('[INFO] Using a data generator or not'.format(useGen))
+
 		# if we're using a data generator and stepsPerEpoch variable supplied,
 		# raise an exception since we cannot possibly determine the stepsPerEpoch from a generator
 		if useGen and stepsPerEpoch is None:
