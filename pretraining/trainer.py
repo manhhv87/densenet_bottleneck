@@ -253,7 +253,7 @@ if __name__ == '__main__':
 
             lrf = LearningRateFinder(model)
             lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1,
-                     stepsPerEpoch=train_size // args.batch_size,     # train_data.shape[0] // args.batch_size,
+                     stepsPerEpoch=steps_per_epoch,     # train_size // args.batch_size,
                      epochs=args.epochs)
 
             # plot the loss for the various learning rates and save the
@@ -271,7 +271,9 @@ if __name__ == '__main__':
         # otherwise, we have already defined a learning rate space to train
         # over, so compute the step size and initialize the cyclic learning
         # rate method
-        stepSize = config.STEP_SIZE * train_size // args.batch_size
+        #
+        # stepSize = config.STEP_SIZE * train_size // args.batch_size
+        stepSize = config.STEP_SIZE * steps_per_epoch
         clr = CyclicLR(mode=config.CLR_METHOD,
                        base_lr=config.MIN_LR,
                        max_lr=config.MAX_LR,
@@ -280,7 +282,7 @@ if __name__ == '__main__':
         # train the network
         print("[INFO] Training network...")
         his_training = model.fit(x=train_data,
-                                 steps_per_epoch=train_size // args.batch_size,
+                                 steps_per_epoch=steps_per_epoch,   # train_size // args.batch_size,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
                                  callbacks=[checkpoint, logger, clr],
