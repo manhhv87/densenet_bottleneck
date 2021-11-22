@@ -133,6 +133,8 @@ if __name__ == '__main__':
         val = None
         validation_data = None
 
+    num_train_ids = 0
+
     if args.train.is_file():    # used to check 'train' if the entry is a file or not.
         print('[INFO] Loading train data from file {} ...'.format(args.train))
         train = load_pkl(str(args.train))   # read 'train' data file
@@ -163,10 +165,13 @@ if __name__ == '__main__':
         if val:     # if validation set is a file
             # remove patients who belong to the validation set from train data
             train_patient_ids = np.setdiff1d(ar1=train_patient_ids, ar2=val['patient_ids'])
+            num_train_ids = train_patient_ids
         elif args.val_patients:     # using number of patient
             print('[INFO] Splitting patients into train and validation')
             train_patient_ids, val_patient_ids = sklearn.model_selection.train_test_split(train_patient_ids,
                                                                                           test_size=args.val_patients)
+            num_train_ids = train_patient_ids
+
             # validation size is one validation epoch by default
             val_size = args.val_size or (len(val_patient_ids) * args.val_samples_per_patient)
             print('[INFO] Collecting {} validation samples ...'.format(val_size))
@@ -181,6 +186,7 @@ if __name__ == '__main__':
         if args.data_parallelism > 1:
             split = len(train_patient_ids) // args.data_parallelism
             train_patient_ids = tf.convert_to_tensor(train_patient_ids)
+            num_train_ids = train_patient_ids
             train_data = tf.data.Dataset.range(args.data_parallelism).interleave(
                 lambda i: _create_dataset_from_generator(train_patient_ids[i * split:(i + 1) * split],
                                                          args.samples_per_patient),
@@ -188,14 +194,13 @@ if __name__ == '__main__':
         else:
             train_data = _create_dataset_from_generator(train_patient_ids, args.samples_per_patient)
 
-        train_data_len = train_data.__len__()
-            #len(list(train_data)) #.__len__()
-        print('[INFO] Train data len: {}'.format(train_data_len))
-
-        buffer_size = 16 * args.samples_per_patient  # data from 16 patients
+        buffer_size = 16 * args.samples_per_patient
         train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
 
     train_data = train_data.batch(args.batch_size)  # train dataset
+
+    train_size = len(num_train_ids) * args.val_samples_per_patient  # new add
+    print('[INFO] Training size {}'.format(train_size))
 
     if val:
         validation_data = validation_data.batch(args.batch_size)    # validation dataset
@@ -260,11 +265,10 @@ if __name__ == '__main__':
             # initialize the learning rate finder and then train with learning
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] Finding learning rate...")
-            print('[INFO] stepsPerEpoch {}'.format(train_data_len // args.batch_size))
 
             lrf = LearningRateFinder(model)
             lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1,
-                     stepsPerEpoch=train_data_len // args.batch_size,     # train_data.shape[0] // args.batch_size,
+                     stepsPerEpoch=train_size // args.batch_size,     # train_data.shape[0] // args.batch_size,
                      epochs=args.epochs)
 
             # plot the loss for the various learning rates and save the
@@ -282,7 +286,7 @@ if __name__ == '__main__':
         # otherwise, we have already defined a learning rate space to train
         # over, so compute the step size and initialize the cyclic learning
         # rate method
-        stepSize = config.STEP_SIZE * (train_data_len // args.batch_size)   # (train_data.shape[0] // args.batch_size)
+        stepSize = config.STEP_SIZE * train_size // args.batch_size
         clr = CyclicLR(mode=config.CLR_METHOD,
                        base_lr=config.MIN_LR,
                        max_lr=config.MAX_LR,
@@ -291,7 +295,7 @@ if __name__ == '__main__':
         # train the network
         print("[INFO] Training network...")
         his_training = model.fit(x=train_data,
-                                 steps_per_epoch=train_data_len // args.batch_size,       # train_data.shape[0] // args.batch_size,
+                                 steps_per_epoch=train_size // args.batch_size,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
                                  callbacks=[checkpoint, logger, clr],
