@@ -41,7 +41,7 @@ class LearningRateFinder:
 		iterClasses = ["NumpyArrayIterator", "DirectoryIterator", "Iterator", "Sequence",
 					   "CustomFromGenerator", "CustomFromData"]
 
-		print('[INFO] data.__class__.__name__'.format(data.__class__.__name__))
+		print('[INFO] data.__class__.__name__: {}'.format(data.__class__.__name__))
 
 		# return whether our data is an iterator
 		return data.__class__.__name__ in iterClasses
