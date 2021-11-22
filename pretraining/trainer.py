@@ -12,7 +12,6 @@ from transplant.evaluation import CustomCheckpoint, f1
 from transplant.modules.utils import build_input_tensor_from_shape
 from transplant.utils import (matches_spec, load_pkl, save_pkl)
 
-# set the matplotlib backend so figures can be saved in the background
 from clr.learningratefinder import LearningRateFinder
 from clr.clr_callback import CyclicLR
 from clr import config
@@ -21,6 +20,7 @@ import numpy as np
 import cv2
 import sys
 
+# set the matplotlib backend so figures can be saved in the background
 import matplotlib
 matplotlib.use("Agg")
 
@@ -32,6 +32,8 @@ class CustomFromGenerator:
         self.samples_per_patient = samples_per_patient
 
     def _create_dataset_from_generator(self):
+        print('[INFO] Create dataset from generator')
+
         self.samples_per_patient = self.samples_per_patient or args.samples_per_patient
 
         if args.task == 'rhythm':
@@ -52,6 +54,8 @@ class CustomFromGenerator:
 
 
 class CustomFromData:
+    print('[INFO] Create dataset from data')
+
     def __init__(self, data, **kwargs):
         super().__init__(**kwargs)
         self.data = data
@@ -62,10 +66,6 @@ class CustomFromData:
         if args.task in ['rhythm', 'beat', 'hr']:
             spec = (tf.TensorSpec((None, args.frame_size, 1), tf.float32),
                     tf.TensorSpec((None,), tf.int32))
-        # elif args.task == 'cpc':
-        #     spec = ({'context': tf.TensorSpec((None, args.context_size, args.frame_size, 1), tf.float32),
-        #              'samples': tf.TensorSpec((None, args.ns + 1, args.frame_size, 1), tf.float32)},
-        #             tf.TensorSpec((None,), tf.int32))
         else:
             raise ValueError('unknown task: {}'.format(args.task))
 
@@ -167,7 +167,7 @@ if __name__ == '__main__':
             train = {key: array[train_mask] for key, array in train.items()}
         train_size = len(train['y'])
         steps_per_epoch = None
-        train_data = CustomFromData(train)._create_dataset_from_data().shuffle(train_size)   # creat train dataset
+        train_data = CustomFromData(train)._create_dataset_from_data().shuffle(train_size)   # create train dataset
     else:   # not file
         print('[INFO] Building train data generators')
         train_patient_ids = icentia11k.ds_patient_ids   # return patient's id
@@ -270,7 +270,7 @@ if __name__ == '__main__':
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] finding learning rate...")
             lrf = LearningRateFinder(model)
-            lrf.find(trainData=train_data, stepsPerEpoch=steps_per_epoch, startLR=1e-10, endLR=1e+1, epochs=3)
+            lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1, epochs=3)
 
             # plot the loss for the various learning rates and save the
             # resulting plot to disk
