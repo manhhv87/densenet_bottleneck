@@ -289,7 +289,7 @@ if __name__ == '__main__':
                                  verbose=2)
 
         # construct a plot that plots and saves the training history
-        N = np.arange(0, config.NUM_EPOCHS)
+        N = np.arange(0, args.epochs)
         plt.style.use("ggplot")
         plt.figure()
         plt.plot(N, his_training.history["loss"], label="train_loss")
