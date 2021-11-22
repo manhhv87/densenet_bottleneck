@@ -46,7 +46,7 @@ class CustomFromGenerator:
         elif args.task == 'hr':
             dataset = datasets.heart_rate_dataset(db_dir=str(args.train), patient_ids=self.patient_ids,
                                                   frame_size=args.frame_size, unzipped=args.unzipped,
-                                                  samples_per_patient=self.amples_per_patient)
+                                                  samples_per_patient=self.samples_per_patient)
         # elif args.task == 'cpc':
         #     dataset = datasets.cpc_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
         #                                    context_size=args.context_size, ns=args.ns, context_overlap=args.context_overlap,
