@@ -224,6 +224,8 @@ if __name__ == '__main__':
         # Returns the output shapes for elements of the input dataset / iterator.
         input_shape, _ = tf.compat.v1.data.get_output_shapes(train_data)
 
+        print('[INFO] Output shape of train data ...{}'.format(input_shape))
+
         # Returns the output shapes for elements of the input dataset / iterator.
         input_dtype, _ = tf.compat.v1.data.get_output_types(train_data)
 
