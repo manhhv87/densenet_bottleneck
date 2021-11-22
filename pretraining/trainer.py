@@ -256,7 +256,7 @@ if __name__ == '__main__':
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] Finding learning rate...")
             lrf = LearningRateFinder(model)
-            lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1, stepsPerEpoch=steps_per_epoch, epochs=3)
+            lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1, stepsPerEpoch=steps_per_epoch, epochs=10)
 
             # plot the loss for the various learning rates and save the
             # resulting plot to disk
