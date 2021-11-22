@@ -46,11 +46,6 @@ class CustomFromGenerator:
             dataset = datasets.heart_rate_dataset(db_dir=str(args.train), patient_ids=self.patient_ids,
                                                   frame_size=args.frame_size, unzipped=args.unzipped,
                                                   samples_per_patient=self.samples_per_patient)
-        # elif args.task == 'cpc':
-        #     dataset = datasets.cpc_dataset(db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
-        #                                    context_size=args.context_size, ns=args.ns, context_overlap=args.context_overlap,
-        #                                    positive_offset=args.positive_offset, num_buffered_patients=16,
-        #                                    unzipped=args.unzipped, samples_per_patient=samples_per_patient)
         else:
             raise ValueError('unknown task: {}'.format(args.task))
         return dataset
@@ -163,7 +158,7 @@ if __name__ == '__main__':
             # else:
             print('Splitting data into train and validation')
             _, val_patients_ids = sklearn.model_selection.train_test_split(np.unique(train['patient_ids']),
-                                                                           test_size=args.val_patients)     # _ is test_patients_ids
+                                                                           test_size=args.val_patients)
             # remove training examples of patients who belong to the validation set
             val_mask = np.isin(train['patient_ids'], val_patients_ids)
             val = {key: array[val_mask] for key, array in train.items()}    # create dictionaries
@@ -208,7 +203,7 @@ if __name__ == '__main__':
         buffer_size = 16 * args.samples_per_patient  # data from 16 patients
         train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
 
-    train_data = train_data.batch(args.batch_size)  # train dataset
+    #train_data = train_data.batch(args.batch_size)  # train dataset
 
     if val:
         validation_data = validation_data.batch(args.batch_size)    # validation dataset
