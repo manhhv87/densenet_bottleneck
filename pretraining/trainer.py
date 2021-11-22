@@ -80,11 +80,6 @@ if __name__ == '__main__':
     parser.add_argument('--stages', type=int, default=None, help='Stages of the densenet network '
                                                                  'that will be pretrained.')
     parser.add_argument('--frame-size', type=int, default=2048, help='Frame size.')
-    # parser.add_argument('--context-size', type=int, default=8, help='Context size measured in frames.')
-    # parser.add_argument('--ns', type=int, default=1, help='Number of negative samples for the CPC.')
-    # parser.add_argument('--positive-offset', type=int, default=0,
-    #                     help='Offset of the positive sample from the context.')
-    # parser.add_argument('--context-overlap', type=int, default=0, help='CPC Context overlap.')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size.')
     parser.add_argument('--samples-per-patient', type=int, default=1000,
                         help='Number of data points that are sampled from a patient file once it is read.')

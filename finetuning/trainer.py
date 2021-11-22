@@ -4,7 +4,6 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import regularizers   # new adding
 
 from finetuning.utils import ecg_feature_extractor, train_test_split
 from transplant.evaluation import auc, f1, multi_f1, CustomCheckpoint
@@ -115,13 +114,6 @@ if __name__ == '__main__':
 
         # not include fc layer
         model = ecg_feature_extractor(arch=args.arch)
-
-        # add classification layer on top of the ecg feature extractor
-        # model.add(tf.keras.layers.BatchNormalization())  # new adding
-        # model.add(tf.keras.layers.ReLU())  # new adding
-        # model.add(tf.keras.layers.GlobalAvgPool1D())
-        # model.add(tf.keras.layers.Dense(units=64, activation='relu'))
-        # model.add(tf.keras.layers.ReLU())
         model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
 
         # initialize the weights of the model

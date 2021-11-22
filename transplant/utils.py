@@ -173,29 +173,6 @@ def running_mean_std(iterator, dtype=None):
     return mean, std
 
 
-# def buffered_generator(generator, buffer_size):
-#     """
-#     Buffer the elements yielded by a generator. New elements replace the oldest elements in the buffer.
-#     The buffer should be accessed in a read-only manner.
-#
-#     @param generator: Generator object.
-#     @param buffer_size: Number of elements in the buffer.
-#
-#     @return: Generator that yields a buffer.
-#     """
-#     # https://cafedev.vn/tu-hoc-python-khi-nao-nen-su-dung-cau-lenh-yield-thay-vi-cau-lenh-return-trong-python/
-#
-#     buffer = []
-#     for e in generator:
-#         buffer.append(e)
-#         if len(buffer) == buffer_size:
-#             break
-#     yield buffer
-#     for e in generator:
-#         buffer = buffer[1:] + [e]
-#         yield buffer
-
-
 def load_pkl(file, compress=True):
     """ Load pickled file. """
     if compress:
