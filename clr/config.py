@@ -3,12 +3,10 @@ import os
 
 # define the minimum learning rate, maximum learning rate, batch size,
 # step size, CLR method, and number of epochs
-MIN_LR = 1e-5
-MAX_LR = 1e-2
-BATCH_SIZE = 64
+MIN_LR = 1e-3
+MAX_LR = 1e-1
 STEP_SIZE = 8
 CLR_METHOD = "triangular"
-NUM_EPOCHS = 48
 
 # define the path to the output learning rate finder plot, training
 # history plot and cyclical learning rate plot
