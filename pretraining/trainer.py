@@ -255,8 +255,11 @@ if __name__ == '__main__':
             # initialize the learning rate finder and then train with learning
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] Finding learning rate...")
+            print('[INFO] stepsPerEpoch {}'.format(np.ceil((len(train_data) / float(args.batch_size)))))
+
             lrf = LearningRateFinder(model)
-            lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1, stepsPerEpoch=steps_per_epoch, epochs=args.epochs)
+            lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1,
+                     stepsPerEpoch=np.ceil((len(train_data) / float(args.batch_size))), epochs=args.epochs)
 
             # plot the loss for the various learning rates and save the
             # resulting plot to disk
@@ -273,7 +276,7 @@ if __name__ == '__main__':
         # otherwise, we have already defined a learning rate space to train
         # over, so compute the step size and initialize the cyclic learning
         # rate method
-        stepSize = config.STEP_SIZE * (train_data.shape[0][1] // args.batch_size)
+        stepSize = config.STEP_SIZE * (len(train_data) // args.batch_size)
         clr = CyclicLR(mode=config.CLR_METHOD,
                        base_lr=config.MIN_LR,
                        max_lr=config.MAX_LR,
