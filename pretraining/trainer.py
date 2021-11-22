@@ -190,6 +190,9 @@ if __name__ == '__main__':
         buffer_size = 16 * args.samples_per_patient  # data from 16 patients
         train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
 
+    train_data_len = train_data.__len__()
+    print('[INFO] Train data len: {}'.format(train_data_len))
+
     train_data = train_data.batch(args.batch_size)  # train dataset
 
     if val:
@@ -259,7 +262,7 @@ if __name__ == '__main__':
 
             lrf = LearningRateFinder(model)
             lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1,
-                     stepsPerEpoch=train_data.__len__() // args.batch_size,     # train_data.shape[0] // args.batch_size,
+                     stepsPerEpoch=train_data_len // args.batch_size,     # train_data.shape[0] // args.batch_size,
                      epochs=args.epochs)
 
             # plot the loss for the various learning rates and save the
@@ -277,7 +280,7 @@ if __name__ == '__main__':
         # otherwise, we have already defined a learning rate space to train
         # over, so compute the step size and initialize the cyclic learning
         # rate method
-        stepSize = config.STEP_SIZE * train_data.__len__() // args.batch_size   # (train_data.shape[0] // args.batch_size)
+        stepSize = config.STEP_SIZE * (train_data_len // args.batch_size)   # (train_data.shape[0] // args.batch_size)
         clr = CyclicLR(mode=config.CLR_METHOD,
                        base_lr=config.MIN_LR,
                        max_lr=config.MAX_LR,
@@ -286,7 +289,7 @@ if __name__ == '__main__':
         # train the network
         print("[INFO] Training network...")
         his_training = model.fit(x=train_data,
-                                 steps_per_epoch=train_data.__len__(),       # train_data.shape[0] // args.batch_size,
+                                 steps_per_epoch=train_data_len // args.batch_size,       # train_data.shape[0] // args.batch_size,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
                                  callbacks=[checkpoint, logger, clr],
