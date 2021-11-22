@@ -18,7 +18,6 @@ from clr.clr_callback import CyclicLR
 from clr import config
 import matplotlib.pyplot as plt
 import numpy as np
-import argparse
 import cv2
 import sys
 
@@ -81,9 +80,6 @@ class CustomFromData:
         dataset = tf.data.Dataset.from_tensor_slices((x, y))
         return dataset
 
-
-CustomFromGeneratorObject = CustomFromGenerator()
-CustomFromDataObject = CustomFromData()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
