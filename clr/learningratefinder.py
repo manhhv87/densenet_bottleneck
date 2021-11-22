@@ -104,7 +104,7 @@ class LearningRateFinder:
 		# if we're using a data generator and stepsPerEpoch variable supplied,
 		# raise an exception since we cannot possibly determine the stepsPerEpoch from a generator
 		if useGen and stepsPerEpoch is None:
-			msg = "Using generator without supplying stepsPerEpoch"
+			msg = "[INFO] Using generator without supplying stepsPerEpoch"
 			raise Exception(msg)
 
 		# if we're not using a data generator then our entire dataset must

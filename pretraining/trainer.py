@@ -54,13 +54,13 @@ class CustomFromGenerator:
 
 
 class CustomFromData:
-    print('[INFO] Create dataset from data')
-
     def __init__(self, data, **kwargs):
         super().__init__(**kwargs)
         self.data = data
 
     def _create_dataset_from_data(self):
+        print('[INFO] Create dataset from data')
+        
         x, y = self.data['x'], self.data['y']
 
         if args.task in ['rhythm', 'beat', 'hr']:
