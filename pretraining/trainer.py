@@ -26,8 +26,6 @@ matplotlib.use("Agg")
 
 
 def _create_dataset_from_generator(patient_ids, samples_per_patient=None):
-    print('[INFO] Create dataset from generator')
-
     samples_per_patient = samples_per_patient or args.samples_per_patient
     if args.task == 'rhythm':
         dataset = datasets.rhythm_dataset(
@@ -47,8 +45,6 @@ def _create_dataset_from_generator(patient_ids, samples_per_patient=None):
 
 
 def _create_dataset_from_data(data):
-    print('[INFO] Create dataset from data')
-
     x, y = data['x'], data['y']
     if args.task in ['rhythm', 'beat', 'hr']:
         spec = (tf.TensorSpec((None, args.frame_size, 1), tf.float32),
@@ -143,10 +139,6 @@ if __name__ == '__main__':
             train_mask = np.isin(element=train['patient_ids'], test_elements=val['patient_ids'], invert=True)
             train = {key: array[train_mask] for key, array in train.items()}    # create dictionaries
         elif args.val_patients:     # if validation dataset is number of patients
-            # if args.task == 'cpc':
-            #     print('--val-patients is ignored when train is a pickled file because the negative samples '
-            #           'in the validation set cannot be guaranteed to come from only the validation patients.')
-            # else:
             print('[INFO] Splitting data into train and validation')
             _, val_patients_ids = sklearn.model_selection.train_test_split(np.unique(train['patient_ids']),
                                                                            test_size=args.val_patients)
@@ -200,7 +192,7 @@ if __name__ == '__main__':
     train_data = train_data.batch(args.batch_size)  # train dataset
 
     train_size = len(num_train_ids) * args.val_samples_per_patient  # new add
-    print('[INFO] Training size {}'.format(train_size))
+    print('[INFO] Collecting {} training samples ... {}'.format(train_size))
 
     if val:
         validation_data = validation_data.batch(args.batch_size)    # validation dataset
@@ -220,8 +212,6 @@ if __name__ == '__main__':
         # initialize the weights of the model
         # Returns the output shapes for elements of the input dataset / iterator.
         input_shape, _ = tf.compat.v1.data.get_output_shapes(train_data)
-
-        print('[INFO] Output shape of train data ...{}'.format(input_shape))
 
         # Returns the output shapes for elements of the input dataset / iterator.
         input_dtype, _ = tf.compat.v1.data.get_output_types(train_data)

@@ -40,8 +40,6 @@ class LearningRateFinder:
 		# define the set of class types we will check for
 		iterClasses = ["NumpyArrayIterator", "DirectoryIterator", "Iterator", "Sequence", "BatchDataset"]
 
-		print('[INFO] data.__class__.__name__: {}'.format(data.__class__.__name__))
-
 		# return whether our data is an iterator
 		return data.__class__.__name__ in iterClasses
 
@@ -78,9 +76,8 @@ class LearningRateFinder:
 		lr *= self.lrMult
 		K.set_value(self.model.optimizer.lr, lr)
 
-	def find(self, trainData, startLR, endLR, epochs=None,
-			 stepsPerEpoch=None, batchSize=32, sampleSize=2048,
-			 verbose=1):
+	def find(self, trainData, startLR, endLR, epochs=None, stepsPerEpoch=None,
+			 batchSize=32, sampleSize=2048, verbose=1):
 		"""
 		This method is responsible for automatically finding our optimal learning rate for training.
 		We’ll call this method from our driver script when we are ready to find our learning rate.
