@@ -25,55 +25,44 @@ import matplotlib
 matplotlib.use("Agg")
 
 
-class CustomFromGenerator:
-    def __init__(self, patient_ids, samples_per_patient=None, **kwargs):
-        super().__init__(**kwargs)
-        self.patient_ids = patient_ids
-        self.samples_per_patient = samples_per_patient
+def _create_dataset_from_generator(patient_ids, samples_per_patient=None):
+    print('[INFO] Create dataset from generator')
 
-    def _create_dataset_from_generator(self):
-        print('[INFO] Create dataset from generator')
-
-        self.samples_per_patient = self.samples_per_patient or args.samples_per_patient
-
-        if args.task == 'rhythm':
-            dataset = datasets.rhythm_dataset(db_dir=str(args.train), patient_ids=self.patient_ids,
-                                              frame_size=args.frame_size, unzipped=args.unzipped,
-                                              samples_per_patient=self.samples_per_patient)
-        elif args.task == 'beat':
-            dataset = datasets.beat_dataset(db_dir=str(args.train), patient_ids=self.patient_ids,
-                                            frame_size=args.frame_size, unzipped=args.unzipped,
-                                            samples_per_patient=self.samples_per_patient)
-        elif args.task == 'hr':
-            dataset = datasets.heart_rate_dataset(db_dir=str(args.train), patient_ids=self.patient_ids,
-                                                  frame_size=args.frame_size, unzipped=args.unzipped,
-                                                  samples_per_patient=self.samples_per_patient)
-        else:
-            raise ValueError('unknown task: {}'.format(args.task))
-        return dataset
+    samples_per_patient = samples_per_patient or args.samples_per_patient
+    if args.task == 'rhythm':
+        dataset = datasets.rhythm_dataset(
+            db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
+            unzipped=args.unzipped, samples_per_patient=samples_per_patient)
+    elif args.task == 'beat':
+        dataset = datasets.beat_dataset(
+            db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
+            unzipped=args.unzipped, samples_per_patient=samples_per_patient)
+    elif args.task == 'hr':
+        dataset = datasets.heart_rate_dataset(
+            db_dir=str(args.train), patient_ids=patient_ids, frame_size=args.frame_size,
+            unzipped=args.unzipped, samples_per_patient=samples_per_patient)
+    else:
+        raise ValueError('unknown task: {}'.format(args.task))
+    return dataset
 
 
-class CustomFromData:
-    def __init__(self, data, **kwargs):
-        super().__init__(**kwargs)
-        self.data = data
+def _create_dataset_from_data(data):
+    print('[INFO] Create dataset from data')
 
-    def _create_dataset_from_data(self):
-        print('[INFO] Create dataset from data')
-        
-        x, y = self.data['x'], self.data['y']
-
-        if args.task in ['rhythm', 'beat', 'hr']:
-            spec = (tf.TensorSpec((None, args.frame_size, 1), tf.float32),
-                    tf.TensorSpec((None,), tf.int32))
-        else:
-            raise ValueError('unknown task: {}'.format(args.task))
-
-        if not matches_spec((x, y), spec, ignore_batch_dim=True):
-            raise ValueError('data does not match the required spec: {}'.format(spec))
-
-        dataset = tf.data.Dataset.from_tensor_slices((x, y))
-        return dataset
+    x, y = data['x'], data['y']
+    if args.task in ['rhythm', 'beat', 'hr']:
+        spec = (tf.TensorSpec((None, args.frame_size, 1), tf.float32),
+                tf.TensorSpec((None,), tf.int32))
+    elif args.task == 'cpc':
+        spec = ({'context': tf.TensorSpec((None, args.context_size, args.frame_size, 1), tf.float32),
+                 'samples': tf.TensorSpec((None, args.ns + 1, args.frame_size, 1), tf.float32)},
+                tf.TensorSpec((None,), tf.int32))
+    else:
+        raise ValueError('unknown task: {}'.format(args.task))
+    if not matches_spec((x, y), spec, ignore_batch_dim=True):
+        raise ValueError('data does not match the required spec: {}'.format(spec))
+    dataset = tf.data.Dataset.from_tensor_slices((x, y))
+    return dataset
 
 
 if __name__ == '__main__':
@@ -139,7 +128,7 @@ if __name__ == '__main__':
     if args.val_file:   # Using val_file
         print('[INFO] Loading validation data from file {} ...'.format(args.val_file))
         val = load_pkl(str(args.val_file))  # read data from val_file
-        validation_data = CustomFromData(val)._create_dataset_from_data()    # create validation dataset
+        validation_data = _create_dataset_from_data(val)    # create validation dataset
     else:
         val = None
         validation_data = None
@@ -162,12 +151,12 @@ if __name__ == '__main__':
             # remove training examples of patients who belong to the validation set
             val_mask = np.isin(train['patient_ids'], val_patients_ids)
             val = {key: array[val_mask] for key, array in train.items()}    # create dictionaries
-            validation_data = CustomFromData(val)._create_dataset_from_data()    # create validation dataset
+            validation_data = _create_dataset_from_data(val)    # create validation dataset
             train_mask = ~val_mask
             train = {key: array[train_mask] for key, array in train.items()}
         train_size = len(train['y'])
         steps_per_epoch = None
-        train_data = CustomFromData(train)._create_dataset_from_data().shuffle(train_size)   # create train dataset
+        train_data = _create_dataset_from_data(train).shuffle(train_size)   # create train dataset
     else:   # not file
         print('[INFO] Building train data generators')
         train_patient_ids = icentia11k.ds_patient_ids   # return patient's id
@@ -181,25 +170,23 @@ if __name__ == '__main__':
             # validation size is one validation epoch by default
             val_size = args.val_size or (len(val_patient_ids) * args.val_samples_per_patient)
             print('[INFO] Collecting {} validation samples ...'.format(val_size))
-            validation_data = CustomFromGenerator(val_patient_ids,
-                                                  args.val_samples_per_patient)._create_dataset_from_generator()
+            validation_data = _create_dataset_from_generator(val_patient_ids, args.val_samples_per_patient)
             val_x, val_y = next(validation_data.batch(val_size).as_numpy_iterator())
             val = {'x': val_x, 'y': val_y, 'patient_ids': val_patient_ids}
             if args.cache_val:
                 print('[INFO] Caching the validation set in {} ...'.format(args.cache_val))
                 save_pkl(str(args.cache_val), x=val_x, y=val_y, patient_ids=val_patient_ids)
-            validation_data = CustomFromData(val)._create_dataset_from_data()
+            validation_data = _create_dataset_from_data(val)
         steps_per_epoch = args.steps_per_epoch
         if args.data_parallelism > 1:
             split = len(train_patient_ids) // args.data_parallelism
             train_patient_ids = tf.convert_to_tensor(train_patient_ids)
             train_data = tf.data.Dataset.range(args.data_parallelism).interleave(
-                lambda i: CustomFromGenerator(train_patient_ids[i * split:(i + 1) * split],
-                                              args.samples_per_patient)._create_dataset_from_generator(),
+                lambda i: _create_dataset_from_generator(train_patient_ids[i * split:(i + 1) * split],
+                                                         args.samples_per_patient),
                 num_parallel_calls=tf.data.experimental.AUTOTUNE)
         else:
-            train_data = CustomFromGenerator(train_patient_ids,
-                                             args.samples_per_patient)._create_dataset_from_generator()
+            train_data = _create_dataset_from_generator(train_patient_ids, args.samples_per_patient)
         buffer_size = 16 * args.samples_per_patient  # data from 16 patients
         train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
 
@@ -262,15 +249,9 @@ if __name__ == '__main__':
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
-        # lr_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.5,
-        #                                                    patience=5, verbose=1, min_lr=1e-7)
-
         # check to see if we are attempting to find an optimal learning rate
         # before training for the full number of epochs
         if args.lr_find > 0:
-            # train_data = np.stack(list(train_data))
-            # validation_data = np.stack(list(validation_data))
-
             # initialize the learning rate finder and then train with learning
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] Finding learning rate...")
