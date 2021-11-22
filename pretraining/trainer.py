@@ -255,7 +255,7 @@ if __name__ == '__main__':
             # initialize the learning rate finder and then train with learning
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] Finding learning rate...")
-            print('[INFO] stepsPerEpoch {}'.format(train_data.shape[0] // args.batch_size))
+            print('[INFO] stepsPerEpoch {}'.format(train_data.__len__() // args.batch_size))
 
             lrf = LearningRateFinder(model)
             lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1,
