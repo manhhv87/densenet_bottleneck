@@ -192,7 +192,7 @@ if __name__ == '__main__':
     train_data = train_data.batch(args.batch_size)  # train dataset
 
     train_size = len(num_train_ids) * args.val_samples_per_patient  # new add
-    print('[INFO] Collecting {} training samples ... {}'.format(train_size))
+    print('[INFO] Collecting {} training samples ...'.format(train_size))
 
     if val:
         validation_data = validation_data.batch(args.batch_size)    # validation dataset
