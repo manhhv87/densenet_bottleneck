@@ -190,7 +190,7 @@ if __name__ == '__main__':
         buffer_size = 16 * args.samples_per_patient  # data from 16 patients
         train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
 
-    train_data_len = train_data.__len__()
+    train_data_len = len(train_data)    #.__len__()
     print('[INFO] Train data len: {}'.format(train_data_len))
 
     train_data = train_data.batch(args.batch_size)  # train dataset
@@ -258,7 +258,7 @@ if __name__ == '__main__':
             # initialize the learning rate finder and then train with learning
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] Finding learning rate...")
-            print('[INFO] stepsPerEpoch {}'.format(train_data.__len__() // args.batch_size))
+            print('[INFO] stepsPerEpoch {}'.format(train_data_len // args.batch_size))
 
             lrf = LearningRateFinder(model)
             lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1,
