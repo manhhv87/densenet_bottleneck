@@ -62,10 +62,6 @@ class CustomFromData:
         if args.task in ['rhythm', 'beat', 'hr']:
             spec = (tf.TensorSpec((None, args.frame_size, 1), tf.float32),
                     tf.TensorSpec((None,), tf.int32))
-        # elif args.task == 'cpc':
-        #     spec = ({'context': tf.TensorSpec((None, args.context_size, args.frame_size, 1), tf.float32),
-        #              'samples': tf.TensorSpec((None, args.ns + 1, args.frame_size, 1), tf.float32)},
-        #             tf.TensorSpec((None,), tf.int32))
         else:
             raise ValueError('unknown task: {}'.format(args.task))
 
@@ -262,9 +258,6 @@ if __name__ == '__main__':
 
         # check to see if we are attempting to find an optimal learning rate
         # before training for the full number of epochs
-
-        # train_data = train_data.batch(args.batch_size)  # train dataset
-
         if args.lr_find > 0:
             # initialize the learning rate finder and then train with learning
             # rates ranging from 1e-10 to 1e+1
