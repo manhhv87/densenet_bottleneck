@@ -260,17 +260,18 @@ if __name__ == '__main__':
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
-        # lr_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_acc', factor=0.5,
-        #                                                    patience=5, verbose=1, min_lr=1e-7)
-
         # check to see if we are attempting to find an optimal learning rate
         # before training for the full number of epochs
+
+        # train_data = train_data.batch(args.batch_size)  # train dataset
+
         if args.lr_find > 0:
             # initialize the learning rate finder and then train with learning
             # rates ranging from 1e-10 to 1e+1
             print("[INFO] finding learning rate...")
             lrf = LearningRateFinder(model)
-            lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1, epochs=3)
+            lrf.find(trainData=train_data.batch(args.batch_size),
+                     startLR=1e-10, endLR=1e+1, epochs=3)
 
             # plot the loss for the various learning rates and save the
             # resulting plot to disk
