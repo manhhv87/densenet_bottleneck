@@ -188,7 +188,8 @@ if __name__ == '__main__':
         else:
             train_data = _create_dataset_from_generator(train_patient_ids, args.samples_per_patient)
 
-        train_data_len = train_data.__len__()
+        train_data_len = tf.data.experimental.cardinality(train_data)
+            #len(list(train_data)) #.__len__()
         print('[INFO] Train data len: {}'.format(train_data_len))
 
         buffer_size = 16 * args.samples_per_patient  # data from 16 patients
