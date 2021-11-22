@@ -11,10 +11,10 @@ def ecg_feature_extractor(arch=None, stages=None):
     # See Table 1 in Deep Residual Learning for Image Recognition
     if arch is None or arch == 'resnet18':
         resnet = _DenseNet(num_outputs=None,
-                           blocks=(1, 0, 0, 0)[:stages],
+                           blocks=(6, 12, 24, 16)[:stages],
                            first_num_channels=64,
                            growth_rate=32,
-                           kernel_size=(7, 5, 5, 3),
+                           kernel_size=(3, 3, 3, 3),
                            bottleneck=True,
                            include_top=False)  # not include fc layer
     elif arch == 'resnet34':
