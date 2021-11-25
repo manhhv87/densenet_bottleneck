@@ -27,7 +27,7 @@ class _DenseBlock(tf.keras.layers.Layer):
         if self.bottleneck:
             self.bn = batch_norm()
             self.relu = relu()
-            self.conv = conv1d(filters=4 * self.num_filters)
+            self.conv = conv1d(filters=8 * self.num_filters)
 
             if self.dropout_rate is not None:
                 self.drop = tf.keras.layers.Dropout(rate=self.dropout_rate)
