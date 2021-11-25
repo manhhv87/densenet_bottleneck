@@ -108,9 +108,9 @@ class _DenseNet(tf.keras.Model):
         self.dropout_rate = dropout_rate
 
         # Built Convolution layer
+        self.conv1 = conv1d(filters=64, kernel_size=7, strides=2)  # 7×7, 64, stride 2
         self.bn1 = batch_norm()
         self.relu1 = relu()
-        self.conv1 = conv1d(filters=64, kernel_size=7, strides=2)  # 7×7, 64, stride 2
 
         if self.dropout_rate is not None:
             self.drop1 = tf.keras.layers.Dropout(rate=self.dropout_rate)
