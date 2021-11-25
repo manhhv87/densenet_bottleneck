@@ -11,8 +11,7 @@ def relu():
 
 def conv1d(filters, kernel_size=1, strides=1):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
-                                  padding='same', use_bias=False,
-                                  kernel_initializer=tf.keras.initializers.he_uniform())
+                                  padding='same', kernel_initializer=tf.keras.initializers.he_uniform())
 
 
 class _DenseBlock(tf.keras.layers.Layer):
@@ -67,7 +66,7 @@ class _TransitionBlock(tf.keras.layers.Layer):
     def build(self, input_shape):
         self.bn = batch_norm()
         self.relu = relu()
-        self.conv = conv1d(self.num_filters)
+        self.conv = conv1d(self.num_filters, strides=2)
 
         if self.dropout_rate is not None:
             self.drop = tf.keras.layers.Dropout(rate=self.dropout_rate)
@@ -108,7 +107,7 @@ class _DenseNet(tf.keras.Model):
         self.dropout_rate = dropout_rate
 
         # Built Convolution layer
-        self.conv = conv1d(filters=64, kernel_size=7, strides=2)  # 7×7, 64, stride 2
+        self.conv = conv1d(filters=first_num_channels, kernel_size=7, strides=2)  # 7×7, 64, stride 2
         self.bn = batch_norm()
         self.relu = relu()
 
