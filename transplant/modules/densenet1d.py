@@ -148,13 +148,13 @@ class _DenseNet(tf.keras.Model):
             include_top = self.include_top
 
         # Built conv1 layer
-        x = self.bn1(x)
-        x = self.relu1(x)
         x = self.conv1(x)
 
         if self.dropout_rate is not None:
             x = self.drop1(x)
 
+        x = self.bn1(x)
+        x = self.relu1(x)
         x = self.maxpool1(x)
 
         # Built other layers
