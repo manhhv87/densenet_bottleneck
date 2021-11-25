@@ -13,7 +13,7 @@ def conv1d(filters, kernel_size=1, strides=1):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
                                   padding='same', use_bias=False,
                                   kernel_initializer=tf.keras.initializers.he_uniform(),
-                                  kernel_regularizer=tf.keras.regularizers.l1_l2(l1=0.01, l2=0.01)
+                                  kernel_regularizer=tf.keras.regularizers.l1_l2(l1=0.001, l2=0.001)
                                   )
 
 

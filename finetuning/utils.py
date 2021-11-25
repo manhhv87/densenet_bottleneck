@@ -14,7 +14,7 @@ def ecg_feature_extractor(arch=None, stages=None):
                            blocks=(1, 0, 0, 0)[:stages],
                            first_num_channels=32,
                            growth_rate=16,
-                           kernel_size=(3, 3, 3, 3),
+                           kernel_size=(7, 5, 5, 3),
                            bottleneck=True,
                            include_top=False)  # not include fc layer
     elif arch == 'resnet34':
