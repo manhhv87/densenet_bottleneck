@@ -27,7 +27,7 @@ class _DenseBlock(tf.keras.layers.Layer):
         if self.bottleneck:
             self.bn = batch_norm()
             self.relu = relu()
-            self.conv = conv1d(filters=8 * self.num_filters)
+            self.conv = conv1d(filters=4 * self.num_filters)
 
             if self.dropout_rate is not None:
                 self.drop = tf.keras.layers.Dropout(rate=self.dropout_rate)
@@ -108,14 +108,14 @@ class _DenseNet(tf.keras.Model):
         self.dropout_rate = dropout_rate
 
         # Built Convolution layer
-        self.conv1 = conv1d(filters=64, kernel_size=7, strides=2)  # 7×7, 64, stride 2
-        self.bn1 = batch_norm()
-        self.relu1 = relu()
+        self.conv = conv1d(filters=64, kernel_size=7, strides=2)  # 7×7, 64, stride 2
+        self.bn = batch_norm()
+        self.relu = relu()
 
         if self.dropout_rate is not None:
-            self.drop1 = tf.keras.layers.Dropout(rate=self.dropout_rate)
+            self.drop = tf.keras.layers.Dropout(rate=self.dropout_rate)
 
-        self.maxpool1 = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding='same')  # 3×3 max pool, stride 2
+        self.maxpool = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding='same')  # 3×3 max pool, stride 2
 
         # Built Dense Blocks and Transition layers
         self.densenet_blocks = []
@@ -148,14 +148,14 @@ class _DenseNet(tf.keras.Model):
             include_top = self.include_top
 
         # Built conv1 layer
-        x = self.conv1(x)
+        x = self.conv(x)
 
         if self.dropout_rate is not None:
-            x = self.drop1(x)
+            x = self.drop(x)
 
-        x = self.bn1(x)
-        x = self.relu1(x)
-        x = self.maxpool1(x)
+        x = self.bn(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
 
         # Built other layers
         for dnet_block in self.densenet_blocks:
