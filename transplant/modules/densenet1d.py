@@ -2,7 +2,7 @@ import tensorflow as tf
 
 
 def batch_norm():
-    return tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+    return tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
 
 
 def relu():
@@ -11,7 +11,8 @@ def relu():
 
 def conv1d(filters, kernel_size=1, strides=1):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
-                                  padding='same', kernel_initializer=tf.keras.initializers.he_uniform())
+                                  padding='same', use_bias=False,
+                                  kernel_initializer=tf.keras.initializers.VarianceScaling())
 
 
 class _DenseBlock(tf.keras.layers.Layer):
@@ -66,7 +67,7 @@ class _TransitionBlock(tf.keras.layers.Layer):
     def build(self, input_shape):
         self.bn = batch_norm()
         self.relu = relu()
-        self.conv = conv1d(self.num_filters, strides=2)
+        self.conv = conv1d(self.num_filters)
 
         if self.dropout_rate is not None:
             self.drop = tf.keras.layers.Dropout(rate=self.dropout_rate)
