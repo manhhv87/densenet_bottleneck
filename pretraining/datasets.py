@@ -25,7 +25,7 @@ def rhythm_generator(db_dir, patient_ids, frame_size, normalize=True, unzipped=F
         # data_generator to x_y
         # x_y[0] = data_generator[0] = (frame_size, 1)
         # x_y[1] = label
-        data_generator = map(lambda x_y: (icentia11k.normalize(x_y[0]), x_y[1]), data_generator)
+        data_generator = map(lambda x_y: (icentia11k.normalize(x_y[0], inplace=True), x_y[1]), data_generator)
     return data_generator
 
 
@@ -48,7 +48,7 @@ def beat_generator(db_dir, patient_ids, frame_size, normalize=True, unzipped=Fal
         # data_generator to x_y
         # x_y[0] = data_generator[0] = (frame_size, 1)
         # x_y[1] = label
-        data_generator = map(lambda x_y: (icentia11k.normalize(x_y[0]), x_y[1]), data_generator)
+        data_generator = map(lambda x_y: (icentia11k.normalize(x_y[0], inplace=True), x_y[1]), data_generator)
     return data_generator
 
 
@@ -70,7 +70,7 @@ def heart_rate_generator(db_dir, patient_ids, frame_size, normalize=True, unzipp
         # data_generator to x_y
         # x_y[0] = data_generator[0] = (frame_size, 1)
         # x_y[1] = label
-        data_generator = map(lambda x_y: (icentia11k.normalize(x_y[0]), x_y[1]), data_generator)
+        data_generator = map(lambda x_y: (icentia11k.normalize(x_y[0], inplace=True), x_y[1]), data_generator)
     return data_generator
 
 
