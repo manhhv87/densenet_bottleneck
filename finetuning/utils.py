@@ -14,7 +14,7 @@ def ecg_feature_extractor(arch=None, stages=None):
                            blocks=(6, 12, 24, 16)[:stages],
                            first_num_channels=64,
                            growth_rate=32,
-                           kernel_size=(10, 7, 7, 5),
+                           kernel_size=(3, 3, 3, 3),
                            dropout_rate=None,
                            bottleneck=True,
                            include_top=False)  # not include fc layer
