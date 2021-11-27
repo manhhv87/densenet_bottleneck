@@ -201,7 +201,7 @@ if __name__ == '__main__':
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
 
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
@@ -273,11 +273,11 @@ if __name__ == '__main__':
         # rate method
         #
         # stepSize = config.STEP_SIZE * train_size // args.batch_size
-        stepSize = config.STEP_SIZE * steps_per_epoch
-        clr = CyclicLR(mode=config.CLR_METHOD,
-                       base_lr=config.MIN_LR,
-                       max_lr=config.MAX_LR,
-                       step_size=stepSize)
+        # stepSize = config.STEP_SIZE * steps_per_epoch
+        # clr = CyclicLR(mode=config.CLR_METHOD,
+        #                base_lr=config.MIN_LR,
+        #                max_lr=config.MAX_LR,
+        #                step_size=stepSize)
 
         # train the network
         print("[INFO] Training network...")
@@ -285,28 +285,28 @@ if __name__ == '__main__':
                                  steps_per_epoch=steps_per_epoch,   # train_size // args.batch_size,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
-                                 callbacks=[checkpoint, logger, clr],
+                                 callbacks=[checkpoint, logger],
                                  verbose=2)
 
-        # construct a plot that plots and saves the training history
-        N = np.arange(0, args.epochs)
-        plt.style.use("ggplot")
-        plt.figure()
-        plt.plot(N, his_training.history["loss"], label="train_loss")
-        plt.plot(N, his_training.history["val_loss"], label="val_loss")
-        plt.plot(N, his_training.history["acc"], label="train_acc")
-        plt.plot(N, his_training.history["val_acc"], label="val_acc")
-        plt.title("Training Loss and Accuracy")
-        plt.xlabel("Epoch #")
-        plt.ylabel("Loss/Accuracy")
-        plt.legend(loc="lower left")
-        plt.savefig(config.TRAINING_PLOT_PATH)
-
-        # plot the learning rate history
-        N = np.arange(0, len(clr.history["lr"]))
-        plt.figure()
-        plt.plot(N, clr.history["lr"])
-        plt.title("Cyclical Learning Rate (CLR)")
-        plt.xlabel("Training Iterations")
-        plt.ylabel("Learning Rate")
-        plt.savefig(config.CLR_PLOT_PATH)
+        # # construct a plot that plots and saves the training history
+        # N = np.arange(0, args.epochs)
+        # plt.style.use("ggplot")
+        # plt.figure()
+        # plt.plot(N, his_training.history["loss"], label="train_loss")
+        # plt.plot(N, his_training.history["val_loss"], label="val_loss")
+        # plt.plot(N, his_training.history["acc"], label="train_acc")
+        # plt.plot(N, his_training.history["val_acc"], label="val_acc")
+        # plt.title("Training Loss and Accuracy")
+        # plt.xlabel("Epoch #")
+        # plt.ylabel("Loss/Accuracy")
+        # plt.legend(loc="lower left")
+        # plt.savefig(config.TRAINING_PLOT_PATH)
+        #
+        # # plot the learning rate history
+        # N = np.arange(0, len(clr.history["lr"]))
+        # plt.figure()
+        # plt.plot(N, clr.history["lr"])
+        # plt.title("Cyclical Learning Rate (CLR)")
+        # plt.xlabel("Training Iterations")
+        # plt.ylabel("Learning Rate")
+        # plt.savefig(config.CLR_PLOT_PATH)
