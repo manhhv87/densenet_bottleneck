@@ -182,7 +182,8 @@ if __name__ == '__main__':
             train_data = _create_dataset_from_generator(train_patient_ids, args.samples_per_patient)
 
         buffer_size = 16 * args.samples_per_patient
-        train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
+        # train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
+        train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE)
 
     train_data = train_data.batch(args.batch_size)  # train dataset
 
@@ -201,7 +202,7 @@ if __name__ == '__main__':
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
 
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adagrad(learning_rate=config.MIN_LR),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model

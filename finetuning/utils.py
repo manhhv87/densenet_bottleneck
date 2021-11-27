@@ -13,7 +13,7 @@ def ecg_feature_extractor(arch=None, stages=None):
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 24, 16)[:stages],
                            first_num_channels=32,
-                           growth_rate=16,
+                           growth_rate=8,
                            kernel_size=(7, 5, 5, 3),
                            dropout_rate=None,
                            bottleneck=True,
