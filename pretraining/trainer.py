@@ -244,6 +244,9 @@ if __name__ == '__main__':
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
+        rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=7,
+                                                           verbose=1, min_lr=1e-7)
+
         # check to see if we are attempting to find an optimal learning rate
         # before training for the full number of epochs
         if args.lr_find > 0:
@@ -285,7 +288,7 @@ if __name__ == '__main__':
                                  steps_per_epoch=steps_per_epoch,   # train_size // args.batch_size,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
-                                 callbacks=[checkpoint, logger],
+                                 callbacks=[checkpoint, logger, rl_stopping],
                                  verbose=2)
 
         # # construct a plot that plots and saves the training history

@@ -6,14 +6,18 @@ def batch_norm():
 
 
 def relu():
-    return tf.keras.layers.ELU()
+    # return tf.keras.layers.ReLU()
+    # return tf.keras.layers.ELU()
+    return tf.keras.layers.LeakyReLU()
+    # return tf.keras.layers.PReLU()
 
 
 def conv1d(filters, kernel_size=1, strides=1):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
                                   padding='same', use_bias=False,
-                                  kernel_initializer=tf.keras.initializers.VarianceScaling())
-
+                                  kernel_initializer=tf.keras.initializers.he_uniform())
+                                  # kernel_initializer = tf.keras.initializers.he_normal())
+                                  # kernel_initializer=tf.keras.initializers.VarianceScaling())
 
 class _DenseBlock(tf.keras.layers.Layer):
     def __init__(self, num_filters, kernel_size, bottleneck=True, dropout_rate=None, **kwargs):  # constructor
