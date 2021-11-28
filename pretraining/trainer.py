@@ -124,7 +124,7 @@ if __name__ == '__main__':
         val = None
         validation_data = None
 
-    num_train_ids = 0
+    num_train_ids = 0   # new adding
 
     if args.train.is_file():    # used to check 'train' if the entry is a file or not.
         print('[INFO] Loading train data from file {} ...'.format(args.train))
@@ -152,12 +152,12 @@ if __name__ == '__main__':
         if val:     # if validation set is a file
             # remove patients who belong to the validation set from train data
             train_patient_ids = np.setdiff1d(ar1=train_patient_ids, ar2=val['patient_ids'])
-            num_train_ids = train_patient_ids
+            num_train_ids = train_patient_ids   # new adding
         elif args.val_patients:     # using number of patient
             print('[INFO] Splitting patients into train and validation')
             train_patient_ids, val_patient_ids = sklearn.model_selection.train_test_split(train_patient_ids,
                                                                                           test_size=args.val_patients)
-            num_train_ids = train_patient_ids
+            num_train_ids = train_patient_ids   # new adding
 
             # validation size is one validation epoch by default
             val_size = args.val_size or (len(val_patient_ids) * args.val_samples_per_patient)
@@ -170,24 +170,24 @@ if __name__ == '__main__':
                 save_pkl(str(args.cache_val), x=val_x, y=val_y, patient_ids=val_patient_ids)
             validation_data = _create_dataset_from_data(val)
         steps_per_epoch = args.steps_per_epoch
+        train_size = len(num_train_ids) * args.val_samples_per_patient  # new adding
+        print('[INFO] Collecting {} training samples ...'.format(train_size))   # new adding
         if args.data_parallelism > 1:
             split = len(train_patient_ids) // args.data_parallelism
             train_patient_ids = tf.convert_to_tensor(train_patient_ids)
-            num_train_ids = train_patient_ids
+            num_train_ids = train_patient_ids   # new adding
             train_data = tf.data.Dataset.range(args.data_parallelism).interleave(
                 lambda i: _create_dataset_from_generator(train_patient_ids[i * split:(i + 1) * split],
                                                          args.samples_per_patient),
                 num_parallel_calls=tf.data.experimental.AUTOTUNE)
         else:
             train_data = _create_dataset_from_generator(train_patient_ids, args.samples_per_patient)
+        # buffer_size = 16 * args.samples_per_patient
+        # train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
 
-        buffer_size = 16 * args.samples_per_patient
-        train_data = train_data.prefetch(tf.data.experimental.AUTOTUNE).shuffle(buffer_size)
+        train_data = train_data.shuffle(train_size)     # new adding
 
     train_data = train_data.batch(args.batch_size)  # train dataset
-
-    train_size = len(num_train_ids) * args.val_samples_per_patient  # new add
-    print('[INFO] Collecting {} training samples ...'.format(train_size))
 
     if val:
         validation_data = validation_data.batch(args.batch_size)    # validation dataset
@@ -196,12 +196,10 @@ if __name__ == '__main__':
 
     with strategy.scope():
         print('[INFO] Building model ...')
-
-        # Adding local features learning part
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
 
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
@@ -244,6 +242,7 @@ if __name__ == '__main__':
 
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
+        # new adding
         rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=7,
                                                            verbose=1, min_lr=1e-7)
 
@@ -286,10 +285,10 @@ if __name__ == '__main__':
         print("[INFO] Training network...")
         his_training = model.fit(x=train_data,
                                  steps_per_epoch=steps_per_epoch,   # train_size // args.batch_size,
+                                 verbose=2,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
-                                 callbacks=[checkpoint, logger, rl_stopping],
-                                 verbose=2)
+                                 callbacks=[checkpoint, logger, rl_stopping])
 
         # # construct a plot that plots and saves the training history
         # N = np.arange(0, args.epochs)
