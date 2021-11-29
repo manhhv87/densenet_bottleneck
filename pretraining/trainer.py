@@ -197,7 +197,7 @@ if __name__ == '__main__':
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
 
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adam(learning_rate=2e-5, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
@@ -244,7 +244,7 @@ if __name__ == '__main__':
         rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5,
                                                            verbose=1, min_lr=1e-7)
 
-        ear_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='max', patience=7)
+        ear_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='max', patience=7, min_delta=1e-3)
 
         # check to see if we are attempting to find an optimal learning rate
         # before training for the full number of epochs
