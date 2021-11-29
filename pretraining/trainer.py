@@ -197,7 +197,7 @@ if __name__ == '__main__':
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
 
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.Adadelta(learning_rate=0.001),
+                      optimizer=tf.keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
@@ -241,7 +241,7 @@ if __name__ == '__main__':
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
         # new adding
-        rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=7,
+        rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5,
                                                            verbose=1, min_lr=1e-7)
 
         # check to see if we are attempting to find an optimal learning rate
