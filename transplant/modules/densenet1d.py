@@ -6,10 +6,10 @@ def batch_norm():
 
 
 def relu():
-    return tf.keras.layers.ReLU()
+    # return tf.keras.layers.ReLU()
     # return tf.keras.layers.ELU()
     # return tf.keras.layers.LeakyReLU()
-    # return tf.keras.layers.PReLU()
+    return tf.keras.layers.PReLU()
 
 
 def conv1d(filters, kernel_size=1, strides=1):
