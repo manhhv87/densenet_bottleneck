@@ -244,6 +244,8 @@ if __name__ == '__main__':
         rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5,
                                                            verbose=1, min_lr=1e-7)
 
+        ear_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='max', patience=7)
+
         # check to see if we are attempting to find an optimal learning rate
         # before training for the full number of epochs
         if args.lr_find > 0:
@@ -286,7 +288,7 @@ if __name__ == '__main__':
                                  verbose=2,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
-                                 callbacks=[checkpoint, logger, rl_stopping])
+                                 callbacks=[checkpoint, logger, rl_stopping, ear_stopping])
 
         # # construct a plot that plots and saves the training history
         # N = np.arange(0, args.epochs)
