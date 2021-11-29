@@ -33,21 +33,18 @@ def task_solver(task, arch='resnet18', stages=None, return_feature_extractor=Fal
     if task == 'rhythm':
         num_classes = len(icentia11k.ds_rhythm_names)
         model = tf.keras.Sequential([feature_extractor,
-                                     tf.keras.layers.GlobalAveragePooling1D(),  # new adding
                                      tf.keras.layers.BatchNormalization(),  # new adding
                                      tf.keras.layers.Dropout(0.2),  # new adding
                                      tf.keras.layers.Dense(num_classes)])
     elif task == 'beat':
         num_classes = len(icentia11k.ds_beat_names)
         model = tf.keras.Sequential([feature_extractor,
-                                     tf.keras.layers.GlobalAveragePooling1D(),
                                      tf.keras.layers.BatchNormalization(),
                                      tf.keras.layers.Dropout(0.2),
                                      tf.keras.layers.Dense(num_classes)])
     elif task == 'hr':
         num_classes = len(icentia11k.ds_hr_names)
         model = tf.keras.Sequential([feature_extractor,
-                                     tf.keras.layers.GlobalAveragePooling1D(),
                                      tf.keras.layers.BatchNormalization(),
                                      tf.keras.layers.Dropout(0.2),
                                      tf.keras.layers.Dense(num_classes)])
