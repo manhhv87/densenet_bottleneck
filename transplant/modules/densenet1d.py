@@ -2,54 +2,46 @@ import tensorflow as tf
 
 
 def batch_norm():
-    return tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
+    return tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
 
 
 def relu():
     return tf.keras.layers.ReLU()
-    # return tf.keras.layers.ELU()
-    # return tf.keras.layers.LeakyReLU()
-    # return tf.keras.layers.PReLU()
 
 
 def conv1d(filters, kernel_size=1, strides=1):
     return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
                                   padding='same', use_bias=False,
                                   kernel_initializer=tf.keras.initializers.VarianceScaling())
-                                  # kernel_initializer=tf.keras.initializers.he_uniform())
-                                  # kernel_initializer = tf.keras.initializers.he_normal())
 
 
 class _DenseBlock(tf.keras.layers.Layer):
-    def __init__(self, num_filters, kernel_size, bottleneck=True, dropout_rate=None, **kwargs):  # constructor
+    """A building block for a dense block.
+        # Arguments
+            growth_rate: float, growth rate at dense layers.
+            kernel_size: int, kernel size
+            bottleneck: bool, yes or no using bottleneck
+        # Returns
+            Output tensor for the block.
+    """
+    def __init__(self, growth_rate, kernel_size, bottleneck=True, **kwargs):  # constructor
         super().__init__(**kwargs)
-        self.num_filters = num_filters
+        self.growth_rate = growth_rate
         self.kernel_size = kernel_size
         self.bottleneck = bottleneck
-        self.dropout_rate = dropout_rate
 
     def build(self, input_shape):
         if self.bottleneck:
             self.bn = batch_norm()
             self.relu = relu()
-            self.conv = conv1d(filters=4 * self.num_filters)
-
-            if self.dropout_rate is not None:
-                self.drop = tf.keras.layers.Dropout(rate=self.dropout_rate)
+            self.conv = conv1d(filters=4 * self.growth_rate)
 
         self.bn1 = batch_norm()
         self.relu1 = relu()
-        self.conv1 = conv1d(filters=self.num_filters, kernel_size=self.kernel_size)
+        self.conv1 = conv1d(filters=self.growth_rate, kernel_size=self.kernel_size)
 
-        if self.dropout_rate is not None:
-            self.drop1 = tf.keras.layers.Dropout(rate=self.dropout_rate)
-
-        if self.bottleneck and self.dropout_rate:
-            self.listLayers = [self.bn, self.relu, self.conv, self.drop, self.bn1, self.relu1, self.conv1, self.drop1]
-        elif self.bottleneck and not self.dropout_rate:
+        if self.bottleneck:
             self.listLayers = [self.bn, self.relu, self.conv, self.bn1, self.relu1, self.conv1]
-        elif not self.bottleneck and self.dropout_rate:
-            self.listLayers = [self.bn1, self.relu1, self.conv1, self.drop1]
         else:
             self.listLayers = [self.bn1, self.relu1, self.conv1]
 
@@ -64,30 +56,31 @@ class _DenseBlock(tf.keras.layers.Layer):
 
 
 class _TransitionBlock(tf.keras.layers.Layer):
-    def __init__(self, num_filters, dropout_rate=None, **kwargs):
+    """A transition block.
+        # Arguments
+            num_filters: int, number of filters into transition layers.
+            reduction: float, compression rate at transition layers.
+        # Returns
+            output tensor for the block.
+    """
+    def __init__(self, num_filters, reduction, **kwargs):
         super().__init__(**kwargs)
         self.num_filters = num_filters
-        self.dropout_rate = dropout_rate
+        self.reduction = reduction
 
     def build(self, input_shape):
-        self.bn = batch_norm()
-        self.relu = relu()
-        self.conv = conv1d(self.num_filters)
+        self.bn = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+        self.relu = tf.keras.layers.Activation('relu')
+        self.conv = tf.keras.layers.Con
+            conv1d(self.num_filters * self.reduction)
+        self.avg_pool = tf.keras.layers.AveragePooling1D(pool_size=2, strides=2)
 
-        if self.dropout_rate is not None:
-            self.drop = tf.keras.layers.Dropout(rate=self.dropout_rate)
-
-        self.avg_pool = tf.keras.layers.AveragePooling1D(pool_size=2, strides=2, padding='same')
         super().build(input_shape)
 
     def call(self, x, **kwargs):
         x = self.bn(x)
         x = self.relu(x)
         x = self.conv(x)
-
-        if self.dropout_rate is not None:
-            x = self.drop(x)
-
         return self.avg_pool(x)
 
 
@@ -106,20 +99,15 @@ class _DenseNet(tf.keras.Model):
     """
 
     def __init__(self, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
-                 kernel_size=(3, 3, 3, 3), dropout_rate=None, block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
+                 kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
                  bottleneck=True, include_top=True, **kwargs):  # constructor
 
         super().__init__(**kwargs)
-        self.dropout_rate = dropout_rate
 
         # Built Convolution layer
         self.conv = conv1d(filters=first_num_channels, kernel_size=7, strides=2)  # 7×7, 64, stride 2
         self.bn = batch_norm()
         self.relu = relu()
-
-        if self.dropout_rate is not None:
-            self.drop = tf.keras.layers.Dropout(rate=self.dropout_rate)
-
         self.maxpool = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding='same')  # 3×3 max pool, stride 2
 
         # Built Dense Blocks and Transition layers
@@ -154,10 +142,6 @@ class _DenseNet(tf.keras.Model):
 
         # Built conv1 layer
         x = self.conv(x)
-
-        if self.dropout_rate is not None:
-            x = self.drop(x)
-
         x = self.bn(x)
         x = self.relu(x)
         x = self.maxpool(x)
