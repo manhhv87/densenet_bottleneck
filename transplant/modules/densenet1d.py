@@ -1,20 +1,6 @@
 import tensorflow as tf
 
 
-def batch_norm():
-    return tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
-
-
-def relu():
-    return tf.keras.layers.ReLU()
-
-
-def conv1d(filters, kernel_size=1, strides=1):
-    return tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, strides=strides,
-                                  padding='same', use_bias=False,
-                                  kernel_initializer=tf.keras.initializers.VarianceScaling())
-
-
 class _DenseBlock(tf.keras.layers.Layer):
     """A building block for a dense block.
         # Arguments
@@ -32,13 +18,14 @@ class _DenseBlock(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         if self.bottleneck:
-            self.bn = batch_norm()
-            self.relu = relu()
-            self.conv = conv1d(filters=4 * self.growth_rate)
+            self.bn = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+            self.relu = tf.keras.layers.Activation('relu')
+            self.conv = tf.keras.layers.Conv1D(filters=4 * self.growth_rate, kernel_size=1, use_bias=False)
 
-        self.bn1 = batch_norm()
-        self.relu1 = relu()
-        self.conv1 = conv1d(filters=self.growth_rate, kernel_size=self.kernel_size)
+        self.bn1 = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+        self.relu1 = tf.keras.layers.Activation('relu')
+        self.conv1 = tf.keras.layers.Conv1D(filters=self.growth_rate, kernel_size=self.kernel_size,
+                                            padding='same', use_bias=False)
 
         if self.bottleneck:
             self.listLayers = [self.bn, self.relu, self.conv, self.bn1, self.relu1, self.conv1]
@@ -63,16 +50,14 @@ class _TransitionBlock(tf.keras.layers.Layer):
         # Returns
             output tensor for the block.
     """
-    def __init__(self, num_filters, reduction, **kwargs):
+    def __init__(self, num_filters, **kwargs):
         super().__init__(**kwargs)
         self.num_filters = num_filters
-        self.reduction = reduction
 
     def build(self, input_shape):
         self.bn = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
         self.relu = tf.keras.layers.Activation('relu')
-        self.conv = tf.keras.layers.Con
-            conv1d(self.num_filters * self.reduction)
+        self.conv = tf.keras.layers.Conv1D(self.num_filters, kernel_size=1, use_bias=False)
         self.avg_pool = tf.keras.layers.AveragePooling1D(pool_size=2, strides=2)
 
         super().build(input_shape)
@@ -105,18 +90,19 @@ class _DenseNet(tf.keras.Model):
         super().__init__(**kwargs)
 
         # Built Convolution layer
-        self.conv = conv1d(filters=first_num_channels, kernel_size=7, strides=2)  # 7×7, 64, stride 2
-        self.bn = batch_norm()
-        self.relu = relu()
-        self.maxpool = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding='same')  # 3×3 max pool, stride 2
+        self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, strides=2, use_bias=False)
+        self.bn = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+        self.relu = tf.keras.layers.Activation('relu')
+        self.maxpool = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding='same')
 
         # Built Dense Blocks and Transition layers
         self.densenet_blocks = []
         num_channel_trans = first_num_channels
         for stage, _ in enumerate(blocks):  # stage = [0,1,2,3] and _ = [6, 12, 24, 16]
             for block in range(blocks[stage]):
-                dnet_block = block_fn1(num_filters=growth_rate, kernel_size=kernel_size[stage], bottleneck=bottleneck)
-                self.densenet_blocks.append(dnet_block)
+                self.densenet_blocks.append(block_fn1(growth_rate=growth_rate,
+                                                      kernel_size=kernel_size[stage],
+                                                      bottleneck=bottleneck))
 
             # This is the number of output channels in the previous dense block
             num_channel_trans += blocks[stage] * growth_rate
@@ -125,8 +111,10 @@ class _DenseNet(tf.keras.Model):
             # between the dense blocks
             if stage != len(blocks) - 1:
                 num_channel_trans //= 2
-                tran_block = block_fn2(num_filters=num_channel_trans)
-                self.densenet_blocks.append(tran_block)
+                self.densenet_blocks.append(block_fn2(num_filters=num_channel_trans))
+
+        self.bn1 = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+        self.relu1 = tf.keras.layers.Activation('relu')
 
         # include top layer (full connected layer)
         self.include_top = include_top
@@ -149,6 +137,9 @@ class _DenseNet(tf.keras.Model):
         # Built other layers
         for dnet_block in self.densenet_blocks:
             x = dnet_block(x)
+
+        x = self.bn1(x)
+        x = self.relu1(x)
 
         # include top layer (full connected layer)
         if include_top:
