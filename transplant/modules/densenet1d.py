@@ -135,7 +135,7 @@ class _DenseNet(tf.keras.Model):
             # between the dense blocks
             if stage != len(blocks) - 1:
                 num_channel_trans //= 2
-                self.densenet_blocks.append(block_fn2(num_filters=num_channel_trans, dropout_rate=dropout_rate))
+                self.densenet_blocks.append(block_fn2(nb_channels=num_channel_trans, dropout_rate=dropout_rate))
 
         self.bn1 = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
         self.relu1 = tf.keras.layers.Activation('relu')
