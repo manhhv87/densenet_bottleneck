@@ -197,7 +197,7 @@ if __name__ == '__main__':
         model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
 
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      optimizer=tf.keras.optimizers.SGD(learning_rate=0.045, momentum=0.9),
+                      optimizer=tf.keras.optimizers.Adam(beta_1=0.9, beta_2=0.98, epsilon=1e-9),        # SGD(learning_rate=0.045, momentum=0.9),
                       metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name='acc')])
 
         # initialize the weights of the model
@@ -211,6 +211,7 @@ if __name__ == '__main__':
         model(inputs)
 
         print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
+        model.summary()
 
         if args.weights_file:
             print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
@@ -288,7 +289,7 @@ if __name__ == '__main__':
                                  verbose=2,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
-                                 callbacks=[checkpoint, logger, ear_stopping])
+                                 callbacks=[checkpoint, logger])
 
         # # construct a plot that plots and saves the training history
         # N = np.arange(0, args.epochs)
