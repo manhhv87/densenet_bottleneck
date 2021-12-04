@@ -12,8 +12,8 @@ def ecg_feature_extractor(arch=None, stages=None):
     if arch is None or arch == 'resnet18':
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 0, 0)[:stages],
-                           first_num_channels=16,
-                           growth_rate=8,
+                           first_num_channels=32,
+                           growth_rate=16,
                            kernel_size=(7, 5, 5, 3),
                            bottleneck=True,
                            dropout_rate=None,
