@@ -17,10 +17,11 @@ class _DenseBlock(tf.keras.layers.Layer):
     def build(self, input_shape):
         # Bottleneck
         if self.bottleneck:
-            self.bn = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+            self.bn = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
             self.relu = tf.keras.layers.Activation('relu')
             self.conv = tf.keras.layers.Conv1D(4 * self.growth_rate, kernel_size=1, use_bias=False,
-                                               kernel_regularizer=tf.keras.regularizers.l2(1e-4))
+                                               kernel_initializer=tf.keras.initializers.VarianceScaling())
+                                               # kernel_regularizer=tf.keras.regularizers.l2(1e-4))
             self.listLayers.append(self.bn)
             self.listLayers.append(self.relu)
             self.listLayers.append(self.conv)
@@ -31,10 +32,12 @@ class _DenseBlock(tf.keras.layers.Layer):
                 self.listLayers.append(self.drop)
 
         # Standard (BN-ReLU-Conv)
-        self.bn1 = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+        self.bn1 = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
         self.relu1 = tf.keras.layers.Activation('relu')
         self.conv1 = tf.keras.layers.Conv1D(filters=self.growth_rate, kernel_size=self.kernel_size,
-                                            padding='same', use_bias=False)
+                                            padding='same', use_bias=False,
+                                            kernel_initializer=tf.keras.initializers.VarianceScaling())
+                                            # kernel_regularizer=tf.keras.regularizers.l2(1e-4))
         self.listLayers.append(self.bn1)
         self.listLayers.append(self.relu1)
         self.listLayers.append(self.conv1)
@@ -65,10 +68,11 @@ class _TransitionBlock(tf.keras.layers.Layer):
         self.dropout_rate = dropout_rate
 
     def build(self, input_shape):
-        self.bn = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+        self.bn = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
         self.relu = tf.keras.layers.Activation('relu')
         self.conv = tf.keras.layers.Conv1D(self.nb_channels, padding='same', kernel_size=1, use_bias=False,
-                                           kernel_regularizer=tf.keras.regularizers.l2(1e-4))
+                                           kernel_initializer=tf.keras.initializers.VarianceScaling())
+                                           # kernel_regularizer=tf.keras.regularizers.l2(1e-4))
 
         # Adding dropout
         if self.dropout_rate:
@@ -112,9 +116,10 @@ class _DenseNet(tf.keras.Model):
 
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
-                                           kernel_regularizer=tf.keras.regularizers.l2(1e-4),
-                                           strides=2, use_bias=False)
-        self.bn = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+                                           strides=2, use_bias=False,
+                                           kernel_initializer=tf.keras.initializers.VarianceScaling())
+                                           # kernel_regularizer=tf.keras.regularizers.l2(1e-4))
+        self.bn = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
         self.relu = tf.keras.layers.Activation('relu')
         self.maxpool = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding='same')
 
@@ -137,7 +142,7 @@ class _DenseNet(tf.keras.Model):
                 num_channel_trans //= 2
                 self.densenet_blocks.append(block_fn2(nb_channels=num_channel_trans, dropout_rate=dropout_rate))
 
-        self.bn1 = tf.keras.layers.BatchNormalization(epsilon=1.001e-5)
+        self.bn1 = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
         self.relu1 = tf.keras.layers.Activation('relu')
 
         # include top layer (full connected layer)
