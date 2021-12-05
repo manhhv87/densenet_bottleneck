@@ -12,9 +12,9 @@ def ecg_feature_extractor(arch=None, stages=None):
     if arch is None or arch == 'resnet18':
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 24, 16)[:stages],
-                           first_num_channels=64,
-                           growth_rate=32,
-                           kernel_size=(3, 3, 3, 3),
+                           first_num_channels=16,
+                           growth_rate=8,
+                           kernel_size=(7, 5, 5, 3),
                            bottleneck=True,
                            dropout_rate=None,
                            include_top=False)  # not include fc layer
