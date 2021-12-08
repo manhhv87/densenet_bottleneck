@@ -242,8 +242,8 @@ if __name__ == '__main__':
         logger = tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))
 
         # new adding
-        rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5,
-                                                           verbose=1, min_lr=1e-7)
+        rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5,
+                                                           verbose=1, min_lr=1e-5)
 
         ear_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='max', patience=50, min_delta=1e-3)
 
