@@ -276,7 +276,7 @@ if __name__ == '__main__':
         # over, so compute the step size and initialize the cyclic learning
         # rate method
 
-        stepSize = config.STEP_SIZE * train_size // args.batch_size
+        # stepSize = config.STEP_SIZE * train_size // args.batch_size
         stepSize = config.STEP_SIZE * steps_per_epoch
         clr = CyclicLR(mode=config.CLR_METHOD,
                        base_lr=config.MIN_LR,
@@ -290,7 +290,8 @@ if __name__ == '__main__':
                                  verbose=2,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
-                                 callbacks=[checkpoint, logger, rl_stopping, clr])
+                                 # callbacks=[checkpoint, logger, rl_stopping, clr])
+                                 callbacks=[checkpoint, logger, clr])
 
         # construct a plot that plots and saves the training history
         N = np.arange(0, args.epochs)
