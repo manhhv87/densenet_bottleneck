@@ -287,7 +287,7 @@ if __name__ == '__main__':
         print("[INFO] Training network...")
         his_training = model.fit(x=train_data,
                                  steps_per_epoch=steps_per_epoch,   # train_size // args.batch_size,
-                                 verbose=2,
+                                 verbose=1,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
                                  callbacks=[checkpoint, logger, rl_stopping, clr])
