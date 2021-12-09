@@ -290,8 +290,8 @@ if __name__ == '__main__':
                                  verbose=2,
                                  epochs=args.epochs,
                                  validation_data=validation_data,
-                                 # callbacks=[checkpoint, logger, rl_stopping, clr])
-                                 callbacks=[checkpoint, logger, clr])
+                                 callbacks=[checkpoint, logger, rl_stopping, clr])
+                                 # callbacks=[checkpoint, logger, clr])
 
         # construct a plot that plots and saves the training history
         N = np.arange(0, args.epochs)
