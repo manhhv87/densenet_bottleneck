@@ -283,6 +283,12 @@ if __name__ == '__main__':
                        max_lr=config.MAX_LR,
                        step_size=stepSize)
 
+        # Disable AutoShard.
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
+        train_data = train_data.with_options(options)
+        validation_data = validation_data.with_options(options)
+
         # train the network
         print("[INFO] Training network...")
         his_training = model.fit(x=train_data,
