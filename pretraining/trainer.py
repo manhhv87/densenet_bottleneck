@@ -285,7 +285,7 @@ if __name__ == '__main__':
 
         # Disable AutoShard.
         options = tf.data.Options()
-        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
         train_data = train_data.with_options(options)
         validation_data = validation_data.with_options(options)
 
