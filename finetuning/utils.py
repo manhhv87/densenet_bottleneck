@@ -16,7 +16,7 @@ def ecg_feature_extractor(arch=None, stages=None):
                            growth_rate=8,
                            kernel_size=(8, 6, 6, 6),
                            bottleneck=True,
-                           dropout_rate=0.05,
+                           dropout_rate=None,
                            include_top=False)
     elif arch == 'resnet34':
         resnet = _DenseNet(num_outputs=None,
