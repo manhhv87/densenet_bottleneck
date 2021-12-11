@@ -11,13 +11,13 @@ def ecg_feature_extractor(arch=None, stages=None):
     # See Table 1 in Deep Residual Learning for Image Recognition
     if arch is None or arch == 'resnet18':
         resnet = _DenseNet(num_outputs=None,
-                           blocks=(6, 4, 0, 0)[:stages],
+                           blocks=(6, 2, 4, 0)[:stages],
                            first_num_channels=16,
                            growth_rate=8,
-                           kernel_size=(8, 6, 4, 4),
+                           kernel_size=(8, 6, 6, 3),
                            bottleneck=True,
                            dropout_rate=None,
-                           include_top=False)  # not include fc layer
+                           include_top=False)
     elif arch == 'resnet34':
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 24, 16)[:stages],
@@ -26,7 +26,7 @@ def ecg_feature_extractor(arch=None, stages=None):
                            kernel_size=(7, 5, 5, 3),
                            bottleneck=True,
                            dropout_rate=None,
-                           include_top=False)  # not include fc layer
+                           include_top=False)
     elif arch == 'resnet50':
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 24, 16)[:stages],
@@ -35,7 +35,7 @@ def ecg_feature_extractor(arch=None, stages=None):
                            kernel_size=(7, 5, 5, 3),
                            bottleneck=True,
                            dropout_rate=None,
-                           include_top=False)  # not include fc layer
+                           include_top=False)
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
 
