@@ -16,7 +16,7 @@ def ecg_feature_extractor(arch=None, stages=None):
                            growth_rate=8,
                            kernel_size=(8, 6, 4, 4),
                            bottleneck=True,
-                           dropout_rate=0.05,
+                           dropout_rate=0.01,
                            include_top=False)  # not include fc layer
     elif arch == 'resnet34':
         resnet = _DenseNet(num_outputs=None,
@@ -25,6 +25,7 @@ def ecg_feature_extractor(arch=None, stages=None):
                            growth_rate=8,
                            kernel_size=(7, 5, 5, 3),
                            bottleneck=True,
+                           dropout_rate=None,
                            include_top=False)  # not include fc layer
     elif arch == 'resnet50':
         resnet = _DenseNet(num_outputs=None,
@@ -33,6 +34,7 @@ def ecg_feature_extractor(arch=None, stages=None):
                            growth_rate=32,
                            kernel_size=(7, 5, 5, 3),
                            bottleneck=True,
+                           dropout_rate=None,
                            include_top=False)  # not include fc layer
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
