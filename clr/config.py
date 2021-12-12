@@ -5,7 +5,7 @@ import os
 # step size, CLR method, and number of epochs
 MIN_LR = 1e-5
 MAX_LR = 1e-3
-STEP_SIZE = 8
+STEP_SIZE = 4
 CLR_METHOD = "triangular2"
 
 # define the path to the output learning rate finder plot, training
