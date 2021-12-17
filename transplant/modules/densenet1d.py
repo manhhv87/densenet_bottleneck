@@ -20,7 +20,7 @@ class _DenseBlock(tf.keras.layers.Layer):
             self.bn = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
             self.relu = tf.keras.layers.Activation('relu')
             self.conv = tf.keras.layers.Conv1D(4 * self.growth_rate, kernel_size=1, use_bias=False,
-                                               kernel_initializer=tf.keras.initializers.he_uniform(),
+                                               kernel_initializer=tf.keras.initializers.VarianceScaling(),
                                                kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-3, l2=1e-3))
             self.listLayers.append(self.bn)
             self.listLayers.append(self.relu)
@@ -36,7 +36,7 @@ class _DenseBlock(tf.keras.layers.Layer):
         self.relu1 = tf.keras.layers.Activation('relu')
         self.conv1 = tf.keras.layers.Conv1D(filters=self.growth_rate, kernel_size=self.kernel_size,
                                             padding='same', use_bias=False,
-                                            kernel_initializer=tf.keras.initializers.he_uniform(),
+                                            kernel_initializer=tf.keras.initializers.VarianceScaling(),
                                             kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-3, l2=1e-3))
         self.listLayers.append(self.bn1)
         self.listLayers.append(self.relu1)
@@ -71,7 +71,7 @@ class _TransitionBlock(tf.keras.layers.Layer):
         self.bn = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
         self.relu = tf.keras.layers.Activation('relu')
         self.conv = tf.keras.layers.Conv1D(self.nb_channels, padding='same', kernel_size=1, use_bias=False,
-                                           kernel_initializer=tf.keras.initializers.he_uniform(),
+                                           kernel_initializer=tf.keras.initializers.VarianceScaling(),
                                            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-3, l2=1e-3))
 
         # Adding dropout
@@ -117,7 +117,7 @@ class _DenseNet(tf.keras.Model):
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
                                            strides=2, use_bias=False,
-                                           kernel_initializer=tf.keras.initializers.he_uniform(),
+                                           kernel_initializer=tf.keras.initializers.VarianceScaling(),
                                            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-3, l2=1e-3))
         self.bn = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
         self.relu = tf.keras.layers.Activation('relu')
