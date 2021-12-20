@@ -229,6 +229,7 @@ if __name__ == '__main__':
         print('[INFO] Train data shape:', train['x'].shape)
 
         num_val_samples = len(train['x']) // args.k_fold
+        all_scores = []
 
         for i in range(args.k_fold):
             print(f"[INFO] Processing fold #{i}")
@@ -345,3 +346,8 @@ if __name__ == '__main__':
                                                            class_names=partial_train_data['classes'],
                                                            record_ids=val['record_ids'])
                 val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
+
+                print('[INFO] Evaluates the model on the validation data ...')
+                val_mse, val_mae = model.evaluate(val_data, val['y'], verbose=0)
+                all_scores.append(val_mae)
+
