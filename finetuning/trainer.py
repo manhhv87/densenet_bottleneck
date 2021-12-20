@@ -349,5 +349,6 @@ if __name__ == '__main__':
 
                 print('[INFO] Evaluates the model on the validation data ...')
                 val_mse, val_mae = model.evaluate(val_data, val['y'], verbose=0)
+                print('Validation MSE {}'.format(val_mse))
                 all_scores.append(val_mae)
 
