@@ -4,7 +4,7 @@ import os
 # define the minimum learning rate, maximum learning rate, batch size,
 # step size, CLR method, and number of epochs
 MIN_LR = 1e-5
-MAX_LR = 1e-3
+MAX_LR = 1e-2
 STEP_SIZE = 4
 CLR_METHOD = "triangular2"
 
