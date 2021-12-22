@@ -189,7 +189,7 @@ if __name__ == '__main__':
                 early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30, verbose=1)
                 callbacks.append(early_stopping)
 
-            model.fit(train_data, epochs=args.epochs, verbose=2, validation_data=val_data, callbacks=callbacks)
+            model.fit(train_data, epochs=args.epochs, verbose=1, validation_data=val_data, callbacks=callbacks)
 
             # load best model for inference
             print('Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
@@ -221,7 +221,8 @@ if __name__ == '__main__':
 
     else:   # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
-        train = load_pkl(file=str(args.train))
+        data = load_pkl(file=str(args.train))
+        train = data['x', 'y', 'record_ids']
 
         if args.channel is not None:
             train['x'] = train['x'][:, :, args.channel:args.channel + 1]
@@ -231,8 +232,7 @@ if __name__ == '__main__':
         num_val_samples = len(train['x']) // args.k_fold
         all_scores = []
 
-        print("[INFO] Length of: Data: {}, Label: {}, Record_IDs: {}, Classes: {}"
-              .format(len(train['x']), len(train['y']), len(train['record_ids']), len(train['classes'])))
+        print("[INFO] Length of: Data: {}, Label: {}, Record_IDs: {}".format(len(train['x']), len(train['y']), len(train['record_ids'])))
         print("[INFO] No. val samples: {}".format(num_val_samples))
 
         for i in range(args.k_fold):
@@ -253,7 +253,7 @@ if __name__ == '__main__':
 
             with strategy.scope():
                 print('[INFO] Building model ...')
-                num_classes = len(partial_train_data['classes'])
+                num_classes = len(data['classes'])
 
                 if is_multiclass(partial_train_data['y']):
                     activation = 'sigmoid'
@@ -305,14 +305,14 @@ if __name__ == '__main__':
                         score_fn = f1
 
                     checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                                  data=(val_data, val['y']),    # if val else (train_data, train['y']),
+                                                  data=(val_data, val['y']),   # if val else (train_data, partial_train_data['y']),
                                                   score_fn=score_fn,
                                                   save_best_only=True,
                                                   verbose=1)
 
                 elif args.val_metric == 'auc':
                     checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                                  data=(val_data, val['y']),    # if val else (train_data, train['y']),
+                                                  data=(val_data, val['y']),    # if val else (train_data, partial_train_data['y']),
                                                   score_fn=auc,
                                                   save_best_only=True,
                                                   verbose=1)
@@ -328,7 +328,7 @@ if __name__ == '__main__':
                 early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30, verbose=1)
                 callbacks.append(early_stopping)
 
-                model.fit(train_data, validation_data=val_data, verbose=2,
+                model.fit(train_data, validation_data=val_data, verbose=1,
                           epochs=args.epochs, callbacks=callbacks)
 
                 # load best model for inference
@@ -339,7 +339,7 @@ if __name__ == '__main__':
                 train_y_prob = model.predict(x=partial_train_data['x'], batch_size=args.batch_size)
                 train_predictions = create_predictions_frame(y_prob=train_y_prob,
                                                              y_true=partial_train_data['y'],
-                                                             class_names=partial_train_data['classes'],
+                                                             class_names=train['classes'],
                                                              record_ids=partial_train_data['record_ids'])
                 train_predictions.to_csv(path_or_buf=args.job_dir / 'train_predictions.csv', index=False)
 
@@ -347,12 +347,12 @@ if __name__ == '__main__':
                 val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
                 val_predictions = create_predictions_frame(y_prob=val_y_prob,
                                                            y_true=val['y'],
-                                                           class_names=partial_train_data['classes'],
+                                                           class_names=train['classes'],
                                                            record_ids=val['record_ids'])
                 val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
 
                 print('[INFO] Evaluates the model on the validation data ...')
-                val_mse, val_mae = model.evaluate(val_data, val['y'], verbose=0)
+                val_mse, val_mae = model.evaluate(val_data, val['y'], verbose=1)
                 print('Validation MSE {}'.format(val_mse))
                 all_scores.append(val_mae)
 
