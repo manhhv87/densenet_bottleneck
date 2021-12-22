@@ -222,6 +222,8 @@ if __name__ == '__main__':
     else:   # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
         data = load_pkl(file=str(args.train))
+        print('{}'.format(data))
+
         train = data['x', 'y', 'record_ids']
 
         if args.channel is not None:
