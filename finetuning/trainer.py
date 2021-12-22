@@ -222,9 +222,10 @@ if __name__ == '__main__':
     else:   # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
         data = load_pkl(file=str(args.train))
-        print('{}'.format(data))
 
-        train = data['x', 'y', 'record_ids']
+        # keys to extract from dictionary
+        key_to_extract = {'x', 'y', 'record_ids'}
+        train = {key: value for key, value in data.items() if key in key_to_extract}
 
         if args.channel is not None:
             train['x'] = train['x'][:, :, args.channel:args.channel + 1]
@@ -234,7 +235,8 @@ if __name__ == '__main__':
         num_val_samples = len(train['x']) // args.k_fold
         all_scores = []
 
-        print("[INFO] Length of: Data: {}, Label: {}, Record_IDs: {}".format(len(train['x']), len(train['y']), len(train['record_ids'])))
+        print("[INFO] Length of: Data: {}, Label: {}, Record_IDs: {}".format(len(train['x']),
+                                                                             len(train['y']), len(train['record_ids'])))
         print("[INFO] No. val samples: {}".format(num_val_samples))
 
         for i in range(args.k_fold):
