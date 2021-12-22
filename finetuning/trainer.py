@@ -29,9 +29,6 @@ def _create_dataset_from_data(data):
     return tf.data.Dataset.from_tensor_slices((data['x'], data['y']))
 
 
-
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--job-dir', type=Path, required=True, help='Job output directory.')
@@ -269,7 +266,9 @@ if __name__ == '__main__':
 
         kf = KFold(n_splits=args.k_fold, shuffle=True)
         foldNum = 0
-        all_scores = []
+        all_scores_mse = []
+        all_scores_f1_each_class = []
+        all_scores_macro_f1 = []
 
         for train_idx, val_idx in kf.split(idx_data):
             foldNum += 1
@@ -420,11 +419,19 @@ if __name__ == '__main__':
                 y_true = val_pre['y_true']
                 y_prob = val_pre['y_prob']
                 macro_f1 = f1(y_true, y_prob)
+                all_scores_macro_f1.append(macro_f1)
                 print('[INFO] macro f1 for fold {} is {}'.format(foldNum, macro_f1))
                 f1_each_class = f1_classes(y_true, y_prob)
+                all_scores_f1_each_class.append(f1_each_class)
                 print('[INFO] f1 for each class for fold {} is {}'.format(foldNum, f1_each_class))
 
                 print('[INFO] Evaluates the model on the validation data ...')
                 val_mse, val_mae = model.evaluate(val_data, verbose=2)
-                all_scores.append(val_mse)
+                all_scores_mse.append(val_mse)
                 print('[INFO] Validation MSE for fold {} is {}'.format(foldNum, val_mse))
+
+        print('[INFO] macro f1 for all of folds is {} and mean is {}'.format(all_scores_macro_f1,
+                                                                             np.mean(all_scores_macro_f1)))
+        print('[INFO] f1 for each class for all of folds is {} and mean is {}'.format(all_scores_f1_each_class,
+                                                                                      np.mean(all_scores_f1_each_class)))
+        print('[INFO] mse for all of folds is {} and mean is {}'.format(all_scores_mse, np.mean(all_scores_mse)))
