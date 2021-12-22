@@ -378,7 +378,7 @@ if __name__ == '__main__':
 
                 # Disable AutoShard.
                 options = tf.data.Options()
-                options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
+                options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.AUTO
                 train_data = train_data.with_options(options)
                 val_data = val_data.with_options(options)
 
@@ -411,5 +411,6 @@ if __name__ == '__main__':
 
                 print('[INFO] Evaluates the model on the validation data ...')
                 val_mse, val_mae = model.evaluate(val_data, verbose=2)
+                print('[INFO] Validation evaluation MSE and MAE: {} and {} for fold {}'.format(val_mse, val_mae, foldNum))
                 all_scores.append(val_mse)
 
