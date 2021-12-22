@@ -6,8 +6,12 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import KFold
 
+from transplant.evaluation import f1, f_max
+from transplant.utils import read_predictions
+from sklearn.metrics import f1_score
+
 from finetuning.utils import ecg_feature_extractor, train_test_split
-from transplant.evaluation import auc, f1, multi_f1, CustomCheckpoint
+from transplant.evaluation import auc, f1, f1_classes, multi_f1, CustomCheckpoint
 from transplant.utils import (create_predictions_frame, load_pkl, is_multiclass)
 
 from clr.learningratefinder import LearningRateFinder
@@ -23,6 +27,9 @@ def _create_dataset_from_data(data):
     return: data and label
     """
     return tf.data.Dataset.from_tensor_slices((data['x'], data['y']))
+
+
+
 
 
 if __name__ == '__main__':
@@ -409,9 +416,15 @@ if __name__ == '__main__':
                                                            record_ids=val['record_ids'])
                 val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
 
+                val_pre = read_predictions(args.job_dir / 'val_predictions.csv')
+                y_true = val_pre['y_true']
+                y_prob = val_pre['y_prob']
+                macro_f1 = f1(y_true, y_prob)
+                print('[INFO] macro f1 for fold {} is {}'.format(foldNum, macro_f1))
+                f1_each_class = f1_classes(y_true, y_prob)
+                print('[INFO] f1 for each class for fold {} is {}'.format(foldNum, f1_each_class))
+
                 print('[INFO] Evaluates the model on the validation data ...')
                 val_mse, val_mae = model.evaluate(val_data, verbose=2)
                 all_scores.append(val_mse)
-
-        print('[INFO] Validation evaluation MSE: {}'.format(all_scores))
-        print('[INFO] Mean MSE: {}'.format(np.mean(all_scores)))
+                print('[INFO] Validation MSE for folds {} is {}'.format(foldNum, val_mse))

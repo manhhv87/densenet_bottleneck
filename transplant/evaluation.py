@@ -34,6 +34,27 @@ def f1(y_true, y_prob, multiclass=False, threshold=None):
     return f1_score(y_true, y_pred, average='macro')
 
 
+def f1_classes(y_true, y_prob, multiclass=False, threshold=None):
+    # threshold may also be a 1d array of thresholds for each class
+    if y_prob.ndim != 2:
+        raise ValueError('y_prob must be a 2d matrix with class probabilities for each sample')
+
+    if y_true.ndim == 1:  # we assume that y_true is sparse (consequently, multiclass=False)
+        if multiclass:
+            raise ValueError('if y_true cannot be sparse and multiclass at the same time')
+        depth = y_prob.shape[1]
+        y_true = _one_hot(y_true, depth)
+
+    if multiclass:
+        if threshold is None:
+            threshold = 0.5
+        y_pred = y_prob >= threshold
+    else:
+        y_pred = y_prob >= np.max(y_prob, axis=1)[:, None]
+
+    return f1_score(y_true, y_pred, average=None)
+
+
 def f_max(y_true, y_prob, thresholds=None):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
     if thresholds is None:
