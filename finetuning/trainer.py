@@ -222,6 +222,8 @@ if __name__ == '__main__':
     else:   # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
         train = load_pkl(file=str(args.train))
+        print("Length of: {} {} {} {}".format(len(train['x']), len(train['y']),
+                                   len(train['record_ids']), len(train['classes'])))
 
         if args.channel is not None:
             train['x'] = train['x'][:, :, args.channel:args.channel + 1]
@@ -235,11 +237,11 @@ if __name__ == '__main__':
             print(f"[INFO] Processing fold #{i+1}")
 
             # Prepares the validation data: data from partition #k
-            val = train[(i * num_val_samples) : ((i + 1) * num_val_samples)]
+            val = train[i * num_val_samples: (i + 1) * num_val_samples]
 
             # Prepares the training data: data from all other partitions
-            partial_train_data = np.concatenate([train[: (i * num_val_samples)],
-                                                 train[((i + 1) * num_val_samples):]],
+            partial_train_data = np.concatenate([train[:i * num_val_samples],
+                                                 train[(i + 1) * num_val_samples:]],
                                                 axis=0)
 
             train_data = _create_dataset_from_data(partial_train_data).shuffle(len(partial_train_data['x'])).batch(args.batch_size)
