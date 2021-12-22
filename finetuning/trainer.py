@@ -222,8 +222,6 @@ if __name__ == '__main__':
     else:   # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
         train = load_pkl(file=str(args.train))
-        print("Length of: {} {} {} {}".format(len(train['x']), len(train['y']),
-                                   len(train['record_ids']), len(train['classes'])))
 
         if args.channel is not None:
             train['x'] = train['x'][:, :, args.channel:args.channel + 1]
@@ -232,6 +230,10 @@ if __name__ == '__main__':
 
         num_val_samples = len(train['x']) // args.k_fold
         all_scores = []
+
+        print("[INFO] Length of: Data: {}, Label: {}, Record_IDs: {}, Classes: {}"
+              .format(len(train['x']), len(train['y']), len(train['record_ids']), len(train['classes'])))
+        print("[INFO] No. val samples: {}".format(num_val_samples))
 
         for i in range(args.k_fold):
             print(f"[INFO] Processing fold #{i+1}")
