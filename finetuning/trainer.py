@@ -427,4 +427,4 @@ if __name__ == '__main__':
                 print('[INFO] Evaluates the model on the validation data ...')
                 val_mse, val_mae = model.evaluate(val_data, verbose=2)
                 all_scores.append(val_mse)
-                print('[INFO] Validation MSE for folds {} is {}'.format(foldNum, val_mse))
+                print('[INFO] Validation MSE for fold {} is {}'.format(foldNum, val_mse))
