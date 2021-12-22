@@ -257,6 +257,9 @@ if __name__ == '__main__':
             train_data = _create_dataset_from_data(train).shuffle(len(train['x'])).batch(args.batch_size)
             val_data = _create_dataset_from_data(val).batch(args.batch_size)
 
+            train_size = len(train['x'])
+            print('[INFO] Train size {} ...'.format(train_size))
+
             strategy = tf.distribute.MirroredStrategy()
 
             with strategy.scope():
@@ -329,11 +332,11 @@ if __name__ == '__main__':
 
                 callbacks.append(checkpoint)
 
-                rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5,
-                                                                   patience=7, verbose=1, min_lr=1e-7)
-                callbacks.append(rl_stopping)
+                # rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5,
+                #                                                    patience=7, verbose=1, min_lr=1e-7)
+                # callbacks.append(rl_stopping)
 
-                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30, verbose=1)
+                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, verbose=1)
                 callbacks.append(early_stopping)
 
                 # otherwise, we have already defined a learning rate space to train
@@ -341,7 +344,7 @@ if __name__ == '__main__':
                 # rate method
 
                 # stepSize = config.STEP_SIZE * train_size // args.batch_size
-                stepSize = config.STEP_SIZE * args.steps_per_epoch
+                stepSize = config.STEP_SIZE * train_size // args.batch_size
                 clr = CyclicLR(mode=config.CLR_METHOD,
                                base_lr=config.MIN_LR,
                                max_lr=config.MAX_LR,
@@ -355,9 +358,10 @@ if __name__ == '__main__':
                 train_data = train_data.with_options(options)
                 val_data = val_data.with_options(options)
 
+                print('[INFO] Training fold {}/{} ...'.format(foldNum+1, args.k_fold))
                 model.fit(train_data,
                           validation_data=val_data,
-                          steps_per_epoch=args.steps_per_epoch,
+                          steps_per_epoch=train_size // args.batch_size,
                           verbose=1,
                           epochs=args.epochs, callbacks=callbacks)
 
