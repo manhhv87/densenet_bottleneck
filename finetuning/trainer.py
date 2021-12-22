@@ -259,6 +259,8 @@ if __name__ == '__main__':
 
             train_size = len(train['x'])
             print('[INFO] Train size {} ...'.format(train_size))
+            val_size = len(val['x'])
+            print('[INFO] Validation size {} ...'.format(val_size))
 
             strategy = tf.distribute.MirroredStrategy()
 
@@ -386,7 +388,6 @@ if __name__ == '__main__':
                 val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
 
                 print('[INFO] Evaluates the model on the validation data ...')
-                val_mse, val_mae = model.evaluate(val_data, verbose=1)
-                print('Validation MSE {}'.format(val_mse))
+                val_mse, val_mae = model.evaluate(val_data, verbose=2)
                 all_scores.append(val_mse)
 
