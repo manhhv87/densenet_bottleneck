@@ -46,7 +46,6 @@ if __name__ == '__main__':
     parser.add_argument('--channel', type=int, default=None, help='Use only the selected channel. '
                                                                   'By default use all available channels.')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs.')
-    parser.add_argument('--steps-per-epoch', type=int, default=100, help='Number of steps per epoch.')
     parser.add_argument('--seed', type=int, default=None, help='Random state.')
     parser.add_argument('--verbose', action='store_true', help='Show debug messages.')
     parser.add_argument('--k-fold', type=int, default=None, help='k-fold cross validation')
