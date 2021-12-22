@@ -58,26 +58,3 @@ def train_test_split(data_set, **options):
             'record_ids': record_ids[test_idx],
             'classes': classes}
     return train, test
-
-
-def crossValidation(data_set, k_folds=5, **options):
-    x, y, record_ids, classes = data_set['x'], data_set['y'], data_set['record_ids'], data_set['classes']
-    assert len(x) == len(y) == len(record_ids)
-    idx_data = np.arange(len(x))
-    idx_target = np.arange(len(y))
-
-    skf = StratifiedKFold(n_splits=k_folds, shuffle=True)
-    skf.get_n_splits(x, y)
-    foldNum = 0
-
-    for train_idx, val_idx in skf.split(idx_data, idx_target):
-        foldNum += 1
-
-        train = {'x': x[train_idx],
-                 'y': y[train_idx],
-                 'record_ids': record_ids[train_idx],
-                 'classes': classes}
-        val = {'x': x[val_idx],
-               'y': y[val_idx],
-               'record_ids': record_ids[val_idx],
-               'classes': classes}

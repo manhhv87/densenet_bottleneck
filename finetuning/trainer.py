@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import KFold
 
 from finetuning.utils import ecg_feature_extractor, train_test_split
 from transplant.evaluation import auc, f1, multi_f1, CustomCheckpoint
@@ -236,12 +236,12 @@ if __name__ == '__main__':
         idx_data = np.arange(len(x))
         idx_target = np.arange(len(y))
 
-        skf = StratifiedKFold(n_splits=args.k_fold, shuffle=True)
-        skf.get_n_splits(x, y)
+        kf = KFold(n_splits=args.k_fold, shuffle=True)
+        kf.get_n_splits(x, y)
         foldNum = 0
         all_scores = []
 
-        for train_idx, val_idx in skf.split(idx_data, idx_target):
+        for train_idx, val_idx in kf.split(idx_data, idx_target):
             foldNum += 1
             print(f"[INFO] Processing fold #{foldNum}")
 
