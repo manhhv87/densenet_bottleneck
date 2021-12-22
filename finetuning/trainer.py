@@ -353,7 +353,7 @@ if __name__ == '__main__':
                 options = tf.data.Options()
                 options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
                 train_data = train_data.with_options(options)
-                validation_data = validation_data.with_options(options)
+                val_data = val_data.with_options(options)
 
                 model.fit(train_data,
                           validation_data=val_data,
