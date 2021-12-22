@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
+from sklearn.model_selection import StratifiedKFold
 
 from finetuning.utils import ecg_feature_extractor, train_test_split
 from transplant.evaluation import auc, f1, multi_f1, CustomCheckpoint
@@ -221,45 +222,48 @@ if __name__ == '__main__':
 
     else:   # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
-        data = load_pkl(file=str(args.train))
-
-        # keys to extract from dictionary
-        key_to_extract = {'x', 'y', 'record_ids'}
-        train = {key: value for key, value in data.items() if key in key_to_extract}
+        data_set = load_pkl(file=str(args.train))
+        x, y, record_ids, classes = data_set['x'], data_set['y'], data_set['record_ids'], data_set['classes']
 
         if args.channel is not None:
-            train['x'] = train['x'][:, :, args.channel:args.channel + 1]
+            data_set['x'] = data_set['x'][:, :, args.channel:args.channel + 1]
 
-        print('[INFO] Train data shape:', train['x'].shape)
+        print('[INFO] Train data shape:', data_set['x'].shape)
 
-        num_val_samples = len(train['x']) // args.k_fold
+
+
+
+        idx_data = np.arange(len(x))
+        idx_target = np.arange(len(y))
+
+        skf = StratifiedKFold(n_splits=args.k_fold, shuffle=True)
+        skf.get_n_splits(x, y)
+        foldNum = 0
         all_scores = []
 
-        print("[INFO] Length of: Data: {}, Label: {}, Record_IDs: {}".format(len(train['x']),
-                                                                             len(train['y']), len(train['record_ids'])))
-        print("[INFO] No. val samples: {}".format(num_val_samples))
+        for train_idx, val_idx in skf.split(idx_data, idx_target):
+            foldNum += 1
+            print(f"[INFO] Processing fold #{foldNum}")
 
-        for i in range(args.k_fold):
-            print(f"[INFO] Processing fold #{i+1}")
+            train = {'x': x[train_idx],
+                     'y': y[train_idx],
+                     'record_ids': record_ids[train_idx],
+                     'classes': classes}
+            val = {'x': x[val_idx],
+                   'y': y[val_idx],
+                   'record_ids': record_ids[val_idx],
+                   'classes': classes}
 
-            # Prepares the validation data: data from partition #k
-            val = train[:][i * num_val_samples: (i + 1) * num_val_samples]
-
-            # Prepares the training data: data from all other partitions
-            partial_train_data = np.concatenate([train[:][:i * num_val_samples],
-                                                 train[:][(i + 1) * num_val_samples:]],
-                                                axis=0)
-
-            train_data = _create_dataset_from_data(partial_train_data).shuffle(len(partial_train_data['x'])).batch(args.batch_size)
+            train_data = _create_dataset_from_data(train).shuffle(len(train['x'])).batch(args.batch_size)
             val_data = _create_dataset_from_data(val).batch(args.batch_size)
 
             strategy = tf.distribute.MirroredStrategy()
 
             with strategy.scope():
                 print('[INFO] Building model ...')
-                num_classes = len(data['classes'])
+                num_classes = len(train['classes'])
 
-                if is_multiclass(partial_train_data['y']):
+                if is_multiclass(train['y']):
                     activation = 'sigmoid'
                     loss = tf.keras.losses.BinaryCrossentropy()
                     accuracy = tf.keras.metrics.BinaryAccuracy(name='acc')
@@ -273,8 +277,7 @@ if __name__ == '__main__':
                 model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
 
                 # initialize the weights of the model
-                inputs = tf.keras.layers.Input(shape=partial_train_data['x'].shape[1:],
-                                               dtype=partial_train_data['x'].dtype)
+                inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
                 model(inputs)  # complete model
 
                 print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
@@ -303,7 +306,7 @@ if __name__ == '__main__':
                                                                     mode='auto',
                                                                     verbose=1)
                 elif args.val_metric == 'f1':
-                    if is_multiclass(partial_train_data['y']):
+                    if is_multiclass(train['y']):
                         score_fn = multi_f1
                     else:
                         score_fn = f1
@@ -340,11 +343,11 @@ if __name__ == '__main__':
                 model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
 
                 print('[INFO] Predicting training data ...')
-                train_y_prob = model.predict(x=partial_train_data['x'], batch_size=args.batch_size)
+                train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
                 train_predictions = create_predictions_frame(y_prob=train_y_prob,
-                                                             y_true=partial_train_data['y'],
+                                                             y_true=train['y'],
                                                              class_names=train['classes'],
-                                                             record_ids=partial_train_data['record_ids'])
+                                                             record_ids=train['record_ids'])
                 train_predictions.to_csv(path_or_buf=args.job_dir / 'train_predictions.csv', index=False)
 
                 print('[INFO] Predicting validation data ...')
@@ -358,5 +361,5 @@ if __name__ == '__main__':
                 print('[INFO] Evaluates the model on the validation data ...')
                 val_mse, val_mae = model.evaluate(val_data, val['y'], verbose=1)
                 print('Validation MSE {}'.format(val_mse))
-                all_scores.append(val_mae)
+                all_scores.append(val_mse)
 
