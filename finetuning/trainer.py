@@ -149,7 +149,8 @@ if __name__ == '__main__':
                 print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
                 model.load_weights(str(args.weights_file))
 
-            model.compile(optimizer=tf.keras.optimizers.Adam(),
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR,
+                                                             beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                           loss=loss,
                           metrics=[accuracy])
 
@@ -383,10 +384,10 @@ if __name__ == '__main__':
 
                 print('[INFO] Training fold {}/{} ...'.format(foldNum, args.k_fold))
                 model.fit(train_data,
-                          validation_data=val_data,
-                          steps_per_epoch=train_size // args.batch_size,
+                          epochs=args.epochs,
                           verbose=1,
-                          epochs=args.epochs, callbacks=callbacks)
+                          validation_data=val_data,
+                          callbacks=callbacks)
 
                 # load best model for inference
                 print('[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
