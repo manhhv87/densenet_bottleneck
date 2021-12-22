@@ -10,6 +10,9 @@ from finetuning.utils import ecg_feature_extractor, train_test_split
 from transplant.evaluation import auc, f1, multi_f1, CustomCheckpoint
 from transplant.utils import (create_predictions_frame, load_pkl, is_multiclass)
 
+from clr.learningratefinder import LearningRateFinder
+from clr.clr_callback import CyclicLR
+from clr import config
 
 def _create_dataset_from_data(data):
     """
@@ -43,6 +46,7 @@ if __name__ == '__main__':
     parser.add_argument('--channel', type=int, default=None, help='Use only the selected channel. '
                                                                   'By default use all available channels.')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs.')
+    parser.add_argument('--steps-per-epoch', type=int, default=100, help='Number of steps per epoch.')
     parser.add_argument('--seed', type=int, default=None, help='Random state.')
     parser.add_argument('--verbose', action='store_true', help='Show debug messages.')
     parser.add_argument('--k-fold', type=int, default=None, help='k-fold cross validation')
@@ -230,9 +234,6 @@ if __name__ == '__main__':
 
         print('[INFO] Train data shape:', data_set['x'].shape)
 
-
-
-
         idx_data = np.arange(len(x))
         idx_target = np.arange(len(y))
 
@@ -243,7 +244,6 @@ if __name__ == '__main__':
 
         for train_idx, val_idx in kf.split(idx_data, idx_target):
             foldNum += 1
-            print(f"[INFO] Processing fold #{foldNum}")
 
             train = {'x': x[train_idx],
                      'y': y[train_idx],
@@ -288,7 +288,8 @@ if __name__ == '__main__':
                     print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
                     model.load_weights(str(args.weights_file))
 
-                model.compile(optimizer=tf.keras.optimizers.Adam(),
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR,
+                                                                 beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                               loss=loss,
                               metrics=[accuracy])
 
@@ -335,7 +336,29 @@ if __name__ == '__main__':
                 early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30, verbose=1)
                 callbacks.append(early_stopping)
 
-                model.fit(train_data, validation_data=val_data, verbose=1,
+                # otherwise, we have already defined a learning rate space to train
+                # over, so compute the step size and initialize the cyclic learning
+                # rate method
+
+                # stepSize = config.STEP_SIZE * train_size // args.batch_size
+                stepSize = config.STEP_SIZE * args.steps_per_epoch
+                clr = CyclicLR(mode=config.CLR_METHOD,
+                               base_lr=config.MIN_LR,
+                               max_lr=config.MAX_LR,
+                               step_size=stepSize)
+
+                callbacks.append(clr)
+
+                # Disable AutoShard.
+                options = tf.data.Options()
+                options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
+                train_data = train_data.with_options(options)
+                validation_data = validation_data.with_options(options)
+
+                model.fit(train_data,
+                          validation_data=val_data,
+                          steps_per_epoch=args.steps_per_epoch,
+                          verbose=1,
                           epochs=args.epochs, callbacks=callbacks)
 
                 # load best model for inference
@@ -359,7 +382,7 @@ if __name__ == '__main__':
                 val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
 
                 print('[INFO] Evaluates the model on the validation data ...')
-                val_mse, val_mae = model.evaluate(val_data, val['y'], verbose=1)
+                val_mse, val_mae = model.evaluate(val_data, verbose=1)
                 print('Validation MSE {}'.format(val_mse))
                 all_scores.append(val_mse)
 

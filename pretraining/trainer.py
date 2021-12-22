@@ -92,7 +92,6 @@ if __name__ == '__main__':
     parser.add_argument('--data-parallelism', type=int, default=1, help='Number of data loaders running in parallel.')
     parser.add_argument('--seed', type=int, default=None, help='Random state.')
     parser.add_argument("-f", "--lr-find", type=int, default=0, help="whether or not to find optimal learning rate")
-
     args, _ = parser.parse_known_args()
 
     if args.val_metric not in ['loss', 'acc', 'f1']:
