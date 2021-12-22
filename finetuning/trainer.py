@@ -358,7 +358,7 @@ if __name__ == '__main__':
                 train_data = train_data.with_options(options)
                 val_data = val_data.with_options(options)
 
-                print('[INFO] Training fold {}/{} ...'.format(foldNum+1, args.k_fold))
+                print('[INFO] Training fold {}/{} ...'.format(foldNum, args.k_fold))
                 model.fit(train_data,
                           validation_data=val_data,
                           steps_per_epoch=train_size // args.batch_size,
