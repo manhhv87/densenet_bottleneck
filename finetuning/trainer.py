@@ -18,6 +18,7 @@ from clr.learningratefinder import LearningRateFinder
 from clr.clr_callback import CyclicLR
 from clr import config
 
+
 def _create_dataset_from_data(data):
     """
     input:  data = {'x': x,
@@ -65,7 +66,7 @@ if __name__ == '__main__':
     print('[INFO] Setting random state {}'.format(seed))
     np.random.seed(seed)
 
-    if not args.k_fold:     # Không sử dụng k-fold
+    if not args.k_fold:  # Không sử dụng k-fold
         # Không sử dụng val file riêng biệt mà chia val từ train set
         if not args.val and args.val_size:
             if args.val_size >= 1:  # Lấy theo số lượng của patients, nếu <= 1 thì đó là theo tỷ lệ của train set
@@ -79,29 +80,30 @@ if __name__ == '__main__':
         print('[INFO] Loading train data from {} ...'.format(args.train))
         train = load_pkl(file=str(args.train))
 
-        if args.val:    # Loading val set từ val file
+        if args.val:  # Loading val set từ val file
             print('[INFO] Loading validation data from {} ...'.format(args.val))
             val = load_pkl(file=str(args.val))
-        elif args.val_size:     # Chia tỷ lệ val set từ train set mà không phải là load từ file
-            original_train_size = len(train['x'])   # Kích thước của toàn bộ dữ liệu dataset
-            train, val = train_test_split(train, test_size=args.val_size, stratify=train['y'])  # Chia thành train và val set
-            new_train_size = len(train['x'])    # Trả về kích thước của train set mới
-            new_val_size = len(val['x'])    # trả về kích thước của val set mới
+        elif args.val_size:  # Chia tỷ lệ val set từ train set mà không phải là load từ file
+            original_train_size = len(train['x'])  # Kích thước của toàn bộ dữ liệu dataset
+            train, val = train_test_split(train, test_size=args.val_size,
+                                          stratify=train['y'])  # Chia thành train và val set
+            new_train_size = len(train['x'])  # Trả về kích thước của train set mới
+            new_val_size = len(val['x'])  # trả về kích thước của val set mới
             print('[INFO] Split data into train {:.2%} and validation {:.2%}'.format(
                 new_train_size / original_train_size, new_val_size / original_train_size))
-        else:   # Không sử dụng val set
+        else:  # Không sử dụng val set
             val = None
 
-        if args.test:   # Sử dụng test set file riêng biệt
+        if args.test:  # Sử dụng test set file riêng biệt
             print('[INFO] Loading test data from {} ...'.format(args.test))
             test = load_pkl(str(args.test))
-        else:   # Không sử dụng test set
+        else:  # Không sử dụng test set
             test = None
 
-        if args.subset:     # Tiếp tục chia train set sau khi đã chia train dataset ban đầu thành new train set và val set
-            original_train_size = len(train['x'])   # Trả về kích thước của train set
-            train, _ = train_test_split(train, train_size=args.subset, stratify=train['y'])     # Trả về new train set
-            new_train_size = len(train['x'])    # Trả về kích thước của new train set
+        if args.subset:  # Tiếp tục chia train set sau khi đã chia train dataset ban đầu thành new train set và val set
+            original_train_size = len(train['x'])  # Trả về kích thước của train set
+            train, _ = train_test_split(train, train_size=args.subset, stratify=train['y'])  # Trả về new train set
+            new_train_size = len(train['x'])  # Trả về kích thước của new train set
             print('[INFO] Using only {:.2%} of train data'.format(new_train_size / original_train_size))
 
         if args.channel is not None:
@@ -153,8 +155,8 @@ if __name__ == '__main__':
                 print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
                 model.load_weights(str(args.weights_file))
 
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR,
-                                                             beta_1=0.9, beta_2=0.98, epsilon=1e-9),
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
+                                                             beta_2=0.98, epsilon=1e-9),
                           loss=loss,
                           metrics=[accuracy])
 
@@ -195,12 +197,7 @@ if __name__ == '__main__':
             callbacks.append(checkpoint)
 
             if val:
-                # new adding
-                rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=7,
-                                                                   verbose=1, min_lr=1e-7)
-                callbacks.append(rl_stopping)
-
-                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30, verbose=1)
+                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, verbose=1)
                 callbacks.append(early_stopping)
 
             # otherwise, we have already defined a learning rate space to train
@@ -252,7 +249,7 @@ if __name__ == '__main__':
                                                             record_ids=test['record_ids'])
                 test_predictions.to_csv(path_or_buf=args.job_dir / 'test_predictions.csv', index=False)
 
-    else:   # Đánh giá theo k-fold cross validation
+    else:  # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
         data_set = load_pkl(file=str(args.train))
         x, y, record_ids, classes = data_set['x'], data_set['y'], data_set['record_ids'], data_set['classes']
@@ -332,7 +329,7 @@ if __name__ == '__main__':
                 callbacks.append(logger)
 
                 if args.val_metric in ['loss', 'acc']:
-                    monitor = ('val_' + args.val_metric)    # if val else args.val_metric
+                    monitor = ('val_' + args.val_metric)  # if val else args.val_metric
                     checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
                                                                     monitor=monitor,
                                                                     save_best_only=True,
@@ -346,14 +343,16 @@ if __name__ == '__main__':
                         score_fn = f1
 
                     checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                                  data=(val_data, val['y']),   # if val else (train_data, partial_train_data['y']),
+                                                  data=(val_data, val['y']),
+                                                  # if val else (train_data, partial_train_data['y']),
                                                   score_fn=score_fn,
                                                   save_best_only=True,
                                                   verbose=1)
 
                 elif args.val_metric == 'auc':
                     checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                                  data=(val_data, val['y']),    # if val else (train_data, partial_train_data['y']),
+                                                  data=(val_data, val['y']),
+                                                  # if val else (train_data, partial_train_data['y']),
                                                   score_fn=auc,
                                                   save_best_only=True,
                                                   verbose=1)
@@ -362,18 +361,11 @@ if __name__ == '__main__':
 
                 callbacks.append(checkpoint)
 
-                # rl_stopping = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5,
-                #                                                    patience=7, verbose=1, min_lr=1e-7)
-                # callbacks.append(rl_stopping)
-
                 early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, verbose=1)
                 callbacks.append(early_stopping)
 
-                # otherwise, we have already defined a learning rate space to train
-                # over, so compute the step size and initialize the cyclic learning
-                # rate method
-
-                # stepSize = config.STEP_SIZE * train_size // args.batch_size
+                # otherwise, we have already defined a learning rate space to train over,
+                # so compute the step size and initialize the cyclic learning rate method
                 stepSize = config.STEP_SIZE * train_size // args.batch_size
                 clr = CyclicLR(mode=config.CLR_METHOD,
                                base_lr=config.MIN_LR,
@@ -396,26 +388,29 @@ if __name__ == '__main__':
                           callbacks=callbacks)
 
                 # load best model for inference
-                print('[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
+                print(
+                    '[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
                 model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
 
-                print('[INFO] Predicting training data ...')
+                print('[INFO] Predicting training data for fold {} ...'.format(foldNum))
                 train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
                 train_predictions = create_predictions_frame(y_prob=train_y_prob,
                                                              y_true=train['y'],
                                                              class_names=train['classes'],
                                                              record_ids=train['record_ids'])
-                train_predictions.to_csv(path_or_buf=args.job_dir / 'train_predictions.csv', index=False)
+                train_predictions.to_csv(path_or_buf=args.job_dir / 'train_predictions_' + str(foldNum) + '.csv',
+                                         index=False)
 
-                print('[INFO] Predicting validation data ...')
+                print('[INFO] Predicting validation data for fold {} ...'.format(foldNum))
                 val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
                 val_predictions = create_predictions_frame(y_prob=val_y_prob,
                                                            y_true=val['y'],
                                                            class_names=train['classes'],
                                                            record_ids=val['record_ids'])
-                val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
+                val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions_' + str(foldNum) + '.csv',
+                                       index=False)
 
-                val_pre = read_predictions(args.job_dir / 'val_predictions.csv')
+                val_pre = read_predictions(args.job_dir / 'val_predictions_' + str(foldNum) + '.csv')
                 y_true = val_pre['y_true']
                 y_prob = val_pre['y_prob']
                 macro_f1 = f1(y_true, y_prob)
@@ -433,5 +428,6 @@ if __name__ == '__main__':
         print('[INFO] macro f1 for all of folds is {} and mean is {}'.format(all_scores_macro_f1,
                                                                              np.mean(all_scores_macro_f1)))
         print('[INFO] f1 for each class for all of folds is {} and mean is {}'.format(all_scores_f1_each_class,
-                                                                                      np.mean(all_scores_f1_each_class)))
+                                                                                      np.mean(
+                                                                                          all_scores_f1_each_class)))
         print('[INFO] mse for all of folds is {} and mean is {}'.format(all_scores_mse, np.mean(all_scores_mse)))
