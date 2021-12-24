@@ -279,8 +279,14 @@ if __name__ == '__main__':
                    'record_ids': record_ids[val_idx],
                    'classes': classes}
 
-            train_data = _create_dataset_from_data(train).shuffle(len(train['x'])).batch(args.batch_size)
-            val_data = _create_dataset_from_data(val).batch(args.batch_size)
+            # train_data = _create_dataset_from_data(train).shuffle(len(train['x'])).batch(args.batch_size)
+            # val_data = _create_dataset_from_data(val).batch(args.batch_size)
+
+            # Disable AutoShard.
+            options = tf.data.Options()
+            options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+            train_data = _create_dataset_from_data(train).with_options(options).shuffle(len(train['x'])).batch(args.batch_size)
+            val_data = _create_dataset_from_data(val).with_options(options).batch(args.batch_size)
 
             train_size = len(train['x'])
             print('[INFO] Train size {} ...'.format(train_size))
@@ -373,12 +379,6 @@ if __name__ == '__main__':
                                step_size=stepSize)
 
                 callbacks.append(clr)
-
-                # Disable AutoShard.
-                options = tf.data.Options()
-                options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
-                train_data = train_data.with_options(options)
-                val_data = val_data.with_options(options)
 
                 print('[INFO] Training fold {}/{} ...'.format(foldNum, args.k_fold))
                 model.fit(train_data,
