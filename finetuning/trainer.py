@@ -398,7 +398,7 @@ if __name__ == '__main__':
                                                              y_true=train['y'],
                                                              class_names=train['classes'],
                                                              record_ids=train['record_ids'])
-                train_predictions.to_csv(path_or_buf=str(args.job_dir / 'train_predictions_' + str(foldNum) + '.csv'),
+                train_predictions.to_csv(path_or_buf=str(args.job_dir) + 'train_predictions_' + str(foldNum) + '.csv',
                                          index=False)
 
                 print('[INFO] Predicting validation data for fold {} ...'.format(foldNum))
@@ -407,7 +407,7 @@ if __name__ == '__main__':
                                                            y_true=val['y'],
                                                            class_names=train['classes'],
                                                            record_ids=val['record_ids'])
-                val_predictions.to_csv(path_or_buf=str(args.job_dir / 'val_predictions_' + str(foldNum) + '.csv'),
+                val_predictions.to_csv(path_or_buf=str(args.job_dir) + 'val_predictions_' + str(foldNum) + '.csv',
                                        index=False)
 
                 val_pre = read_predictions(str(args.job_dir / 'val_predictions_' + str(foldNum) + '.csv'))
