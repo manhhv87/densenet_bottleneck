@@ -389,6 +389,12 @@ if __name__ == '__main__':
                     '[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
                 model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
 
+                # Disable AutoShard.
+                options = tf.data.Options()
+                options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+                train = _create_dataset_from_data(train).with_options(options)
+                val = _create_dataset_from_data(val).with_options(options)
+
                 print('[INFO] Predicting training data for fold {} ...'.format(foldNum))
                 train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
                 train_predictions = create_predictions_frame(y_prob=train_y_prob,
