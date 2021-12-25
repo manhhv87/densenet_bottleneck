@@ -427,10 +427,17 @@ if __name__ == '__main__':
                 val_mse, val_mae = model.evaluate(val_data, verbose=2)
                 all_scores_mse.append(val_mse)
                 print('[INFO] Validation MSE for fold {} is {}'.format(foldNum, val_mse))
+                print("============================================================================")
 
-        print('[INFO] macro f1 for all of folds is {} and mean is {}'.format(all_scores_macro_f1,
-                                                                             np.mean(all_scores_macro_f1)))
-        print('[INFO] f1 for each class for all of folds is {} and mean is {}'.format(all_scores_f1_each_class,
-                                                                                      np.mean(
-                                                                                          all_scores_f1_each_class)))
-        print('[INFO] mse for all of folds is {} and mean is {}'.format(all_scores_mse, np.mean(all_scores_mse)))
+        f1_mean_each_classes = []
+        for i in range(len(all_scores_f1_each_class)):
+            f1_mean_each_classes.append(np.mean(all_scores_f1_each_class[i]))
+
+        print("Results ...")
+        print("============================================================================")
+
+        print('[INFO] macro and mean f1 for all of folds is {} and {}'.format(all_scores_macro_f1,
+                                                                              np.mean(all_scores_macro_f1)))
+        print('[INFO] f1 and mean for each class of folds is {} and {}'.format(all_scores_f1_each_class,
+                                                                               f1_mean_each_classes))
+        print('[INFO] mse and mean for folds is {} and {}'.format(all_scores_mse, np.mean(all_scores_mse)))
