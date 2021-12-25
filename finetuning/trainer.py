@@ -283,7 +283,8 @@ if __name__ == '__main__':
             # Disable AutoShard.
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
-            train_data = _create_dataset_from_data(train).with_options(options).shuffle(len(train['x'])).batch(args.batch_size)
+            train_data = _create_dataset_from_data(train).with_options(options).shuffle(len(train['x'])).batch(
+                args.batch_size)
             val_data = _create_dataset_from_data(val).with_options(options).batch(args.batch_size)
 
             train_size = len(train['x'])
@@ -438,8 +439,9 @@ if __name__ == '__main__':
         print("Results ...")
         print("============================================================================")
 
-        print('[INFO] macro and mean f1 for all of folds is {} and {}'.format(all_scores_macro_f1,
-                                                                              np.std(all_scores_macro_f1)))
-        print('[INFO] f1 and mean for each class of folds is {} and {}'.format(all_scores_f1_each_class,
-                                                                               f1_mean_each_classes))
-        print('[INFO] mse and mean for folds is {} and {}'.format(all_scores_mse, np.std(all_scores_mse)))
+        print('[INFO] macro f1 and standard deviation values for all of folds is {} and {}'.format(
+            all_scores_macro_f1, np.std(all_scores_macro_f1)))
+        print('[INFO] f1 and standard deviation values for each class of folds is {} and {}'.format(
+            all_scores_f1_each_class, f1_mean_each_classes))
+        print('[INFO] mse and standard deviation values for folds is {} and {}'.format(
+            all_scores_mse, np.std(all_scores_mse)))
