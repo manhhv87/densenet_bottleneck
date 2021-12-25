@@ -281,15 +281,6 @@ if __name__ == '__main__':
 
             # Disable AutoShard.
             options = tf.data.Options()
-            options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
-            train = _create_dataset_from_data(train).with_options(options)
-            val = _create_dataset_from_data(val).with_options(options)
-
-            # train_data = _create_dataset_from_data(train).shuffle(len(train['x'])).batch(args.batch_size)
-            # val_data = _create_dataset_from_data(val).batch(args.batch_size)
-
-            # Disable AutoShard.
-            options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
             train_data = _create_dataset_from_data(train).with_options(options).shuffle(len(train['x'])).batch(args.batch_size)
             val_data = _create_dataset_from_data(val).with_options(options).batch(args.batch_size)
