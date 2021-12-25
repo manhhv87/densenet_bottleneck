@@ -380,6 +380,11 @@ if __name__ == '__main__':
 
                 callbacks.append(clr)
 
+                rlo = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=7,
+                                                           verbose=1, min_lr=config.MIN_LR)
+
+                callbacks.append(rlo)
+
                 print('[INFO] Training fold {}/{} ...'.format(foldNum, args.k_fold))
                 model.fit(train_data,
                           epochs=args.epochs,
