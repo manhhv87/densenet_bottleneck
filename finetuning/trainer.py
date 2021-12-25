@@ -433,13 +433,13 @@ if __name__ == '__main__':
 
         f1_mean_each_classes = []
         for i in range(len(all_scores_f1_each_class)):
-            f1_mean_each_classes.append(np.mean(all_scores_f1_each_class[i]))
+            f1_mean_each_classes.append(np.std(all_scores_f1_each_class[i]))
 
         print("Results ...")
         print("============================================================================")
 
         print('[INFO] macro and mean f1 for all of folds is {} and {}'.format(all_scores_macro_f1,
-                                                                              np.mean(all_scores_macro_f1)))
+                                                                              np.std(all_scores_macro_f1)))
         print('[INFO] f1 and mean for each class of folds is {} and {}'.format(all_scores_f1_each_class,
                                                                                f1_mean_each_classes))
-        print('[INFO] mse and mean for folds is {} and {}'.format(all_scores_mse, np.mean(all_scores_mse)))
+        print('[INFO] mse and mean for folds is {} and {}'.format(all_scores_mse, np.std(all_scores_mse)))
