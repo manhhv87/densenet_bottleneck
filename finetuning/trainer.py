@@ -279,6 +279,12 @@ if __name__ == '__main__':
                    'record_ids': record_ids[val_idx],
                    'classes': classes}
 
+            # Disable AutoShard.
+            options = tf.data.Options()
+            options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
+            train = train.with_options(options)
+            val = val.with_options(options)
+
             # train_data = _create_dataset_from_data(train).shuffle(len(train['x'])).batch(args.batch_size)
             # val_data = _create_dataset_from_data(val).batch(args.batch_size)
 
@@ -410,7 +416,7 @@ if __name__ == '__main__':
                 val_predictions.to_csv(path_or_buf=str(args.job_dir) + 'val_predictions_' + str(foldNum) + '.csv',
                                        index=False)
 
-                val_pre = read_predictions(str(args.job_dir / 'val_predictions_' + str(foldNum) + '.csv'))
+                val_pre = read_predictions(str(args.job_dir) + 'val_predictions_' + str(foldNum) + '.csv')
                 y_true = val_pre['y_true']
                 y_prob = val_pre['y_prob']
                 macro_f1 = f1(y_true, y_prob)
