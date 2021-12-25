@@ -197,7 +197,8 @@ if __name__ == '__main__':
             callbacks.append(checkpoint)
 
             if val:
-                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, verbose=1)
+                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50,
+                                                                  min_delta=0.001, verbose=1)
                 callbacks.append(early_stopping)
 
             # otherwise, we have already defined a learning rate space to train
@@ -364,7 +365,8 @@ if __name__ == '__main__':
 
                 callbacks.append(checkpoint)
 
-                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, verbose=1)
+                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50,
+                                                                  min_delta=0.001, verbose=1)
                 callbacks.append(early_stopping)
 
                 # otherwise, we have already defined a learning rate space to train over,
