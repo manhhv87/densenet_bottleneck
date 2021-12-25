@@ -432,9 +432,9 @@ if __name__ == '__main__':
                 print('[INFO] Validation MSE for fold {} is {}'.format(foldNum, val_mse))
                 print("============================================================================")
 
-        f1_mean_each_classes = []
+        f1_std_each_classes = []
         for i in range(len(all_scores_f1_each_class)):
-            f1_mean_each_classes.append(np.std(all_scores_f1_each_class[i]))
+            f1_std_each_classes.append(np.std(all_scores_f1_each_class[i]))
 
         print("Results ...")
         print("============================================================================")
