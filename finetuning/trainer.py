@@ -431,11 +431,7 @@ if __name__ == '__main__':
                 print('[INFO] Validation MSE for fold {} is {}'.format(foldNum, val_mse))
                 print("============================================================================")
 
-        f1_std_each_classes = []
-        f1_mean_each_classes = []
-        for i in range(len(all_scores_f1_each_class)):
-            f1_mean_each_classes.append(np.mean(all_scores_f1_each_class[i]))
-            f1_std_each_classes.append(np.std(all_scores_f1_each_class[i]))
+        scores_f1_each_class_array = np.concatenate(all_scores_f1_each_class, axis=0).reshape((5, 4))
 
         print("Results ...")
         print("============================================================================")
@@ -443,6 +439,6 @@ if __name__ == '__main__':
         print('[INFO] macro f1, mean and standard deviation values for all of folds is {}, {} and {}'.format(
             all_scores_macro_f1, np.mean(all_scores_macro_f1), np.std(all_scores_macro_f1)))
         print('[INFO] f1, mean and standard deviation values for each class of folds is {}, {} and {}'.format(
-            all_scores_f1_each_class, f1_mean_each_classes, f1_std_each_classes))
-        print('[INFO] mse and standard deviation values for folds is {} and {}'.format(
-            all_scores_mse, np.std(all_scores_mse)))
+            all_scores_f1_each_class, scores_f1_each_class_array.mean(axis=0), scores_f1_each_class_array.std(axis=0)))
+        print('[INFO] mse, mean and standard deviation values for folds is {} and {}'.format(
+            all_scores_mse, np.mean(all_scores_mse), np.std(all_scores_mse)))
