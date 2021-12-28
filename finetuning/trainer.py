@@ -441,7 +441,7 @@ if __name__ == '__main__':
         print("============================================================================")
 
         print('[INFO] macro f1, mean and standard deviation values for all of folds is {}, {} and {}'.format(
-            all_scores_macro_f1, n.mean(all_scores_macro_f1), np.std(all_scores_macro_f1)))
+            all_scores_macro_f1, np.mean(all_scores_macro_f1), np.std(all_scores_macro_f1)))
         print('[INFO] f1, mean and standard deviation values for each class of folds is {}, {} and {}'.format(
             all_scores_f1_each_class, f1_mean_each_classes, f1_std_each_classes))
         print('[INFO] mse and standard deviation values for folds is {} and {}'.format(
