@@ -6,9 +6,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import KFold
 
-from transplant.evaluation import f1, f_max
 from transplant.utils import read_predictions
-from sklearn.metrics import f1_score
 
 from finetuning.utils import ecg_feature_extractor, train_test_split
 from transplant.evaluation import auc, f1, f1_classes, multi_f1, CustomCheckpoint
