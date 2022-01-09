@@ -8,8 +8,8 @@ from sklearn.model_selection import KFold
 
 from transplant.utils import read_predictions
 
-from finetuning.utils import ecg_feature_extractor, train_test_split
-from transplant.evaluation import auc, f1, f1_classes, multi_f1, CustomCheckpoint
+from finetuning.utils import (ecg_feature_extractor, train_test_split)
+from transplant.evaluation import (auc, f1, f1_classes, multi_f1, CustomCheckpoint, f_max, challenge2020_metrics)
 from transplant.utils import (create_predictions_frame, load_pkl, is_multiclass)
 
 from clr.learningratefinder import LearningRateFinder
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size.')
     parser.add_argument('--val-metric', default='loss',
                         help='Validation metric used to find the best model at each epoch. Supported metrics are:'
-                             '`loss`, `acc`, `f1`, `auc`.')
+                             '`loss`, `acc`, `f1`, `auc`, `f_max`.')
     parser.add_argument('--channel', type=int, default=None, help='Use only the selected channel. '
                                                                   'By default use all available channels.')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs.')
@@ -189,6 +189,21 @@ if __name__ == '__main__':
                                               score_fn=auc,
                                               save_best_only=True,
                                               verbose=1)
+
+            elif args.val_metric == 'f_max':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']) if val else (train_data, train['y']),
+                                              score_fn=f_max,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == "challenge2020_metrics":
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']) if val else (train_data, train['y']),
+                                              score_fn=challenge2020_metrics,
+                                              save_best_only=True,
+                                              verbose=1)
+
             else:
                 raise ValueError('Unknown metric: {}'.format(args.val_metric))
 
@@ -359,6 +374,21 @@ if __name__ == '__main__':
                                                   score_fn=auc,
                                                   save_best_only=True,
                                                   verbose=1)
+
+                elif args.val_metric == 'f_max':
+                    checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                                  data=(val_data, val['y']) if val else (train_data, train['y']),
+                                                  score_fn=f_max,
+                                                  save_best_only=True,
+                                                  verbose=1)
+
+                elif args.val_metric == "challenge2020_metrics":
+                    checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                                  data=(val_data, val['y']) if val else (train_data, train['y']),
+                                                  score_fn=challenge2020_metrics,
+                                                  save_best_only=True,
+                                                  verbose=1)
+
                 else:
                     raise ValueError('Unknown metric: {}'.format(args.val_metric))
 
