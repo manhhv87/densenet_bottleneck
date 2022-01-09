@@ -192,14 +192,14 @@ if __name__ == '__main__':
 
             elif args.val_metric == 'fmax':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']) if val else (train_data, train['y']),
+                                              data=(val_data, val['y']),     # if val else (train_data, train['y']),
                                               score_fn=f_max,
                                               save_best_only=True,
                                               verbose=1)
 
             elif args.val_metric == 'fg':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']) if val else (train_data, train['y']),
+                                              data=(val_data, val['y']),    # if val else (train_data, train['y']),
                                               score_fn=challenge2020_metrics,
                                               save_best_only=True,
                                               verbose=1)
