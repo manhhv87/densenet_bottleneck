@@ -420,53 +420,53 @@ if __name__ == '__main__':
                           validation_data=val_data,
                           callbacks=callbacks)
 
-                # load best model for inference
-                print(
-                    '[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
-                model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
-
-                print('[INFO] Predicting training data for fold {} ...'.format(foldNum))
-                train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
-                train_predictions = create_predictions_frame(y_prob=train_y_prob,
-                                                             y_true=train['y'],
-                                                             class_names=train['classes'],
-                                                             record_ids=train['record_ids'])
-                train_predictions.to_csv(path_or_buf=str(args.job_dir) + '/train_predictions_' + str(foldNum) + '.csv',
-                                         index=False)
-
-                print('[INFO] Predicting validation data for fold {} ...'.format(foldNum))
-                val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
-                val_predictions = create_predictions_frame(y_prob=val_y_prob,
-                                                           y_true=val['y'],
-                                                           class_names=train['classes'],
-                                                           record_ids=val['record_ids'])
-                val_predictions.to_csv(path_or_buf=str(args.job_dir) + '/val_predictions_' + str(foldNum) + '.csv',
-                                       index=False)
-
-                val_pre = read_predictions(str(args.job_dir) + '/val_predictions_' + str(foldNum) + '.csv')
-                y_true = val_pre['y_true']
-                y_prob = val_pre['y_prob']
-                macro_f1 = f1(y_true, y_prob)
-                all_scores_macro_f1.append(macro_f1)
-                print('[INFO] macro f1 for fold {} is {}'.format(foldNum, macro_f1))
-                f1_each_class = f1_classes(y_true, y_prob)
-                all_scores_f1_each_class.append(f1_each_class)
-                print('[INFO] f1 for each class for fold {} is {}'.format(foldNum, f1_each_class))
-
-                print('[INFO] Evaluates the model on the validation data ...')
-                val_mse, val_mae = model.evaluate(val_data, verbose=1)
-                all_scores_mse.append(val_mse)
-                print('[INFO] Validation MSE for fold {} is {}'.format(foldNum, val_mse))
-                print("============================================================================")
-
-        scores_f1_each_class_array = np.concatenate(all_scores_f1_each_class, axis=0).reshape((5, 4))
-
-        print("Results ...")
-        print("============================================================================")
-
-        print('[INFO] macro f1, mean and standard deviation values for all of folds is {}, {} and {}'.format(
-            all_scores_macro_f1, np.mean(all_scores_macro_f1), np.std(all_scores_macro_f1)))
-        print('[INFO] f1, mean and standard deviation values for each class of folds is {}, {} and {}'.format(
-            all_scores_f1_each_class, scores_f1_each_class_array.mean(axis=0), scores_f1_each_class_array.std(axis=0)))
-        print('[INFO] mse, mean and standard deviation values for folds is {} and {}'.format(
-            all_scores_mse, np.mean(all_scores_mse), np.std(all_scores_mse)))
+        #         # load best model for inference
+        #         print(
+        #             '[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
+        #         model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
+        #
+        #         print('[INFO] Predicting training data for fold {} ...'.format(foldNum))
+        #         train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
+        #         train_predictions = create_predictions_frame(y_prob=train_y_prob,
+        #                                                      y_true=train['y'],
+        #                                                      class_names=train['classes'],
+        #                                                      record_ids=train['record_ids'])
+        #         train_predictions.to_csv(path_or_buf=str(args.job_dir) + '/train_predictions_' + str(foldNum) + '.csv',
+        #                                  index=False)
+        #
+        #         print('[INFO] Predicting validation data for fold {} ...'.format(foldNum))
+        #         val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
+        #         val_predictions = create_predictions_frame(y_prob=val_y_prob,
+        #                                                    y_true=val['y'],
+        #                                                    class_names=train['classes'],
+        #                                                    record_ids=val['record_ids'])
+        #         val_predictions.to_csv(path_or_buf=str(args.job_dir) + '/val_predictions_' + str(foldNum) + '.csv',
+        #                                index=False)
+        #
+        #         val_pre = read_predictions(str(args.job_dir) + '/val_predictions_' + str(foldNum) + '.csv')
+        #         y_true = val_pre['y_true']
+        #         y_prob = val_pre['y_prob']
+        #         macro_f1 = f1(y_true, y_prob)
+        #         all_scores_macro_f1.append(macro_f1)
+        #         print('[INFO] macro f1 for fold {} is {}'.format(foldNum, macro_f1))
+        #         f1_each_class = f1_classes(y_true, y_prob)
+        #         all_scores_f1_each_class.append(f1_each_class)
+        #         print('[INFO] f1 for each class for fold {} is {}'.format(foldNum, f1_each_class))
+        #
+        #         print('[INFO] Evaluates the model on the validation data ...')
+        #         val_mse, val_mae = model.evaluate(val_data, verbose=1)
+        #         all_scores_mse.append(val_mse)
+        #         print('[INFO] Validation MSE for fold {} is {}'.format(foldNum, val_mse))
+        #         print("============================================================================")
+        #
+        # scores_f1_each_class_array = np.concatenate(all_scores_f1_each_class, axis=0).reshape((5, 4))
+        #
+        # print("Results ...")
+        # print("============================================================================")
+        #
+        # print('[INFO] macro f1, mean and standard deviation values for all of folds is {}, {} and {}'.format(
+        #     all_scores_macro_f1, np.mean(all_scores_macro_f1), np.std(all_scores_macro_f1)))
+        # print('[INFO] f1, mean and standard deviation values for each class of folds is {}, {} and {}'.format(
+        #     all_scores_f1_each_class, scores_f1_each_class_array.mean(axis=0), scores_f1_each_class_array.std(axis=0)))
+        # print('[INFO] mse, mean and standard deviation values for folds is {} and {}'.format(
+        #     all_scores_mse, np.mean(all_scores_mse), np.std(all_scores_mse)))
