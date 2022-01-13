@@ -1,7 +1,6 @@
 import numpy as np
 import sklearn.model_selection
 import tensorflow as tf
-from sklearn.model_selection import StratifiedKFold
 
 from transplant.modules.densenet1d import _DenseNet
 
@@ -40,7 +39,10 @@ def ecg_feature_extractor(arch=None, stages=None):
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
 
-    feature_extractor = tf.keras.Sequential([resnet, tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
+    feature_extractor = tf.keras.Sequential([resnet,
+                                             tf.keras.layers.BatchNormalization(),
+                                             tf.keras.layers.Activation('relu'),
+                                             tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
     return feature_extractor
 
 
