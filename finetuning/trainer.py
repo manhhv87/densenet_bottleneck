@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras import backend as K
 from sklearn.model_selection import KFold
 
 from transplant.utils import read_predictions
@@ -420,6 +421,8 @@ if __name__ == '__main__':
                           verbose=1,
                           validation_data=val_data,
                           callbacks=callbacks)
+
+                K.clear_session()
                 print("============================================================================")
 
                 # load best model for inference
