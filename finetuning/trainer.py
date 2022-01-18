@@ -28,6 +28,34 @@ def _create_dataset_from_data(data):
     return tf.data.Dataset.from_tensor_slices((data['x'], data['y']))
 
 
+def _create_model(arch, n_classes, act, dat_x, weights_file):
+    # include fc layer
+    model = ecg_feature_extractor(arch=arch)
+    model.add(tf.keras.layers.Dense(units=n_classes, activation=act))
+
+    # initialize the weights of the model
+    inputs = tf.keras.layers.Input(shape=dat_x.shape[1:], dtype=dat_x.dtype)
+    model(inputs)
+
+    print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
+
+    if weights_file:  # Sử dụng trọng số đã được pre-trained
+        print('[INFO] Loading weights from file {} ...'.format(weights_file))
+        model.load_weights(str(weights_file))
+
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
+                                                     beta_2=0.98, epsilon=1e-9),
+                  loss=loss,
+                  metrics=[accuracy])
+
+    return model, model.get_weights()
+
+
+# we initialize it multiple times
+def _init_weight(same_old_model, first_weights):
+    same_old_model.set_weights(first_weights)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--job-dir', type=Path, required=True, help='Job output directory.')
@@ -285,26 +313,38 @@ if __name__ == '__main__':
             loss = tf.keras.losses.CategoricalCrossentropy()
             accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
 
-        # not include fc layer
-        model = ecg_feature_extractor(arch=args.arch)
-        model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
+        model, weights = _create_model(args.arch, num_classes, activation, data_set['x'], args.weights_file)
 
-        # initialize the weights of the model
-        inputs = tf.keras.layers.Input(shape=data_set['x'].shape[1:], dtype=data_set['x'].dtype)
-        model(inputs)  # complete model
-
-        print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
-
-        if args.weights_file:  # Sử dụng trọng số đã được pre-trained
-            # initialize weights (excluding the optimizer state) to load the pretrained resnet
-            # the optimizer state is randomly initialized in the `model.compile` function
-            print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
-            model.load_weights(str(args.weights_file))
-
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
-                                                         beta_2=0.98, epsilon=1e-9),
-                      loss=loss,
-                      metrics=[accuracy])
+        # print('[INFO] Building model ...')
+        # num_classes = len(data_set['classes'])
+        #
+        # if is_multiclass(data_set['y']):
+        #     activation = 'sigmoid'
+        #     loss = tf.keras.losses.BinaryCrossentropy()
+        #     accuracy = tf.keras.metrics.BinaryAccuracy(name='acc')
+        # else:
+        #     activation = 'softmax'
+        #     loss = tf.keras.losses.CategoricalCrossentropy()
+        #     accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
+        #
+        # # not include fc layer
+        # model = ecg_feature_extractor(arch=args.arch)
+        # model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
+        #
+        # # initialize the weights of the model
+        # inputs = tf.keras.layers.Input(shape=data_set['x'].shape[1:], dtype=data_set['x'].dtype)
+        # model(inputs)  # complete model
+        #
+        # print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
+        #
+        # if args.weights_file:  # Sử dụng trọng số đã được pre-trained
+        #     print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
+        #     model.load_weights(str(args.weights_file))
+        #
+        # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
+        #                                                  beta_2=0.98, epsilon=1e-9),
+        #               loss=loss,
+        #               metrics=[accuracy])
 
         kf = KFold(n_splits=args.k_fold, shuffle=True)
         foldNum = 0
@@ -338,6 +378,9 @@ if __name__ == '__main__':
             print('[INFO] Train size {} ...'.format(train_size))
             val_size = len(val['x'])
             print('[INFO] Validation size {} ...'.format(val_size))
+
+            # instead of creating a new model, we just reset its weights
+            _init_weight(model, weights)
 
             callbacks = []
 
