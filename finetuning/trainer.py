@@ -30,25 +30,25 @@ def _create_dataset_from_data(data):
 
 def _create_model(arch, n_classes, act, dat_x, weights_file):
     # include fc layer
-    model = ecg_feature_extractor(arch=arch)
-    model.add(tf.keras.layers.Dense(units=n_classes, activation=act))
+    old_model = ecg_feature_extractor(arch=arch)
+    old_model.add(tf.keras.layers.Dense(units=n_classes, activation=act))
 
     # initialize the weights of the model
-    inputs = tf.keras.layers.Input(shape=dat_x.shape[1:], dtype=dat_x.dtype)
-    model(inputs)
+    inputs_func = tf.keras.layers.Input(shape=dat_x.shape[1:], dtype=dat_x.dtype)
+    old_model(inputs_func)
 
-    print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
+    print('[INFO] Model parameters: {:,d}'.format(old_model.count_params()))
 
     if weights_file:  # Sử dụng trọng số đã được pre-trained
         print('[INFO] Loading weights from file {} ...'.format(weights_file))
-        model.load_weights(str(weights_file))
+        old_model.load_weights(str(weights_file))
 
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
-                                                     beta_2=0.98, epsilon=1e-9),
-                  loss=loss,
-                  metrics=[accuracy])
+    old_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
+                                                         beta_2=0.98, epsilon=1e-9),
+                      loss=loss,
+                      metrics=[accuracy])
 
-    return model, model.get_weights()
+    return old_model, old_model.get_weights()
 
 
 # we initialize it multiple times
@@ -220,14 +220,14 @@ if __name__ == '__main__':
 
             elif args.val_metric == 'fmax':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']),     # if val else (train_data, train['y']),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
                                               score_fn=f_max,
                                               save_best_only=True,
                                               verbose=1)
 
             elif args.val_metric == 'fg':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']),    # if val else (train_data, train['y']),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
                                               score_fn=challenge2020_metrics,
                                               save_best_only=True,
                                               verbose=1)
@@ -300,7 +300,6 @@ if __name__ == '__main__':
             data_set['x'] = data_set['x'][:, :, args.channel:args.channel + 1]
 
         print('[INFO] Train data shape:', data_set['x'].shape)
-
         print('[INFO] Building model ...')
         num_classes = len(data_set['classes'])
 
@@ -314,37 +313,6 @@ if __name__ == '__main__':
             accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
 
         model, weights = _create_model(args.arch, num_classes, activation, data_set['x'], args.weights_file)
-
-        # print('[INFO] Building model ...')
-        # num_classes = len(data_set['classes'])
-        #
-        # if is_multiclass(data_set['y']):
-        #     activation = 'sigmoid'
-        #     loss = tf.keras.losses.BinaryCrossentropy()
-        #     accuracy = tf.keras.metrics.BinaryAccuracy(name='acc')
-        # else:
-        #     activation = 'softmax'
-        #     loss = tf.keras.losses.CategoricalCrossentropy()
-        #     accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
-        #
-        # # not include fc layer
-        # model = ecg_feature_extractor(arch=args.arch)
-        # model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
-        #
-        # # initialize the weights of the model
-        # inputs = tf.keras.layers.Input(shape=data_set['x'].shape[1:], dtype=data_set['x'].dtype)
-        # model(inputs)  # complete model
-        #
-        # print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
-        #
-        # if args.weights_file:  # Sử dụng trọng số đã được pre-trained
-        #     print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
-        #     model.load_weights(str(args.weights_file))
-        #
-        # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
-        #                                                  beta_2=0.98, epsilon=1e-9),
-        #               loss=loss,
-        #               metrics=[accuracy])
 
         kf = KFold(n_splits=args.k_fold, shuffle=True)
         foldNum = 0
@@ -375,9 +343,9 @@ if __name__ == '__main__':
             val_data = _create_dataset_from_data(val).with_options(options).batch(args.batch_size)
 
             train_size = len(train['x'])
-            print('[INFO] Train size {} ...'.format(train_size))
+            # print('[INFO] Train size {} ...'.format(train_size))
             val_size = len(val['x'])
-            print('[INFO] Validation size {} ...'.format(val_size))
+            # print('[INFO] Validation size {} ...'.format(val_size))
 
             # instead of creating a new model, we just reset its weights
             _init_weight(model, weights)
@@ -418,14 +386,14 @@ if __name__ == '__main__':
 
             elif args.val_metric == 'fmax':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']),    # if val else (train_data, train['y']),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
                                               score_fn=f_max,
                                               save_best_only=True,
                                               verbose=1)
 
             elif args.val_metric == 'fg':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']),    # if val else (train_data, train['y']),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
                                               score_fn=challenge2020_metrics,
                                               save_best_only=True,
                                               verbose=1)
@@ -456,3 +424,61 @@ if __name__ == '__main__':
                       validation_data=val_data,
                       callbacks=callbacks)
             print("============================================================================")
+
+            # load best model for inference
+            print(
+                '[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
+            model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
+
+            print('[INFO] Predicting validation data for fold {} ...'.format(foldNum))
+            val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
+            val_predictions = create_predictions_frame(y_prob=val_y_prob,
+                                                       y_true=val['y'],
+                                                       class_names=train['classes'],
+                                                       record_ids=val['record_ids'])
+            val_predictions.to_csv(path_or_buf=str(args.job_dir) + '/val_predictions_' + str(foldNum) + '.csv',
+                                   index=False)
+
+            val_pre = read_predictions(str(args.job_dir) + '/val_predictions_' + str(foldNum) + '.csv')
+            y_true = val_pre['y_true']
+            y_prob = val_pre['y_prob']
+
+            # Evaluation on F1
+            if args.val_metric == 'f1':
+                macro_f1 = f1(y_true, y_prob)
+                all_scores_macro_f1.append(macro_f1)
+                print('[INFO] macro f1 for fold {} is {}'.format(foldNum, macro_f1))
+
+                f1_each_class = f1_classes(y_true, y_prob)
+                all_scores_f1_each_class.append(f1_each_class)
+                print('[INFO] f1 for each class for fold {} is {}'.format(foldNum, f1_each_class))
+
+                print('[INFO] Evaluates the model on the validation data ...')
+                val_mse, val_mae = model.evaluate(val_data, verbose=1)
+                all_scores_mse.append(val_mse)
+                print('[INFO] Validation MSE for fold {} is {}'.format(foldNum, val_mse))
+                print("============================================================================")
+
+            # Evaluation on AUC
+            if args.val_metric == 'auc':
+                macro_auc = auc(y_true, y_prob)
+                all_scores_macro_auc.append(macro_auc)
+                print('[INFO] macro AUC for fold {} is {}'.format(foldNum, macro_auc))
+
+        print("Results ...")
+        print("============================================================================")
+
+        if args.val_metric == 'f1':
+            scores_f1_each_class_array = np.concatenate(all_scores_f1_each_class, axis=0).reshape((5, 4))
+
+            print('[INFO] macro f1, mean and standard deviation values for all of folds is {}, {} and {}'.format(
+                all_scores_macro_f1, np.mean(all_scores_macro_f1), np.std(all_scores_macro_f1)))
+            print('[INFO] f1, mean and standard deviation values for each class of folds is {}, {} and {}'.format(
+                all_scores_f1_each_class, scores_f1_each_class_array.mean(axis=0),
+                scores_f1_each_class_array.std(axis=0)))
+            print('[INFO] mse, mean and standard deviation values for folds is {} and {}'.format(
+                all_scores_mse, np.mean(all_scores_mse), np.std(all_scores_mse)))
+
+        if args.val_metric == 'auc':
+            print('[INFO] macro AUC, mean and standard deviation values for all of folds is {}, {} and {}'.format(
+                all_scores_macro_auc, np.mean(all_scores_macro_auc), np.std(all_scores_macro_auc)))
