@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras import backend as K
 from sklearn.model_selection import KFold
 
 from transplant.utils import read_predictions
@@ -273,39 +274,7 @@ if __name__ == '__main__':
 
         print('[INFO] Train data shape:', data_set['x'].shape)
 
-        # Building model
-        print('[INFO] Building model ...')
-        num_classes = len(data_set['classes'])
-
-        if is_multiclass(data_set['y']):
-            activation = 'sigmoid'
-            loss = tf.keras.losses.BinaryCrossentropy()
-            accuracy = tf.keras.metrics.BinaryAccuracy(name='acc')
-        else:
-            activation = 'softmax'
-            loss = tf.keras.losses.CategoricalCrossentropy()
-            accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
-
-        # not include fc layer
-        model = ecg_feature_extractor(arch=args.arch)
-        model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
-
-        # initialize the weights of the model
-        inputs = tf.keras.layers.Input(shape=data_set['x'].shape[1:], dtype=data_set['x'].dtype)
-        model(inputs)  # complete model
-
-        print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
-
-        if args.weights_file:  # Sử dụng trọng số đã được pre-trained
-            # initialize weights (excluding the optimizer state) to load the pretrained resnet
-            # the optimizer state is randomly initialized in the `model.compile` function
-            print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
-            model.load_weights(str(args.weights_file))
-
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR,
-                                                         beta_1=0.9, beta_2=0.98, epsilon=1e-9),
-                      loss=loss,
-                      metrics=[accuracy])
+        idx_data = np.arange(len(x))
 
         kf = KFold(n_splits=args.k_fold, shuffle=True)
         foldNum = 0
@@ -313,7 +282,6 @@ if __name__ == '__main__':
         all_scores_f1_each_class = []
         all_scores_macro_f1 = []
         all_scores_macro_auc = []
-        idx_data = np.arange(len(x))
 
         for train_idx, val_idx in kf.split(idx_data):
             foldNum += 1
@@ -342,38 +310,38 @@ if __name__ == '__main__':
             strategy = tf.distribute.MirroredStrategy()
 
             with strategy.scope():
-                # print('[INFO] Building model ...')
-                # num_classes = len(train['classes'])
-                #
-                # if is_multiclass(train['y']):
-                #     activation = 'sigmoid'
-                #     loss = tf.keras.losses.BinaryCrossentropy()
-                #     accuracy = tf.keras.metrics.BinaryAccuracy(name='acc')
-                # else:
-                #     activation = 'softmax'
-                #     loss = tf.keras.losses.CategoricalCrossentropy()
-                #     accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
-                #
-                # # not include fc layer
-                # model = ecg_feature_extractor(arch=args.arch)
-                # model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
-                #
-                # # initialize the weights of the model
-                # inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
-                # model(inputs)  # complete model
-                #
-                # print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
-                #
-                # if args.weights_file:  # Sử dụng trọng số đã được pre-trained
-                #     # initialize weights (excluding the optimizer state) to load the pretrained resnet
-                #     # the optimizer state is randomly initialized in the `model.compile` function
-                #     print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
-                #     model.load_weights(str(args.weights_file))
-                #
-                # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR,
-                #                                                  beta_1=0.9, beta_2=0.98, epsilon=1e-9),
-                #               loss=loss,
-                #               metrics=[accuracy])
+                print('[INFO] Building model ...')
+                num_classes = len(train['classes'])
+
+                if is_multiclass(train['y']):
+                    activation = 'sigmoid'
+                    loss = tf.keras.losses.BinaryCrossentropy()
+                    accuracy = tf.keras.metrics.BinaryAccuracy(name='acc')
+                else:
+                    activation = 'softmax'
+                    loss = tf.keras.losses.CategoricalCrossentropy()
+                    accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
+
+                # not include fc layer
+                model = ecg_feature_extractor(arch=args.arch)
+                model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
+
+                # initialize the weights of the model
+                inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
+                model(inputs)  # complete model
+
+                print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
+
+                if args.weights_file:  # Sử dụng trọng số đã được pre-trained
+                    # initialize weights (excluding the optimizer state) to load the pretrained resnet
+                    # the optimizer state is randomly initialized in the `model.compile` function
+                    print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
+                    model.load_weights(str(args.weights_file))
+
+                model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR,
+                                                                 beta_1=0.9, beta_2=0.98, epsilon=1e-9),
+                              loss=loss,
+                              metrics=[accuracy])
 
                 callbacks = []
 
@@ -448,7 +416,78 @@ if __name__ == '__main__':
                 # callbacks.append(rlo)
 
                 print('[INFO] Training fold {}/{} ...'.format(foldNum, args.k_fold))
-                model.fit(train_data, epochs=args.epochs, verbose=1,
-                          validation_data=val_data, callbacks=callbacks)
+                model.fit(train_data,
+                          epochs=args.epochs,
+                          verbose=1,
+                          validation_data=val_data,
+                          callbacks=callbacks)
 
+                K.clear_session()
                 print("============================================================================")
+
+                # load best model for inference
+                # print(
+                #     '[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
+                # model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
+
+                # print('[INFO] Predicting training data for fold {} ...'.format(foldNum))
+                # train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
+                # train_predictions = create_predictions_frame(y_prob=train_y_prob,
+                #                                              y_true=train['y'],
+                #                                              class_names=train['classes'],
+                #                                              record_ids=train['record_ids'])
+                # train_predictions.to_csv(path_or_buf=str(args.job_dir) + '/train_predictions_' + str(foldNum) + '.csv',
+                #                          index=False)
+
+        #         print('[INFO] Predicting validation data for fold {} ...'.format(foldNum))
+        #         val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
+        #         val_predictions = create_predictions_frame(y_prob=val_y_prob,
+        #                                                    y_true=val['y'],
+        #                                                    class_names=train['classes'],
+        #                                                    record_ids=val['record_ids'])
+        #         val_predictions.to_csv(path_or_buf=str(args.job_dir) + '/val_predictions_' + str(foldNum) + '.csv',
+        #                                index=False)
+        #
+        #         val_pre = read_predictions(str(args.job_dir) + '/val_predictions_' + str(foldNum) + '.csv')
+        #         y_true = val_pre['y_true']
+        #         y_prob = val_pre['y_prob']
+        #
+        #         # Evaluation on F1
+        #         if args.val_metric == 'f1':
+        #             macro_f1 = f1(y_true, y_prob)
+        #             all_scores_macro_f1.append(macro_f1)
+        #             print('[INFO] macro f1 for fold {} is {}'.format(foldNum, macro_f1))
+        #             f1_each_class = f1_classes(y_true, y_prob)
+        #             all_scores_f1_each_class.append(f1_each_class)
+        #             print('[INFO] f1 for each class for fold {} is {}'.format(foldNum, f1_each_class))
+        #
+        #         # Evaluation on AUC
+        #         if args.val_metric == 'auc':
+        #             macro_auc = auc(y_true, y_prob)
+        #             all_scores_macro_auc.append(macro_auc)
+        #             print('[INFO] macro AUC for fold {} is {}'.format(foldNum, macro_auc))
+        #
+        #         # print('[INFO] Evaluates the model on the validation data ...')
+        #         # val_mse, val_mae = model.evaluate(val_data, verbose=1)
+        #         # all_scores_mse.append(val_mse)
+        #         # print('[INFO] Validation MSE for fold {} is {}'.format(foldNum, val_mse))
+        #         # print("============================================================================")
+        #
+        # scores_f1_each_class_array = np.concatenate(all_scores_f1_each_class, axis=0).reshape((5, 4))
+        #
+        # print("Results ...")
+        # print("============================================================================")
+        #
+        # if args.val_metric == 'f1':
+        #     print('[INFO] macro f1, mean and standard deviation values for all of folds is {}, {} and {}'.format(
+        #         all_scores_macro_f1, np.mean(all_scores_macro_f1), np.std(all_scores_macro_f1)))
+        #     print('[INFO] f1, mean and standard deviation values for each class of folds is {}, {} and {}'.format(
+        #         all_scores_f1_each_class, scores_f1_each_class_array.mean(axis=0), scores_f1_each_class_array.std(axis=0)))
+        #     # print('[INFO] mse, mean and standard deviation values for folds is {} and {}'.format(
+        #     #     all_scores_mse, np.mean(all_scores_mse), np.std(all_scores_mse)))
+        #
+        # if args.val_metric == 'auc':
+        #     print('[INFO] macro AUC, mean and standard deviation values for all of folds is {}, {} and {}'.format(
+        #         all_scores_macro_auc, np.mean(all_scores_macro_auc), np.std(all_scores_macro_auc)))
+        #     # print('[INFO] mse, mean and standard deviation values for folds is {} and {}'.format(
+        #     #     all_scores_mse, np.mean(all_scores_mse), np.std(all_scores_mse)))
