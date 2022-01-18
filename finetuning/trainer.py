@@ -276,6 +276,7 @@ if __name__ == '__main__':
         # Building model
         print('[INFO] Building model ...')
         num_classes = len(data_set['classes'])
+        print('num_classes {}'.format(num_classes))
 
         if is_multiclass(data_set['y']):
             activation = 'sigmoid'
