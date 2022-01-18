@@ -245,8 +245,6 @@ if __name__ == '__main__':
             # otherwise, we have already defined a learning rate space to train
             # over, so compute the step size and initialize the cyclic learning
             # rate method
-
-            # stepSize = config.STEP_SIZE * train_size // args.batch_size
             stepSize = config.STEP_SIZE * train_size // args.batch_size
             clr = CyclicLR(mode=config.CLR_METHOD,
                            base_lr=config.MIN_LR,
