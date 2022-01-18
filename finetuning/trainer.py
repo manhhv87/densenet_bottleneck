@@ -420,6 +420,7 @@ if __name__ == '__main__':
                           verbose=1,
                           validation_data=val_data,
                           callbacks=callbacks)
+                print("============================================================================")
 
                 # load best model for inference
                 # print(
