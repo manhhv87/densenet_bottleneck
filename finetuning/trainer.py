@@ -53,7 +53,7 @@ def _create_model(arch, n_classes, act, dat_x, weights_file):
 
 # we initialize it multiple times
 def _init_weight(same_old_model, first_weights):
-    same_old_model.set_weights(first_weights)
+    return same_old_model.set_weights(first_weights)
 
 
 if __name__ == '__main__':
@@ -310,7 +310,7 @@ if __name__ == '__main__':
             loss = tf.keras.losses.CategoricalCrossentropy()
             accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
 
-        model, weights = _create_model(args.arch, num_classes, activation, data_set['x'], args.weights_file)
+        model_old, weights = _create_model(args.arch, num_classes, activation, data_set['x'], args.weights_file)
 
         kf = KFold(n_splits=args.k_fold, shuffle=True)
         foldNum = 0
@@ -346,7 +346,7 @@ if __name__ == '__main__':
             # print('[INFO] Validation size {} ...'.format(val_size))
 
             # instead of creating a new model, we just reset its weights
-            _init_weight(model, weights)
+            model = _init_weight(model_old, weights)
 
             callbacks = []
 
