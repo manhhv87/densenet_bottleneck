@@ -424,7 +424,7 @@ if __name__ == '__main__':
             print("============================================================================")
 
             tf.compat.v1.reset_default_graph()
-            tf.keras.backend.clear_session()
+            # tf.keras.backend.clear_session()
 
         #     # load best model for inference
         #     print(
