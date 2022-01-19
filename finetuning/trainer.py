@@ -16,10 +16,6 @@ from clr.learningratefinder import LearningRateFinder
 from clr.clr_callback import CyclicLR
 from clr import config
 
-# from tensorflow.python.keras import backend as K
-from tensorflow.keras import backend as K
-import gc
-
 
 def _create_dataset_from_data(data):
     """
@@ -58,26 +54,6 @@ def _create_model(arch, n_classes, act, dat_x, weights_file):
 # we initialize it multiple times
 def _init_weight(same_old_model, first_weights):
     same_old_model.set_weights(first_weights)
-
-
-# def _reset_keras():
-#     sess = K.get_session()
-#     K.clear_session()
-#     sess.close()
-#     sess = K.get_session()
-#
-#     try:
-#         del model   # this is from global space - change this as you need
-#     except:
-#         pass
-#
-#     print(gc.collect()) # if it's done something you should see a number being outputted
-#
-#     # use the same config as you used to create the session
-#     config = tf.compat.v1.ConfigProto()
-#     config.gpu_options.per_process_gpu_memory_fraction = 1
-#     config.gpu_options.visible_device_list = "0"
-#     K.set_session(tf.compat.v1.Session(config=config))
 
 
 if __name__ == '__main__':
@@ -447,9 +423,6 @@ if __name__ == '__main__':
                       callbacks=callbacks)
             print("============================================================================")
 
-            # del model
-            # gc.collect()
-            # K.clear_session()
             tf.compat.v1.reset_default_graph()
 
         #     # load best model for inference
