@@ -49,7 +49,8 @@ def _create_model(arch, n_classes, act, dat_x, weights_file):
     old_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
                                                          beta_2=0.98, epsilon=1e-9),
                       loss=loss,
-                      metrics=[accuracy])
+                      metrics=[accuracy],
+                      run_eagerly=True)
 
     return old_model, old_model.get_weights()
 
@@ -333,7 +334,7 @@ if __name__ == '__main__':
             loss = tf.keras.losses.CategoricalCrossentropy()
             accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
 
-        # model, weights = _create_model(args.arch, num_classes, activation, data_set['x'], args.weights_file)
+        model, weights = _create_model(args.arch, num_classes, activation, data_set['x'], args.weights_file)
 
         kf = KFold(n_splits=args.k_fold, shuffle=True)
         foldNum = 0
@@ -369,8 +370,7 @@ if __name__ == '__main__':
             # print('[INFO] Validation size {} ...'.format(val_size))
 
             # instead of creating a new model, we just reset its weights
-            # _init_weight(model, weights)
-            model, weights = _create_model(args.arch, num_classes, activation, data_set['x'], args.weights_file)
+            _init_weight(model, weights)
 
             callbacks = []
 
@@ -447,9 +447,9 @@ if __name__ == '__main__':
                       callbacks=callbacks)
             print("============================================================================")
 
-            K.clear_session()
             del model
             gc.collect()
+            K.clear_session()
 
 
         #     # load best model for inference
