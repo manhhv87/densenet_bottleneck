@@ -16,6 +16,8 @@ from clr.learningratefinder import LearningRateFinder
 from clr.clr_callback import CyclicLR
 from clr import config
 
+import gc
+
 
 def _create_dataset_from_data(data):
     """
@@ -423,8 +425,12 @@ if __name__ == '__main__':
                       callbacks=callbacks)
             print("============================================================================")
 
-            tf.compat.v1.reset_default_graph()
+            # tf.compat.v1.reset_default_graph()
             # tf.keras.backend.clear_session()
+
+            del model
+            gc.collect()
+            tf.keras.backend.clear_session()
 
         #     # load best model for inference
         #     print(
