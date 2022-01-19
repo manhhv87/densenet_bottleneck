@@ -55,7 +55,7 @@ def _create_model(arch, n_classes, act, dat_x, weights_file):
 
 # we initialize it multiple times
 def _init_weight(same_old_model, first_weights):
-    return same_old_model.set_weights(first_weights)
+    same_old_model.set_weights(first_weights)
 
 
 if __name__ == '__main__':
@@ -348,7 +348,8 @@ if __name__ == '__main__':
             # print('[INFO] Validation size {} ...'.format(val_size))
 
             # instead of creating a new model, we just reset its weights
-            model = _init_weight(model_old, weights)
+            model = model_old
+            _init_weight(model, weights)
 
             callbacks = []
 
