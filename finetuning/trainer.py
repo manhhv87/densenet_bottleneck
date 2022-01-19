@@ -426,7 +426,6 @@ if __name__ == '__main__':
                       callbacks=callbacks)
             print("============================================================================")
 
-            del model
             K.clear_session()
             gc.collect()
 
