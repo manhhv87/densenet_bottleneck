@@ -16,6 +16,9 @@ from clr.learningratefinder import LearningRateFinder
 from clr.clr_callback import CyclicLR
 from clr import config
 
+from tensorflow.python.keras import backend as K
+import gc
+
 
 def _create_dataset_from_data(data):
     """
@@ -422,6 +425,11 @@ if __name__ == '__main__':
                       validation_data=val_data,
                       callbacks=callbacks)
             print("============================================================================")
+
+            del model
+            K.clear_session()
+            gc.collect()
+
 
         #     # load best model for inference
         #     print(
