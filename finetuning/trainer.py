@@ -20,8 +20,6 @@ from clr import config
 from tensorflow.keras import backend as K
 import gc
 
-from numba import cuda
-
 
 def _create_dataset_from_data(data):
     """
@@ -452,9 +450,7 @@ if __name__ == '__main__':
             # del model
             # gc.collect()
             # K.clear_session()
-
-            cuda.select_device(0)
-            cuda.close()
+            tf.compat.v1.reset_default_graph()
 
         #     # load best model for inference
         #     print(
