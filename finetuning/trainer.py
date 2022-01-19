@@ -20,6 +20,8 @@ from clr import config
 from tensorflow.keras import backend as K
 import gc
 
+from numba import cuda
+
 
 def _create_dataset_from_data(data):
     """
@@ -50,8 +52,7 @@ def _create_model(arch, n_classes, act, dat_x, weights_file):
     old_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
                                                          beta_2=0.98, epsilon=1e-9),
                       loss=loss,
-                      metrics=[accuracy],
-                      run_eagerly=True)
+                      metrics=[accuracy])
 
     return old_model, old_model.get_weights()
 
@@ -452,6 +453,8 @@ if __name__ == '__main__':
             # gc.collect()
             # K.clear_session()
 
+            cuda.select_device(0)
+            cuda.close()
 
         #     # load best model for inference
         #     print(
