@@ -16,7 +16,7 @@ from clr.learningratefinder import LearningRateFinder
 from clr.clr_callback import CyclicLR
 from clr import config
 
-from tensorflow.python.keras import backend as K
+from tensorflow.keras import backend as K
 import gc
 
 
