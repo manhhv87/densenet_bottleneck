@@ -75,7 +75,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size.')
     parser.add_argument('--val-metric', default='loss',
                         help='Validation metric used to find the best model at each epoch. Supported metrics are:'
-                             '`loss`, `acc`, `f1`, `auc`, `fmax`, `fg`.')
+                             '`loss`, `acc`, `f1`, `auc`, `fmax`, `fmetric`, `gmetric`.')
     parser.add_argument('--channel', type=int, default=None, help='Use only the selected channel. '
                                                                   'By default use all available channels.')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs.')
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     parser.add_argument('--k-fold', type=int, default=None, help='k-fold cross validation')
     args, _ = parser.parse_known_args()
 
-    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fg']:
+    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric', 'gmetric']:
         raise ValueError('Unknown metric: {}'.format(args.val_metric))
 
     os.makedirs(name=str(args.job_dir), exist_ok=True)
@@ -399,10 +399,17 @@ if __name__ == '__main__':
                                               save_best_only=True,
                                               verbose=1)
 
-            elif args.val_metric == 'fg':
+            elif args.val_metric == 'fmetric':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
                                               data=(val_data, val['y']),  # if val else (train_data, train['y']),
-                                              score_fn=challenge2020_metrics,
+                                              score_fn=f_beta_metric,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'gmetric':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=g_beta_metric,
                                               save_best_only=True,
                                               verbose=1)
 
