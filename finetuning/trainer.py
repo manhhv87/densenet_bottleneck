@@ -9,7 +9,7 @@ from sklearn.model_selection import KFold
 from transplant.utils import read_predictions
 
 from finetuning.utils import (ecg_feature_extractor, train_test_split)
-from transplant.evaluation import (auc, f1, f1_classes, multi_f1, CustomCheckpoint, f_max, challenge2020_metrics)
+from transplant.evaluation import (auc, f1, f1_classes, multi_f1, CustomCheckpoint, f_max, f_beta_metric, g_beta_metric)
 from transplant.utils import (create_predictions_frame, load_pkl, is_multiclass)
 
 from clr.learningratefinder import LearningRateFinder
@@ -227,10 +227,17 @@ if __name__ == '__main__':
                                               save_best_only=True,
                                               verbose=1)
 
-            elif args.val_metric == 'fg':
+            elif args.val_metric == 'fmetric':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
                                               data=(val_data, val['y']),  # if val else (train_data, train['y']),
-                                              score_fn=challenge2020_metrics,
+                                              score_fn=f_beta_metric,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'gmetric':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=g_beta_metric,
                                               save_best_only=True,
                                               verbose=1)
 
