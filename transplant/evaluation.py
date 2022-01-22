@@ -64,7 +64,8 @@ def f_max(y_true, y_prob, thresholds=None):
     f1s = (2 * pr * rc) / (pr + rc)
     i = np.nanargmax(f1s)
 
-    return f1s[i], thresholds[i]
+    # return f1s[i], thresholds[i]
+    return f1s[i]
 
 
 def macro_precision_recall(y_true, y_prob, thresholds):  # multi-class multi-output

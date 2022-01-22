@@ -73,8 +73,7 @@ def read_challenge20_data(db_dir, verbose=False):
     if not db_dir.is_dir():
         raise ValueError('Provided path is not a directory: %s' % db_dir)
 
-    record_names = [file.stem for file in db_dir.iterdir()
-                    if file.suffix == '.mat']
+    record_names = [file.stem for file in db_dir.iterdir() if file.suffix == '.mat']
 
     if verbose:
         record_names = tqdm(record_names, desc='Reading records')
