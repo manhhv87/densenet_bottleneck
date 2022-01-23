@@ -170,9 +170,9 @@ def f_beta_metric(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None, single
 
     f_beta /= class_weights.sum()
     g_beta /= class_weights.sum()
-    return f_beta
-#     return {'F_beta': f_beta,
-#             'G_beta': g_beta}
+    # return f_beta
+    return {'F_beta': f_beta,
+            'G_beta': g_beta}
 
 def g_beta_metric(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single=False):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
