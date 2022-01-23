@@ -126,7 +126,7 @@ def macro_precision_recall(y_true, y_prob, thresholds):  # multi-class multi-out
 
 def f_beta_metric(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single=False):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
-    y_pred = np.argmax(y_pred, axis=1)
+    y_pred = y_pred >= 0.5
 
     print('[INFO] y_true = {}'.format(y_true))
     print('[INFO] y_pred = {}'.format(y_pred))
@@ -169,7 +169,8 @@ def f_beta_metric(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single
     f_beta /= class_weights.sum()
     g_beta /= class_weights.sum()
     return f_beta
-
+#     return {'F_beta': f_beta,
+#             'G_beta': g_beta}
 
 def g_beta_metric(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single=False):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
