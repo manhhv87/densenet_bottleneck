@@ -133,6 +133,9 @@ def f_beta_metric(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single
         sample_weights = y_true.sum(axis=1)
     if class_weights is None:
         class_weights = np.ones(num_classes)
+
+    print('class_weights {}'.format(class_weights))
+
     f_beta = 0
     g_beta = 0
     for k, w_k in enumerate(class_weights):
@@ -148,6 +151,10 @@ def f_beta_metric(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single
                 fn += 1. / sample_weights[i]
         f_beta += w_k * ((1 + beta_f ** 2) * tp) / ((1 + beta_f ** 2) * tp + fp + beta_f ** 2 * fn)
         g_beta += w_k * tp / (tp + fp + beta_g * fn)
+
+    print('[INFO] f_beta = {}'.format(f_beta))
+    print('[INFO] w_k = {}, tp = {}, fp = {}, fn = {}'.format(w_k, tp, fp, fn))
+
     f_beta /= class_weights.sum()
     g_beta /= class_weights.sum()
     return f_beta
