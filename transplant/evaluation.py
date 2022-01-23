@@ -128,24 +128,15 @@ def f_beta_metric(y_true, y_prob, beta_f=2, class_weights=None, single=False):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
     y_pred = y_prob >= np.max(y_prob, axis=1)[:, None]
     y_pred = y_pred.astype(int)
-
-    print('[INFO] y_true = {}'.format(y_true))
-    print('[INFO] y_pred = {}'.format(y_pred))
-
     num_samples, num_classes = y_true.shape
-    print('[INFO] num_samples = {}, num_classes = {}'.format(num_samples, num_classes))
 
     if single:  # if evaluating single class in case of threshold-optimization
         sample_weights = np.ones(num_samples)
     else:
         sample_weights = y_true.sum(axis=1)
 
-    print('[INFO] sample_weights = {}'.format(sample_weights))
-
     if class_weights is None:
         class_weights = np.ones(num_classes)
-
-    print('[INFO] class_weights {}'.format(class_weights))
 
     f_beta = 0
     for k, w_k in enumerate(class_weights):
@@ -160,11 +151,6 @@ def f_beta_metric(y_true, y_prob, beta_f=2, class_weights=None, single=False):
             if y_pred[i, k] == 0 and y_true[i, k] != y_pred[i, k]:
                 fn += 1. / sample_weights[i]
         f_beta += w_k * ((1 + beta_f ** 2) * tp) / ((1 + beta_f ** 2) * tp + fp + beta_f ** 2 * fn)
-
-    print('[INFO] w_k = {}, tp = {}, fp = {}, fn = {}'.format(w_k, tp, fp, fn))
-    print('[INFO] class_weights.sum() = {}'.format(class_weights.sum()))
-    print('[INFO] f_beta = {}'.format(f_beta))
-
     f_beta /= class_weights.sum()
     return f_beta
 
