@@ -440,9 +440,6 @@ if __name__ == '__main__':
                       callbacks=callbacks)
             print("============================================================================")
 
-            # tf.compat.v1.reset_default_graph()
-            # tf.keras.backend.clear_session()
-
             tf.compat.v1.reset_default_graph()
             del model
             gc.collect()
