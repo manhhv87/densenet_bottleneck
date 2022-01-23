@@ -127,14 +127,19 @@ def macro_precision_recall(y_true, y_prob, thresholds):  # multi-class multi-out
 def f_beta_metric(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single=False):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
     num_samples, num_classes = y_true.shape
+    print('[INFO] num_samples = {}, num_classes = {}'.format(num_samples, num_classes))
+
     if single:  # if evaluating single class in case of threshold-optimization
         sample_weights = np.ones(num_samples)
     else:
         sample_weights = y_true.sum(axis=1)
+
+    print('[INFO] sample_weights = {}'.format(sample_weights))
+
     if class_weights is None:
         class_weights = np.ones(num_classes)
 
-    print('class_weights {}'.format(class_weights))
+    print('[INFO] class_weights {}'.format(class_weights))
 
     f_beta = 0
     g_beta = 0
@@ -152,8 +157,9 @@ def f_beta_metric(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single
         f_beta += w_k * ((1 + beta_f ** 2) * tp) / ((1 + beta_f ** 2) * tp + fp + beta_f ** 2 * fn)
         g_beta += w_k * tp / (tp + fp + beta_g * fn)
 
-    print('[INFO] f_beta = {}'.format(f_beta))
     print('[INFO] w_k = {}, tp = {}, fp = {}, fn = {}'.format(w_k, tp, fp, fn))
+    print('[INFO] class_weights.sum() = {}'.format(class_weights.sum()))
+    print('[INFO] f_beta = {}'.format(f_beta))
 
     f_beta /= class_weights.sum()
     g_beta /= class_weights.sum()
