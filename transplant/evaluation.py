@@ -94,15 +94,34 @@ def macro_precision_recall(y_true, y_prob, thresholds):  # multi-class multi-out
     return av_precision, av_recall
 
 
+def apply_thresholds(pred, thresholds):
+    """
+    Apply class-wise thresholds to prediction score in order to get binary format.
+    BUT: if no score is above threshold, pick maximum. This is needed due to metric issues.
+    """
+
+    tmp = []
+    for p in pred:
+        tmp_p = (p > thresholds).astype(int)
+        if np.sum(tmp_p) == 0:
+            tmp_p[np.argmax(p)] = 1
+        tmp.append(tmp_p)
+    tmp = np.array(tmp)
+    return tmp
+
+
 # def challenge2020_metrics(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single=False):
-#     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
+#     """ source: https://github.com/helme/ecg_ptbxl_benchmarking/blob/516740dd2964d67c213ab6df9eba5d50b2245d00/code/utils/utils.py#L100 """
 #     num_samples, num_classes = y_true.shape
+#
 #     if single:  # if evaluating single class in case of threshold-optimization
 #         sample_weights = np.ones(num_samples)
 #     else:
 #         sample_weights = y_true.sum(axis=1)
+#
 #     if class_weights is None:
 #         class_weights = np.ones(num_classes)
+#
 #     f_beta = 0
 #     g_beta = 0
 #     for k, w_k in enumerate(class_weights):
@@ -125,9 +144,8 @@ def macro_precision_recall(y_true, y_prob, thresholds):  # multi-class multi-out
 
 
 def f_beta_metric(y_true, y_prob, beta_f=2, class_weights=None, single=False):
-    """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
-    y_pred = y_prob >= np.max(y_prob, axis=1)[:, None]
-    # y_pred = y_prob >= 0.5
+    # y_pred = y_prob >= np.max(y_prob, axis=1)[:, None]
+    y_pred = apply_thresholds(y_prob, 0.5)
     num_samples, num_classes = y_true.shape
 
     if single:  # if evaluating single class in case of threshold-optimization
@@ -156,9 +174,8 @@ def f_beta_metric(y_true, y_prob, beta_f=2, class_weights=None, single=False):
 
 
 def g_beta_metric(y_true, y_prob, beta_g=2, class_weights=None, single=False):
-    """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
-    y_pred = y_prob >= np.max(y_prob, axis=1)[:, None]
-    # y_pred = y_prob >= 0.5
+    # y_pred = y_prob >= np.max(y_prob, axis=1)[:, None]
+    y_pred = apply_thresholds(y_prob, 0.5)
     num_samples, num_classes = y_true.shape
 
     if single:  # if evaluating single class in case of threshold-optimization
