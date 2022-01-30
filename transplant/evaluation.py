@@ -159,6 +159,10 @@ def challenge2020_f1_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=N
     A = np.zeros((9, 9), dtype=np.int)
 
     y_pred = apply_thresholds(y_prob, 0.5)
+
+    print("[INFO] y_pred = ".format(y_pred))
+    print("[INFO] y_true = ".format(y_true))
+
     num_samples, num_classes = y_true.shape
 
     for class_i in range(num_classes):
@@ -166,7 +170,6 @@ def challenge2020_f1_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=N
             if y_true[i, class_i] == y_pred[i, class_i] == 1:
                 A[class_i][class_i] += 1
             else:
-                print('y_pred[i, class_i] = '.format(y_pred[i, class_i]))
                 A[class_i][y_pred[i, class_i]] += 1
 
     return A
