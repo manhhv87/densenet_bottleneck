@@ -185,14 +185,14 @@ def f1_2018(y_true, y_prob):
     print('[INFO] y_true_shape')
     print(y_true.shape)
     print('[INFO] y_true_1')
-    print(y_true[1])
+    print(y_true[1, 0])
 
     print('[INFO] y_pred')
     print(y_pred)
     print('[INFO] y_pred_shape')
     print(y_pred.shape)
     print('[INFO] y_pred_1')
-    print(y_pred[1])
+    print(y_pred[1, 0])
 
     # A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
     # F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
