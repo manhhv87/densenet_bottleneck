@@ -166,6 +166,7 @@ def challenge2020_f1_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=N
             if y_true[i, class_i] == y_pred[i, class_i] == 1:
                 A[class_i][class_i] += 1
             else:
+                print('y_pred[i, class_i] = '.format(y_pred[i, class_i]))
                 A[class_i][y_pred[i, class_i]] += 1
 
     return A
