@@ -9,7 +9,8 @@ from sklearn.model_selection import KFold
 from transplant.utils import read_predictions
 
 from finetuning.utils import (ecg_feature_extractor, train_test_split)
-from transplant.evaluation import (auc, f1, f1_classes, multi_f1, CustomCheckpoint, f_max, f_beta_metric, g_beta_metric)
+from transplant.evaluation import (auc, f1, f1_classes, multi_f1, CustomCheckpoint, f_max, f_beta_metric, g_beta_metric,
+                                   f1_2018, f_af, f_block, f_pc, f_st)
 from transplant.utils import (create_predictions_frame, load_pkl, is_multiclass)
 
 from clr.learningratefinder import LearningRateFinder
@@ -75,7 +76,8 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size.')
     parser.add_argument('--val-metric', default='loss',
                         help='Validation metric used to find the best model at each epoch. Supported metrics are:'
-                             '`loss`, `acc`, `f1`, `auc`, `fmax`, `fmetric`, `gmetric`.')
+                             '`loss`, `acc`, `f1`, `auc`, `fmax`, `fmetric`, `gmetric`, `f1_2018`, `f_af`, `f_block`, '
+                             '`f_pc`, `f_st`.')
     parser.add_argument('--channel', type=int, default=None, help='Use only the selected channel. '
                                                                   'By default use all available channels.')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs.')
@@ -84,7 +86,8 @@ if __name__ == '__main__':
     parser.add_argument('--k-fold', type=int, default=None, help='k-fold cross validation')
     args, _ = parser.parse_known_args()
 
-    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric', 'gmetric']:
+    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric', 'gmetric', 'f1_2018', 'f_af', 'f_block',
+                               'f_pc', 'f_st']:
         raise ValueError('Unknown metric: {}'.format(args.val_metric))
 
     os.makedirs(name=str(args.job_dir), exist_ok=True)
@@ -238,6 +241,41 @@ if __name__ == '__main__':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
                                               data=(val_data, val['y']),  # if val else (train_data, train['y']),
                                               score_fn=g_beta_metric,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'f12018':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f1_2018,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'faf':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f_af,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'fblock':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f_block,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'fpc':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f_pc,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'fst':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f_st,
                                               save_best_only=True,
                                               verbose=1)
 
@@ -410,6 +448,41 @@ if __name__ == '__main__':
                 checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
                                               data=(val_data, val['y']),  # if val else (train_data, train['y']),
                                               score_fn=g_beta_metric,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'f12018':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f1_2018,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'faf':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f_af,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'fblock':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f_block,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'fpc':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f_pc,
+                                              save_best_only=True,
+                                              verbose=1)
+
+            elif args.val_metric == 'fst':
+                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
+                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                              score_fn=f_st,
                                               save_best_only=True,
                                               verbose=1)
 
