@@ -146,9 +146,9 @@ def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None
     for class_i in range(num_classes):
         for i in range(num_samples):
             if y_true[i, class_i] == y_pred[i, class_i] == 1:
-                A[class_i][class_i] += 1
+                A[class_i+1][class_i+1] += 1
             else:
-                A[class_i][y_pred[i, class_i]] += 1
+                A[class_i+1][y_pred[i, class_i]] += 1
 
     return f_beta, g_beta, A
 
