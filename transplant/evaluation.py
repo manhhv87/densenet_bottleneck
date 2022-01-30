@@ -110,101 +110,38 @@ def apply_thresholds(pred, thresholds):
     return tmp
 
 
-# def challenge2020_metrics(y_true, y_pred, beta_f=2, beta_g=2, class_weights=None, single=False):
-#     """ source: https://github.com/helme/ecg_ptbxl_benchmarking/blob/516740dd2964d67c213ab6df9eba5d50b2245d00/code/utils/utils.py#L100 """
-#     num_samples, num_classes = y_true.shape
-#
-#     if single:  # if evaluating single class in case of threshold-optimization
-#         sample_weights = np.ones(num_samples)
-#     else:
-#         sample_weights = y_true.sum(axis=1)
-#
-#     if class_weights is None:
-#         class_weights = np.ones(num_classes)
-#
-#     f_beta = 0
-#     g_beta = 0
-#     for k, w_k in enumerate(class_weights):
-#         tp, fp, tn, fn = 0., 0., 0., 0.
-#         for i in range(num_samples):
-#             if y_true[i, k] == y_pred[i, k] == 1:
-#                 tp += 1. / sample_weights[i]
-#             if y_pred[i, k] == 1 and y_true[i, k] != y_pred[i, k]:
-#                 fp += 1. / sample_weights[i]
-#             if y_true[i, k] == y_pred[i, k] == 0:
-#                 tn += 1. / sample_weights[i]
-#             if y_pred[i, k] == 0 and y_true[i, k] != y_pred[i, k]:
-#                 fn += 1. / sample_weights[i]
-#         f_beta += w_k * ((1 + beta_f ** 2) * tp) / ((1 + beta_f ** 2) * tp + fp + beta_f ** 2 * fn)
-#         g_beta += w_k * tp / (tp + fp + beta_g * fn)
-#     f_beta /= class_weights.sum()
-#     g_beta /= class_weights.sum()
-#     return {'F_beta': f_beta,
-#             'G_beta': g_beta}
-
-
-def f_beta_metric(y_true, y_prob, beta_f=2, class_weights=None, single=False):
-    y_pred = apply_thresholds(y_prob, 0.5)
-    num_samples, num_classes = y_true.shape
-
-    if single:  # if evaluating single class in case of threshold-optimization
-        sample_weights = np.ones(num_samples)
-    else:
-        sample_weights = y_true.sum(axis=1)
-
-    if class_weights is None:
-        class_weights = np.ones(num_classes)
-
-    f_beta = 0
-    for k, w_k in enumerate(class_weights):
-        TP, FP, TN, FN = 0., 0., 0., 0. # TP = True Positive,...
-        for i in range(num_samples):
-            if y_true[i, k] == y_pred[i, k] == 1:
-                TP += 1. / sample_weights[i]
-            if y_pred[i, k] == 1 and y_true[i, k] != y_pred[i, k]:
-                FP += 1. / sample_weights[i]
-            if y_true[i, k] == y_pred[i, k] == 0:
-                TN += 1. / sample_weights[i]
-            if y_pred[i, k] == 0 and y_true[i, k] != y_pred[i, k]:
-                FN += 1. / sample_weights[i]
-        f_beta += w_k * ((1 + beta_f ** 2) * TP) / ((1 + beta_f ** 2) * TP + FP + beta_f ** 2 * FN)
-    f_beta /= class_weights.sum()
-    return f_beta
-
-
-def g_beta_metric(y_true, y_prob, beta_g=2, class_weights=None, single=False):
-    y_pred = apply_thresholds(y_prob, 0.5)
-    num_samples, num_classes = y_true.shape
-
-    if single:  # if evaluating single class in case of threshold-optimization
-        sample_weights = np.ones(num_samples)
-    else:
-        sample_weights = y_true.sum(axis=1)
-
-    if class_weights is None:
-        class_weights = np.ones(num_classes)
-
-    g_beta = 0
-    for k, w_k in enumerate(class_weights):
-        TP, FP, TN, FN = 0., 0., 0., 0.
-        for i in range(num_samples):
-            if y_true[i, k] == y_pred[i, k] == 1:
-                TP += 1. / sample_weights[i]
-            if y_pred[i, k] == 1 and y_true[i, k] != y_pred[i, k]:
-                FP += 1. / sample_weights[i]
-            if y_true[i, k] == y_pred[i, k] == 0:
-                TN += 1. / sample_weights[i]
-            if y_pred[i, k] == 0 and y_true[i, k] != y_pred[i, k]:
-                FN += 1. / sample_weights[i]
-        g_beta += w_k * TP / (TP + FP + beta_g * FN)
-    g_beta /= class_weights.sum()
-    return g_beta
-
-
-def f1_2018(y_true, y_prob):
-    y_pred = apply_thresholds(y_prob, 0.5)
-    num_samples, num_classes = y_true.shape
+def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None, single=False):
+    """ source: https://github.com/helme/ecg_ptbxl_benchmarking/blob/516740dd2964d67c213ab6df9eba5d50b2245d00/code/utils/utils.py#L100 """
     A = np.zeros((9, 9), dtype=np.int)
+    f_beta = 0
+    g_beta = 0
+
+    y_pred = apply_thresholds(y_prob, 0.5)
+    num_samples, num_classes = y_true.shape
+
+    if single:  # if evaluating single class in case of threshold-optimization
+        sample_weights = np.ones(num_samples)
+    else:
+        sample_weights = y_true.sum(axis=1)
+
+    if class_weights is None:
+        class_weights = np.ones(num_classes)
+
+    for k, w_k in enumerate(class_weights):
+        tp, fp, tn, fn = 0., 0., 0., 0.
+        for i in range(num_samples):
+            if y_true[i, k] == y_pred[i, k] == 1:
+                tp += 1. / sample_weights[i]
+            if y_pred[i, k] == 1 and y_true[i, k] != y_pred[i, k]:
+                fp += 1. / sample_weights[i]
+            if y_true[i, k] == y_pred[i, k] == 0:
+                tn += 1. / sample_weights[i]
+            if y_pred[i, k] == 0 and y_true[i, k] != y_pred[i, k]:
+                fn += 1. / sample_weights[i]
+        f_beta += w_k * ((1 + beta_f ** 2) * tp) / ((1 + beta_f ** 2) * tp + fp + beta_f ** 2 * fn)
+        g_beta += w_k * tp / (tp + fp + beta_g * fn)
+    f_beta /= class_weights.sum()
+    g_beta /= class_weights.sum()
 
     for class_i in range(num_classes):
         for i in range(num_samples):
@@ -213,6 +150,21 @@ def f1_2018(y_true, y_prob):
             else:
                 A[class_i][y_pred[i, class_i]] += 1
 
+    return f_beta, g_beta, A
+
+
+def f_beta_metric(y_true, y_prob, beta_f=2):
+    f_beta, _, _ = challenge2020_metrics(y_true=y_true, y_prob=y_prob, beta_f=beta_f)
+    return f_beta
+
+
+def g_beta_metric(y_true, y_prob, beta_g=2):
+    _, g_beta, _ = challenge2020_metrics(y_true=y_true, y_prob=y_prob, beta_g=beta_g)
+    return g_beta
+
+
+def f1_2018(y_true, y_prob):
+    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
     F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
     F12 = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
     F13 = 2 * A[2][2] / (np.sum(A[2, :]) + np.sum(A[:, 2]))
@@ -222,68 +174,30 @@ def f1_2018(y_true, y_prob):
     F17 = 2 * A[6][6] / (np.sum(A[6, :]) + np.sum(A[:, 6]))
     F18 = 2 * A[7][7] / (np.sum(A[7, :]) + np.sum(A[:, 7]))
     F19 = 2 * A[8][8] / (np.sum(A[8, :]) + np.sum(A[:, 8]))
-
     F1 = (F11 + F12 + F13 + F14 + F15 + F16 + F17 + F18 + F19) / 9
-
     return F1
 
 
 def f_af(y_true, y_prob):
-    y_pred = apply_thresholds(y_prob, 0.5)
-    num_samples, num_classes = y_true.shape
-    A = np.zeros((9, 9), dtype=np.int)
-
-    for class_i in range(num_classes):
-        for i in range(num_samples):
-            if y_true[i, class_i] == y_pred[i, class_i] == 1:
-                A[class_i][class_i] += 1
-            else:
-                A[class_i][y_pred[i, class_i]] += 1
+    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
     Faf = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
     return Faf
 
 
 def f_block(y_true, y_prob):
-    y_pred = apply_thresholds(y_prob, 0.5)
-    num_samples, num_classes = y_true.shape
-    A = np.zeros((9, 9), dtype=np.int)
-
-    for class_i in range(num_classes):
-        for i in range(num_samples):
-            if y_true[i, class_i] == y_pred[i, class_i] == 1:
-                A[class_i][class_i] += 1
-            else:
-                A[class_i][y_pred[i, class_i]] += 1
+    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
     Fblock = 2 * (A[2][2] + A[3][3] + A[4][4]) / (np.sum(A[2:5, :]) + np.sum(A[:, 2:5]))
     return Fblock
 
 
 def f_pc(y_true, y_prob):
-    y_pred = apply_thresholds(y_prob, 0.5)
-    num_samples, num_classes = y_true.shape
-    A = np.zeros((9, 9), dtype=np.int)
-
-    for class_i in range(num_classes):
-        for i in range(num_samples):
-            if y_true[i, class_i] == y_pred[i, class_i] == 1:
-                A[class_i][class_i] += 1
-            else:
-                A[class_i][y_pred[i, class_i]] += 1
+    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
     Fpc = 2 * (A[5][5] + A[6][6]) / (np.sum(A[5:7, :]) + np.sum(A[:, 5:7]))
     return Fpc
 
 
 def f_st(y_true, y_prob):
-    y_pred = apply_thresholds(y_prob, 0.5)
-    num_samples, num_classes = y_true.shape
-    A = np.zeros((9, 9), dtype=np.int)
-
-    for class_i in range(num_classes):
-        for i in range(num_samples):
-            if y_true[i, class_i] == y_pred[i, class_i] == 1:
-                A[class_i][class_i] += 1
-            else:
-                A[class_i][y_pred[i, class_i]] += 1
+    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
     Fst = 2 * (A[7][7] + A[8][8]) / (np.sum(A[7:9, :]) + np.sum(A[:, 7:9]))
     return Fst
 
