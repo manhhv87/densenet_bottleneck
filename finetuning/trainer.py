@@ -76,8 +76,8 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size.')
     parser.add_argument('--val-metric', default='loss',
                         help='Validation metric used to find the best model at each epoch. Supported metrics are:'
-                             '`loss`, `acc`, `f1`, `auc`, `fmax`, `fmetric`, `gmetric`, `f1_2018`, `f_af`, `f_block`, '
-                             '`f_pc`, `f_st`.')
+                             '`loss`, `acc`, `f1`, `auc`, `fmax`, `fmetric`, `gmetric`, `f12018`, `faf`, `fblock`, '
+                             '`fpc`, `fst`.')
     parser.add_argument('--channel', type=int, default=None, help='Use only the selected channel. '
                                                                   'By default use all available channels.')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs.')
@@ -86,8 +86,8 @@ if __name__ == '__main__':
     parser.add_argument('--k-fold', type=int, default=None, help='k-fold cross validation')
     args, _ = parser.parse_known_args()
 
-    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric', 'gmetric', 'f1_2018', 'f_af', 'f_block',
-                               'f_pc', 'f_st']:
+    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric', 'gmetric', 'f12018', 'faf', 'fblock',
+                               'fpc', 'fst']:
         raise ValueError('Unknown metric: {}'.format(args.val_metric))
 
     os.makedirs(name=str(args.job_dir), exist_ok=True)
