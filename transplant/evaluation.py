@@ -112,7 +112,6 @@ def apply_thresholds(pred, thresholds):
 
 def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None, single=False):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking/blob/516740dd2964d67c213ab6df9eba5d50b2245d00/code/utils/utils.py#L100 """
-    A = np.zeros((9, 9), dtype=np.int)
     f_beta = 0
     g_beta = 0
 
@@ -142,6 +141,25 @@ def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None
         g_beta += w_k * tp / (tp + fp + beta_g * fn)
     f_beta /= class_weights.sum()
     g_beta /= class_weights.sum()
+    return f_beta, g_beta
+
+
+def f_beta_metric(y_true, y_prob, beta_f=2):
+    f_beta, _ = challenge2020_metrics(y_true=y_true, y_prob=y_prob, beta_f=beta_f)
+    return f_beta
+
+
+def g_beta_metric(y_true, y_prob, beta_g=2):
+    _, g_beta = challenge2020_metrics(y_true=y_true, y_prob=y_prob, beta_g=beta_g)
+    return g_beta
+
+
+def challenge2020_f1_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None, single=False):
+    """ source: https://github.com/helme/ecg_ptbxl_benchmarking/blob/516740dd2964d67c213ab6df9eba5d50b2245d00/code/utils/utils.py#L100 """
+    A = np.zeros((9, 9), dtype=np.int)
+
+    y_pred = apply_thresholds(y_prob, 0.5)
+    num_samples, num_classes = y_true.shape
 
     for class_i in range(num_classes):
         for i in range(num_samples):
@@ -150,21 +168,11 @@ def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None
             else:
                 A[class_i][y_pred[i, class_i]] += 1
 
-    return f_beta, g_beta, A
-
-
-def f_beta_metric(y_true, y_prob, beta_f=2):
-    f_beta, _, _ = challenge2020_metrics(y_true=y_true, y_prob=y_prob, beta_f=beta_f)
-    return f_beta
-
-
-def g_beta_metric(y_true, y_prob, beta_g=2):
-    _, g_beta, _ = challenge2020_metrics(y_true=y_true, y_prob=y_prob, beta_g=beta_g)
-    return g_beta
+    return A
 
 
 def f1_2018(y_true, y_prob):
-    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
+    A = challenge2020_f1_metrics(y_true=y_true, y_prob=y_prob)
     F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
     F12 = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
     F13 = 2 * A[2][2] / (np.sum(A[2, :]) + np.sum(A[:, 2]))
@@ -179,25 +187,25 @@ def f1_2018(y_true, y_prob):
 
 
 def f_af(y_true, y_prob):
-    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
+    A = challenge2020_f1_metrics(y_true=y_true, y_prob=y_prob)
     Faf = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
     return Faf
 
 
 def f_block(y_true, y_prob):
-    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
+    A = challenge2020_f1_metrics(y_true=y_true, y_prob=y_prob)
     Fblock = 2 * (A[2][2] + A[3][3] + A[4][4]) / (np.sum(A[2:5, :]) + np.sum(A[:, 2:5]))
     return Fblock
 
 
 def f_pc(y_true, y_prob):
-    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
+    A = challenge2020_f1_metrics(y_true=y_true, y_prob=y_prob)
     Fpc = 2 * (A[5][5] + A[6][6]) / (np.sum(A[5:7, :]) + np.sum(A[:, 5:7]))
     return Fpc
 
 
 def f_st(y_true, y_prob):
-    _, _, A = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
+    A = challenge2020_f1_metrics(y_true=y_true, y_prob=y_prob)
     Fst = 2 * (A[7][7] + A[8][8]) / (np.sum(A[7:9, :]) + np.sum(A[:, 7:9]))
     return Fst
 
