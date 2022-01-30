@@ -118,6 +118,9 @@ def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None
     y_pred = apply_thresholds(y_prob, 0.5)
     num_samples, num_classes = y_true.shape
 
+    print("[INFO] y_pred = ".format(y_pred))
+    print("[INFO] y_true = ".format(y_true))
+
     if single:  # if evaluating single class in case of threshold-optimization
         sample_weights = np.ones(num_samples)
     else:
@@ -157,12 +160,7 @@ def g_beta_metric(y_true, y_prob, beta_g=2):
 def challenge2020_f1_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None, single=False):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking/blob/516740dd2964d67c213ab6df9eba5d50b2245d00/code/utils/utils.py#L100 """
     A = np.zeros((9, 9), dtype=np.int)
-
     y_pred = apply_thresholds(y_prob, 0.5)
-
-    print("[INFO] y_pred = ".format(y_pred))
-    print("[INFO] y_true = ".format(y_true))
-
     num_samples, num_classes = y_true.shape
 
     for class_i in range(num_classes):
