@@ -172,6 +172,14 @@ def challenge2020_scores(y_true, y_prob):
 
 def f1_2018(y_true, y_prob):
     y_pred = apply_thresholds(y_prob, 0.5)
+    num_samples, num_classes = y_true.shape
+
+    print('[INFO] num_samples')
+    print(num_samples)
+
+    print('[INFO] num_classes')
+    print(num_classes)
+
     print('[INFO] y_true')
     print(y_true)
     print('[INFO] y_true_shape')
