@@ -170,29 +170,6 @@ def challenge2020_scores(y_true, y_prob):
 
 
 def f1_2018(y_true, y_prob):
-    # y_pred = apply_thresholds(y_prob, 0.5)
-    # num_samples, num_classes = y_true.shape
-    #
-    # print('[INFO] num_samples')
-    # print(num_samples)
-    #
-    # print('[INFO] num_classes')
-    # print(num_classes)
-    #
-    # print('[INFO] y_true')
-    # print(y_true)
-    # print('[INFO] y_true_shape')
-    # print(y_true.shape)
-    # print('[INFO] y_true_1')
-    # print(np.argmax(y_true[1]))
-    #
-    # print('[INFO] y_pred')
-    # print(y_pred)
-    # print('[INFO] y_pred_shape')
-    # print(y_pred.shape)
-    # print('[INFO] y_pred_1')
-    # print(np.argmax(y_pred[1]))
-
     A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
 
     F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
