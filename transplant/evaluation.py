@@ -165,7 +165,7 @@ def challenge2020_scores(y_true, y_prob):
             if y_true[i, class_i] == y_pred[i, class_i] == 1:
                 A[class_i][class_i] += 1
             else:
-                A[np.argmax(y_pred[i])][class_i] += 1
+                A[class_i][np.argmax(y_pred[i])] += 1
     return A
 
 
@@ -194,6 +194,8 @@ def f1_2018(y_true, y_prob):
     # print(np.argmax(y_pred[1]))
 
     A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
+    print(A)
+
     F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
     F12 = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
     F13 = 2 * A[2][2] / (np.sum(A[2, :]) + np.sum(A[:, 2]))
