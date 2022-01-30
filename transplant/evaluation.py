@@ -171,42 +171,41 @@ def challenge2020_scores(y_true, y_prob):
 
 
 def f1_2018(y_true, y_prob):
-    y_pred = apply_thresholds(y_prob, 0.5)
-    num_samples, num_classes = y_true.shape
-
-    print('[INFO] num_samples')
-    print(num_samples)
-
-    print('[INFO] num_classes')
-    print(num_classes)
-
-    print('[INFO] y_true')
-    print(y_true)
-    print('[INFO] y_true_shape')
-    print(y_true.shape)
-    print('[INFO] y_true_1')
-    print(np.argmax(y_true[1]))
-
-    print('[INFO] y_pred')
-    print(y_pred)
-    print('[INFO] y_pred_shape')
-    print(y_pred.shape)
-    print('[INFO] y_pred_1')
-    print(np.argmax(y_pred[1]))
-
-    # A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
-    # F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
-    # F12 = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
-    # F13 = 2 * A[2][2] / (np.sum(A[2, :]) + np.sum(A[:, 2]))
-    # F14 = 2 * A[3][3] / (np.sum(A[3, :]) + np.sum(A[:, 3]))
-    # F15 = 2 * A[4][4] / (np.sum(A[4, :]) + np.sum(A[:, 4]))
-    # F16 = 2 * A[5][5] / (np.sum(A[5, :]) + np.sum(A[:, 5]))
-    # F17 = 2 * A[6][6] / (np.sum(A[6, :]) + np.sum(A[:, 6]))
-    # F18 = 2 * A[7][7] / (np.sum(A[7, :]) + np.sum(A[:, 7]))
-    # F19 = 2 * A[8][8] / (np.sum(A[8, :]) + np.sum(A[:, 8]))
-    # F1 = (F11 + F12 + F13 + F14 + F15 + F16 + F17 + F18 + F19) / 9
+    # y_pred = apply_thresholds(y_prob, 0.5)
+    # num_samples, num_classes = y_true.shape
     #
-    # return F1
+    # print('[INFO] num_samples')
+    # print(num_samples)
+    #
+    # print('[INFO] num_classes')
+    # print(num_classes)
+    #
+    # print('[INFO] y_true')
+    # print(y_true)
+    # print('[INFO] y_true_shape')
+    # print(y_true.shape)
+    # print('[INFO] y_true_1')
+    # print(np.argmax(y_true[1]))
+    #
+    # print('[INFO] y_pred')
+    # print(y_pred)
+    # print('[INFO] y_pred_shape')
+    # print(y_pred.shape)
+    # print('[INFO] y_pred_1')
+    # print(np.argmax(y_pred[1]))
+
+    A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
+    F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
+    F12 = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
+    F13 = 2 * A[2][2] / (np.sum(A[2, :]) + np.sum(A[:, 2]))
+    F14 = 2 * A[3][3] / (np.sum(A[3, :]) + np.sum(A[:, 3]))
+    F15 = 2 * A[4][4] / (np.sum(A[4, :]) + np.sum(A[:, 4]))
+    F16 = 2 * A[5][5] / (np.sum(A[5, :]) + np.sum(A[:, 5]))
+    F17 = 2 * A[6][6] / (np.sum(A[6, :]) + np.sum(A[:, 6]))
+    F18 = 2 * A[7][7] / (np.sum(A[7, :]) + np.sum(A[:, 7]))
+    F19 = 2 * A[8][8] / (np.sum(A[8, :]) + np.sum(A[:, 8]))
+    F1 = (F11 + F12 + F13 + F14 + F15 + F16 + F17 + F18 + F19) / 9
+    return F1
 
 
 def f_af(y_true, y_prob):
