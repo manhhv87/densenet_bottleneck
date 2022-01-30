@@ -144,7 +144,6 @@ def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None
     g_beta /= class_weights.sum()
 
     for class_i in range(num_classes):
-        print('[INFO] Class No.'.format(class_i))
         for i in range(num_samples):
             if y_true[i, class_i] == y_pred[i, class_i] == 1:
                 A[class_i][class_i] += 1
@@ -176,8 +175,6 @@ def f1_2018(y_true, y_prob):
     F18 = 2 * A[7][7] / (np.sum(A[7, :]) + np.sum(A[:, 7]))
     F19 = 2 * A[8][8] / (np.sum(A[8, :]) + np.sum(A[:, 8]))
     F1 = (F11 + F12 + F13 + F14 + F15 + F16 + F17 + F18 + F19) / 9
-
-    print('[INFO] Matrix A = '.format(A))
     return F1
 
 
