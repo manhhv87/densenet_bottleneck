@@ -165,7 +165,11 @@ def challenge2020_scores(y_true, y_prob):
         for i in range(num_samples):
             if y_true[i, class_i] == y_pred[i, class_i] == 1:
                 A[class_i][class_i] += 1
+            if y_true[i, class_i] == y_pred[i, class_i] == 1:
+                A[class_i][class_i] = A[class_i][class_i]
             if y_true[i, class_i] == 0 and y_pred[i, class_i] == 1:
+                A[class_i][np.argmax(y_pred[i])] += 1
+            if y_true[i, class_i] == 1 and y_pred[i, class_i] == 0:
                 A[class_i][np.argmax(y_pred[i])] += 1
     return A
 
