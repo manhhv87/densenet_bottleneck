@@ -354,28 +354,28 @@ if __name__ == '__main__':
             # model.save(str(args.job_dir / 'my_model'))
 
             print('[INFO] Predicting training data ...')
-            train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
-            train_predictions = create_predictions_frame(y_prob=train_y_prob,
-                                                         y_true=train['y'],
-                                                         class_names=train['classes'],
-                                                         record_ids=train['record_ids'])
-            train_predictions.to_csv(path_or_buf=args.job_dir / 'train_predictions.csv', index=False)
+            # train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
+            # train_predictions = create_predictions_frame(y_prob=train_y_prob,
+            #                                              y_true=train['y'],
+            #                                              class_names=train['classes'],
+            #                                              record_ids=train['record_ids'])
+            # train_predictions.to_csv(path_or_buf=args.job_dir / 'train_predictions.csv', index=False)
 
             if val:
                 print('[INFO] Predicting validation data ...')
-                val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
-                val_predictions = create_predictions_frame(y_prob=val_y_prob, y_true=val['y'],
-                                                           class_names=train['classes'],
-                                                           record_ids=val['record_ids'])
-                val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
+                # val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
+                # val_predictions = create_predictions_frame(y_prob=val_y_prob, y_true=val['y'],
+                #                                            class_names=train['classes'],
+                #                                            record_ids=val['record_ids'])
+                # val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
 
             if test:
                 print('[INFO] Predicting test data ...')
-                test_y_prob = model.predict(x=test['x'], batch_size=args.batch_size)
-                test_predictions = create_predictions_frame(y_prob=test_y_prob, y_true=test['y'],
-                                                            class_names=train['classes'],
-                                                            record_ids=test['record_ids'])
-                test_predictions.to_csv(path_or_buf=args.job_dir / 'test_predictions.csv', index=False)
+                # test_y_prob = model.predict(x=test['x'], batch_size=args.batch_size)
+                # test_predictions = create_predictions_frame(y_prob=test_y_prob, y_true=test['y'],
+                #                                             class_names=train['classes'],
+                #                                             record_ids=test['record_ids'])
+                # test_predictions.to_csv(path_or_buf=args.job_dir / 'test_predictions.csv', index=False)
 
                 model.summary()
 
