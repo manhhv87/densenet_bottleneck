@@ -312,6 +312,10 @@ if __name__ == '__main__':
             print('[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
             model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
 
+            # Save the entire model as a SavedModel.
+            print('[INFO] Saving model ...')
+            model.save(str(args.job_dir / 'my_model'))
+
             print('[INFO] Predicting training data ...')
             train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
             train_predictions = create_predictions_frame(y_prob=train_y_prob,
