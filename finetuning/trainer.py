@@ -151,8 +151,8 @@ if __name__ == '__main__':
         test_data = _create_dataset_from_data(test).batch(args.batch_size) if test else None
 
         train_size = len(train['x'])
-        val_size = len(val['x'])
-        test_size = len(test['x'])
+        val_size = len(val)
+        test_size = len(test)
         print('[INFO] Train, Validation and Test size {}, {}, {} ...'.format(train_size, val_size, test_size))
 
         strategy = tf.distribute.MirroredStrategy()
