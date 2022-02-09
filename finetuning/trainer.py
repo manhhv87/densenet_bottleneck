@@ -382,7 +382,7 @@ if __name__ == '__main__':
                 for i in range(0, 25):
                     print(model.get_layer(index=0).get_layer(index=i))
 
-
+                print(model.get_layer(index=0).get_layer(index=0).output)
 
 
 
