@@ -19,11 +19,6 @@ from clr import config
 
 import gc
 
-import matplotlib.pyplot as plt
-import lime
-from lime import lime_tabular
-from tensorflow.keras.models import Model
-
 
 def _create_dataset_from_data(data):
     """
@@ -62,38 +57,6 @@ def _create_model(arch, n_classes, act, dat_x, weights_file):
 # we initialize it multiple times
 def _init_weight(same_old_model, first_weights):
     same_old_model.set_weights(first_weights)
-
-
-# Defining the Grad-CAM algorithm
-def grad_cam(layer_name, data):
-    grad_model = tf.keras.models.Model([model.inputs], [model.get_layer(layer_name).output, model.output])
-    last_conv_layer_output, preds = grad_model(data)
-
-    with tf.GradientTape() as tape:
-        last_conv_layer_output, preds = grad_model(data)
-        pred_index = tf.argmax(preds[0])
-        class_channel = preds[:, pred_index]
-
-    grads = tape.gradient(class_channel, last_conv_layer_output)
-
-    pooled_grads = tf.reduce_mean(grads, axis=(0))
-
-    last_conv_layer_output = last_conv_layer_output[0]
-
-    heatmap = last_conv_layer_output * pooled_grads
-    heatmap = tf.reduce_mean(heatmap, axis=(1))
-    heatmap = np.expand_dims(heatmap, 0)
-    return heatmap
-
-
-# A model wrapper - this is necessary to be able to use LIME to explain the predictions
-class model_wrapper:
-    def __init__(self, model):
-        self.model = model
-
-    def predict(self, input_data):
-        self.pred = self.model.predict(input_data).ravel()
-        return np.array([[1 - self.pred, self.pred]]).T[:, :, 0]
 
 
 if __name__ == '__main__':
@@ -350,41 +313,32 @@ if __name__ == '__main__':
             model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
 
             # Save the entire model as a SavedModel.
-            # print('[INFO] Saving model ...')
-            # model.save(str(args.job_dir / 'my_model'))
+            print('[INFO] Saving model ...')
+            model.save(str(args.job_dir / 'my_model'))
 
             print('[INFO] Predicting training data ...')
-            # train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
-            # train_predictions = create_predictions_frame(y_prob=train_y_prob,
-            #                                              y_true=train['y'],
-            #                                              class_names=train['classes'],
-            #                                              record_ids=train['record_ids'])
-            # train_predictions.to_csv(path_or_buf=args.job_dir / 'train_predictions.csv', index=False)
+            train_y_prob = model.predict(x=train['x'], batch_size=args.batch_size)
+            train_predictions = create_predictions_frame(y_prob=train_y_prob,
+                                                         y_true=train['y'],
+                                                         class_names=train['classes'],
+                                                         record_ids=train['record_ids'])
+            train_predictions.to_csv(path_or_buf=args.job_dir / 'train_predictions.csv', index=False)
 
             if val:
                 print('[INFO] Predicting validation data ...')
-                # val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
-                # val_predictions = create_predictions_frame(y_prob=val_y_prob, y_true=val['y'],
-                #                                            class_names=train['classes'],
-                #                                            record_ids=val['record_ids'])
-                # val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
+                val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
+                val_predictions = create_predictions_frame(y_prob=val_y_prob, y_true=val['y'],
+                                                           class_names=train['classes'],
+                                                           record_ids=val['record_ids'])
+                val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
 
             if test:
                 print('[INFO] Predicting test data ...')
-                # test_y_prob = model.predict(x=test['x'], batch_size=args.batch_size)
-                # test_predictions = create_predictions_frame(y_prob=test_y_prob, y_true=test['y'],
-                #                                             class_names=train['classes'],
-                #                                             record_ids=test['record_ids'])
-                # test_predictions.to_csv(path_or_buf=args.job_dir / 'test_predictions.csv', index=False)
-
-                model.summary()
-
-                for i in range(0, 25):
-                    print(model.get_layer(index=0).get_layer(index=i))
-
-                print(model.get_layer(index=0).get_layer(index=0).output)
-
-
+                test_y_prob = model.predict(x=test['x'], batch_size=args.batch_size)
+                test_predictions = create_predictions_frame(y_prob=test_y_prob, y_true=test['y'],
+                                                            class_names=train['classes'],
+                                                            record_ids=test['record_ids'])
+                test_predictions.to_csv(path_or_buf=args.job_dir / 'test_predictions.csv', index=False)
 
     else:  # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
