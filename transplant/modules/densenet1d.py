@@ -108,7 +108,7 @@ class _DenseNet(tf.keras.Model):
         include_top (bool) - yes or no include top layer
     """
 
-    def __init__(self, in_shape=None, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
+    def __init__(self, in_shape, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
                  kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
                  bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
@@ -160,6 +160,7 @@ class _DenseNet(tf.keras.Model):
 
         # Built conv1 layer
         x = self.input_layer(x)     # new
+
         x = self.conv(x)
         x = self.bn(x)
         x = self.relu(x)
