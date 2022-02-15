@@ -5,13 +5,12 @@ import tensorflow as tf
 from transplant.modules.densenet1d import _DenseNet
 
 
-def ecg_feature_extractor(arch=None, input_layer=None, stages=None):
+def ecg_feature_extractor(arch=None, stages=None):
     # Furthermore, we use larger filter sizes (7, 5, 5, 3) at each stage respectively,
     # which we have observed to outperform the suggested smaller 3 × 3 filters.
     # See Table 1 in Deep Residual Learning for Image Recognition
     if arch is None or arch == 'resnet18':
-        resnet = _DenseNet(input_layer=input_layer,
-                           num_outputs=None,
+        resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 4, 6, 0)[:stages],
                            first_num_channels=16,
                            growth_rate=8,
