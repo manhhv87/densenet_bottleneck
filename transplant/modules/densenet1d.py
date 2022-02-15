@@ -177,5 +177,5 @@ class _DenseNet(tf.keras.Model):
         return x
 
     def model(self):
-        x = tf.keras.layers.Input(shape=(None, 16384, 1))
+        x = tf.keras.layers.Input(shape=(16384, 1))
         return tf.keras.Model(inputs=[x], outputs=self.call(x))
