@@ -176,10 +176,7 @@ if __name__ == '__main__':
 
             # initialize the weights of the model
             inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
-            # model(inputs)  # complete model
-            H, W = inputs.shape.as_list()[1:]
-            model.build(input_shape=(None, H, W))
-            model.call(tf.keras.layers.Input(shape=(H, W)))
+            model(inputs)  # complete model
 
             print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
 
