@@ -10,7 +10,7 @@ def ecg_feature_extractor(arch=None, in_shape=(16384, 1), stages=None):
     # which we have observed to outperform the suggested smaller 3 × 3 filters.
     # See Table 1 in Deep Residual Learning for Image Recognition
     if arch is None or arch == 'resnet18':
-        resnet = _DenseNet(in_shape=in_shape,
+        resnet = _DenseNet(input_shape=in_shape,
                            num_outputs=None,
                            blocks=(6, 4, 6, 0)[:stages],
                            first_num_channels=16,
@@ -18,7 +18,7 @@ def ecg_feature_extractor(arch=None, in_shape=(16384, 1), stages=None):
                            kernel_size=(8, 6, 8, 4),
                            bottleneck=True,
                            dropout_rate=None,
-                           include_top=False).model()
+                           include_top=False)#.model()
     elif arch == 'resnet34':
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 24, 16)[:stages],
