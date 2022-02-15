@@ -114,7 +114,8 @@ class _DenseNet(tf.keras.Model):
 
         super().__init__(**kwargs)
         # self.in_shape = input_shape
-        self.input_layer = tf.keras.layers.Input(input_shape)
+        print(input_shape)
+        self.input_layer = tf.keras.layers.Input(shape=input_shape)
 
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
