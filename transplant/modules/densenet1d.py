@@ -113,7 +113,7 @@ class _DenseNet(tf.keras.Model):
                  bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
         super().__init__(**kwargs)
-        self.in_shape = input_shape
+        # self.in_shape = input_shape
         self.input_layer = tf.keras.layers.Input(input_shape)
 
         # Built Convolution layer
@@ -155,7 +155,7 @@ class _DenseNet(tf.keras.Model):
             out_act = 'sigmoid' if num_outputs == 1 else 'softmax'
             self.classifier = tf.keras.layers.Dense(num_outputs, out_act)
 
-        self.out = self.call(self.input_layer)
+        # self.out = self.call(self.input_layer)
 
     def call(self, x, include_top=None, **kwargs):
         if include_top is None:
@@ -181,5 +181,5 @@ class _DenseNet(tf.keras.Model):
         return x
 
     def model(self):
-        return tf.keras.Model(inputs=[self.in_shape], outputs=self.call(self.in_shape))
+        return tf.keras.Model(inputs=[self.input_layer], outputs=self.call(self.input_layer))
 
