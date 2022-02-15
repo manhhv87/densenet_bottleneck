@@ -113,14 +113,15 @@ class _DenseNet(tf.keras.Model):
                  bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
         super().__init__(**kwargs)
+        print(input_shape)
 
-        self.input_layer = tf.keras.layers.Input(shape=input_shape)
+        self.input_layer = tf.keras.layers.Input(shape=input_shape, dtype=tf.float32)
 
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
                                            strides=2, use_bias=False,
                                            kernel_initializer=tf.keras.initializers.VarianceScaling(),
-                                           kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-5))
+                                           kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-5),)
         self.bn = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
         self.relu = tf.keras.layers.Activation('relu')
         self.maxpool = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding='same')
