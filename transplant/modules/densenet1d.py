@@ -113,7 +113,7 @@ class _DenseNet(tf.keras.Model):
                  bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
         super().__init__(**kwargs)
-        self.in_shape = in_shape
+        self.input_layer = tf.keras.layers.Input(shape=in_shape)
 
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
@@ -159,6 +159,7 @@ class _DenseNet(tf.keras.Model):
             include_top = self.include_top
 
         # Built conv1 layer
+        x = self.input_layer(x)     # new
         x = self.conv(x)
         x = self.bn(x)
         x = self.relu(x)
