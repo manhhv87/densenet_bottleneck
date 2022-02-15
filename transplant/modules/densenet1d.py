@@ -112,16 +112,16 @@ class _DenseNet(tf.keras.Model):
                  kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
                  bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
-        super(_DenseNet, self).__init__(**kwargs)
-        print(input_shape)
+        super().__init__(**kwargs)
 
-        self.input_layer = tf.keras.layers.Input(shape=input_shape)
+        self.input_layer = tf.keras.layers.Input(shape=input_shape, dtype=tf.float32)
 
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
                                            strides=2, use_bias=False,
                                            kernel_initializer=tf.keras.initializers.VarianceScaling(),
-                                           kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-5),)
+                                           kernel_regularizer=tf.keras.regularizers.l1_l2(l1=1e-5, l2=1e-5),
+                                           input_shape=input_shape)
         self.bn = tf.keras.layers.BatchNormalization(momentum=0.9, epsilon=1e-5)
         self.relu = tf.keras.layers.Activation('relu')
         self.maxpool = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding='same')
@@ -156,8 +156,6 @@ class _DenseNet(tf.keras.Model):
             out_act = 'sigmoid' if num_outputs == 1 else 'softmax'
             self.classifier = tf.keras.layers.Dense(num_outputs, out_act)
 
-        self.out = self.call(self.input_layer)
-
     def call(self, x, include_top=None, **kwargs):
         if include_top is None:
             include_top = self.include_top
@@ -181,5 +179,5 @@ class _DenseNet(tf.keras.Model):
             x = self.classifier(x)
         return x
 
-    # def model(self):
-    #     return tf.keras.Model(inputs=[self.input_layer], outputs=self.call(self.input_layer))
+    def model(self):
+        return tf.keras.Model(inputs=[self.input_layer], outputs=self.call(self.input_layer))
