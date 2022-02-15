@@ -108,11 +108,13 @@ class _DenseNet(tf.keras.Model):
         include_top (bool) - yes or no include top layer
     """
 
-    def __init__(self, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
+    def __init__(self, input_shape=(None, 16384, 1), num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
                  kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
                  bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
         super().__init__(**kwargs)
+
+        self.input_layer = tf.keras.layers.Input(input_shape)
 
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
@@ -152,6 +154,8 @@ class _DenseNet(tf.keras.Model):
             self.global_pool = tf.keras.layers.GlobalAveragePooling1D()
             out_act = 'sigmoid' if num_outputs == 1 else 'softmax'
             self.classifier = tf.keras.layers.Dense(num_outputs, out_act)
+
+        self.out = self.call(self.input_layer)
 
     def call(self, x, include_top=None, **kwargs):
         if include_top is None:
