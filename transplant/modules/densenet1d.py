@@ -179,5 +179,5 @@ class _DenseNet(tf.keras.Model):
             x = self.classifier(x)
         return x
 
-    def model(self):
+    def dense_model(self):
         return tf.keras.Model(inputs=[self.input_layer], outputs=self.call(self.input_layer))
