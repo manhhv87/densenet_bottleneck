@@ -108,12 +108,12 @@ class _DenseNet(tf.keras.Model):
         include_top (bool) - yes or no include top layer
     """
 
-    def __init__(self, input_shape, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
+    def __init__(self, in_shape=None, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
                  kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
                  bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
         super().__init__(**kwargs)
-        self.input_shape = input_shape
+        self.in_shape = in_shape
 
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
@@ -179,4 +179,4 @@ class _DenseNet(tf.keras.Model):
 
     def model(self):
         # x = tf.keras.layers.Input(shape=(16384, 1))
-        return tf.keras.Model(inputs=[self.input_shape], outputs=self.call(self.input_shape))
+        return tf.keras.Model(inputs=[self.in_shape], outputs=self.call(self.in_shape))

@@ -169,7 +169,7 @@ if __name__ == '__main__':
                 activation = 'softmax'
                 loss = tf.keras.losses.CategoricalCrossentropy()
                 accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
-
+`
             # not include fc layer
             model = ecg_feature_extractor(arch=args.arch, input_shape=tf.keras.layers.Input(shape=train['x'].shape[1:],
                                                                                             dtype=train['x'].dtype))
