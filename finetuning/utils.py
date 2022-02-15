@@ -17,7 +17,7 @@ def ecg_feature_extractor(arch=None, stages=None):
                            kernel_size=(8, 6, 8, 4),
                            bottleneck=True,
                            dropout_rate=None,
-                           include_top=False)
+                           include_top=False).model()
     elif arch == 'resnet34':
         resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 12, 24, 16)[:stages],
@@ -40,8 +40,6 @@ def ecg_feature_extractor(arch=None, stages=None):
         raise ValueError('unknown architecture: {}'.format(arch))
 
     feature_extractor = tf.keras.Sequential([resnet,
-                                             # tf.keras.layers.BatchNormalization(),
-                                             # tf.keras.layers.Activation('relu'),
                                              tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
     return feature_extractor
 
