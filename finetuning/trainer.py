@@ -175,8 +175,8 @@ if __name__ == '__main__':
                                                                                             dtype=train['x'].dtype))
             model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
 
-            model.build(input_shape=(None, train['x'].shape[1:], train['x'].dtype))
-            model.call(tf.keras.layers.Input(shape=(train['x'].shape[1:], train['x'].dtype)))
+            model.build(input_shape=(None, 16384, 1))
+            model.call(tf.keras.layers.Input(shape=(16384, 1)))
 
             # initialize the weights of the model
             # inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
