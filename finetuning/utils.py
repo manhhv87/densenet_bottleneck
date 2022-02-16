@@ -5,25 +5,27 @@ import tensorflow as tf
 from transplant.modules.densenet1d import _DenseNet
 
 
-def ecg_feature_extractor(arch=None, stages=None):
+def ecg_feature_extractor(arch=None, num_classes=1, activation='sigmoid', stages=None):
     # Furthermore, we use larger filter sizes (7, 5, 5, 3) at each stage respectively,
     # which we have observed to outperform the suggested smaller 3 × 3 filters.
     # See Table 1 in Deep Residual Learning for Image Recognition
     if arch is None or arch == 'resnet18':
-        resnet = _DenseNet(num_outputs=None,
-                           blocks=(6, 4, 6, 0)[:stages],
+        resnet = _DenseNet(blocks=(6, 4, 6, 0)[:stages],
                            first_num_channels=16,
                            growth_rate=8,
                            kernel_size=(8, 6, 8, 4),
                            bottleneck=True,
                            dropout_rate=None,
-                           include_top=False)
+                           include_top=False,
+                           num_classes=num_classes,
+                           activation=activation)
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
 
-    feature_extractor = tf.keras.Sequential([resnet,
-                                             tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
-    return feature_extractor
+    # feature_extractor = tf.keras.Sequential([resnet,
+    #                                          tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
+    # return feature_extractor
+    return resnet
 
 
 def train_test_split(data_set, **options):
