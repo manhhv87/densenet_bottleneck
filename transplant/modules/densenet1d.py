@@ -115,9 +115,10 @@ class _DenseNet(tf.keras.Model):
         super(_DenseNet, self).__init__(**kwargs)
 
         # Add input layer
+        print(input_layer)
         _, w, n_ch = input_layer.shape.as_list()[0:]
 
-        self.input_layer = input_layer
+        # self.input_layer = input_layer
 
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
@@ -182,5 +183,5 @@ class _DenseNet(tf.keras.Model):
             x = self.classifier(x)
         return x
 
-    def dense_model(self):
-        return tf.keras.Model(inputs=[self.input_layer], outputs=self.call(self.input_layer))
+    # def dense_model(self):
+    #     return tf.keras.Model(inputs=[self.input_layer], outputs=self.call(self.input_layer))

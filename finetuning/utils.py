@@ -18,7 +18,7 @@ def ecg_feature_extractor(arch=None, input_layer=None, stages=None):
                            kernel_size=(8, 6, 8, 4),
                            bottleneck=True,
                            dropout_rate=None,
-                           include_top=False).dense_model()
+                           include_top=False)#.dense_model()
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
 
