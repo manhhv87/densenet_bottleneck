@@ -31,9 +31,9 @@ def _create_dataset_from_data(data):
     return tf.data.Dataset.from_tensor_slices((data['x'], data['y']))
 
 
-def _create_model(arch, n_classes, act, dat_x, weights_file):
+def _create_model(n_classes, act, dat_x, weights_file):
     # include fc layer
-    old_model = ecg_feature_extractor(arch=arch)
+    old_model = ecg_feature_extractor()
     old_model.add(tf.keras.layers.Dense(units=n_classes, activation=act))
 
     # initialize the weights of the model
@@ -69,8 +69,6 @@ if __name__ == '__main__':
     parser.add_argument('--weights-file', type=Path, help='Path to pretrained weights or a checkpoint of the model.')
     parser.add_argument('--val-size', type=float, default=None,
                         help='Size of the validation set or proportion of the train set.')
-    parser.add_argument('--arch', default='resnet18', help='Network architecture: '
-                                                           '`resnet18`, `resnet34` or `resnet50`.')
     parser.add_argument('--subset', type=float, default=None, help='Size of a subset of the train set '
                                                                    'or proportion of the train set.')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size.')
@@ -171,8 +169,8 @@ if __name__ == '__main__':
                 accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
 
             # not include fc layer
-            model = ecg_feature_extractor(arch=args.arch, num_classes=num_classes, activation=activation)
-            # model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
+            model = ecg_feature_extractor()
+            model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
 
             # initialize the weights of the model
             inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
@@ -361,7 +359,7 @@ if __name__ == '__main__':
             loss = tf.keras.losses.CategoricalCrossentropy()
             accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
 
-        model_old, weights = _create_model(args.arch, num_classes, activation, data_set['x'], args.weights_file)
+        model_old, weights = _create_model(num_classes, activation, data_set['x'], args.weights_file)
 
         kf = KFold(n_splits=args.k_fold, shuffle=True)
         foldNum = 0

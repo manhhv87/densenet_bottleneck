@@ -108,10 +108,9 @@ class _DenseNet(tf.keras.Model):
         include_top (bool) - yes or no include top layer
     """
 
-    def __init__(self, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
+    def __init__(self, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
                  kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
-                 bottleneck=False, dropout_rate=None, include_top=True,
-                 num_classes=1, activation='sigmoid', **kwargs):  # constructor
+                 bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
         super(_DenseNet, self).__init__(**kwargs)
 
@@ -151,8 +150,8 @@ class _DenseNet(tf.keras.Model):
         if include_top:
             # average pool, 1-d fc, sigmoid
             self.global_pool = tf.keras.layers.GlobalAveragePooling1D()
-            # out_act = 'sigmoid' if num_outputs == 1 else 'softmax'
-            self.classifier = tf.keras.layers.Dense(units=num_classes, activation=activation)
+            out_act = 'sigmoid' if num_outputs == 1 else 'softmax'
+            self.classifier = tf.keras.layers.Dense(num_outputs, out_act)
 
     def call(self, x, include_top=None, **kwargs):
         if include_top is None:
@@ -176,3 +175,4 @@ class _DenseNet(tf.keras.Model):
             x = self.global_pool(x)
             x = self.classifier(x)
         return x
+
