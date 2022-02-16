@@ -35,8 +35,6 @@ if __name__ == '__main__':
     parser.add_argument('--weights-file', type=Path, help='Path to pretrained weights or a checkpoint of the model.')
     parser.add_argument('--val-size', type=float, default=None,
                         help='Size of the validation set or proportion of the train set.')
-    parser.add_argument('--arch', default='resnet18', help='Network architecture: '
-                                                           '`resnet18`, `resnet34` or `resnet50`.')
     parser.add_argument('--subset', type=float, default=None, help='Size of a subset of the train set '
                                                                    'or proportion of the train set.')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size.')

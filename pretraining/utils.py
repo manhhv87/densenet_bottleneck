@@ -27,8 +27,8 @@ def unzip_icentia11k(db_dir, patient_ids, out_dir, num_workers=1, patients_per_w
         pass
 
 
-def task_solver(task, arch='resnet18', stages=None, return_feature_extractor=False):
-    feature_extractor = ecg_feature_extractor(arch=arch, stages=stages)
+def task_solver(task, stages=None, return_feature_extractor=False):
+    feature_extractor = ecg_feature_extractor(stages=stages)
 
     if task == 'rhythm':
         num_classes = len(icentia11k.ds_rhythm_names)
@@ -51,8 +51,8 @@ def task_solver(task, arch='resnet18', stages=None, return_feature_extractor=Fal
         return model
 
 
-def get_pretrained_weights(checkpoint_file, task, arch='resnet18', stages=None):
-    model, feature_extractor = task_solver(task, arch, stages=stages, return_feature_extractor=True)
+def get_pretrained_weights(checkpoint_file, task, stages=None):
+    model, feature_extractor = task_solver(task, stages=stages, return_feature_extractor=True)
 
     if task in ['rhythm', 'beat', 'hr']:
         inputs = build_input_tensor_from_shape(tf.TensorShape((None, 1)))

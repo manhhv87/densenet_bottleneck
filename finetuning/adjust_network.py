@@ -10,14 +10,12 @@ if __name__ == '__main__':
     parser.add_argument('--weights-file', type=Path, required=True,
                         help='Path to pretrained weights or a checkpoint of the model.')
     parser.add_argument('--channels', type=int, required=True, help='New number of input channels.')
-    parser.add_argument('--arch', default='resnet18', help='Network architecture: '
-                                                           '`resnet18`, `resnet34` or `resnet50`.')
     parser.add_argument('--stages', type=int, default=None, help='Stages of the residual network '
                                                                  'that will be pretrained.')
     args, _ = parser.parse_known_args()
 
     # initialize model
-    model = ecg_feature_extractor(arch=args.arch, stages=args.stages)
+    model = ecg_feature_extractor(stages=args.stages)
     inputs = tf.keras.layers.Input((256, 1), dtype='float32')
     model(inputs)
 
@@ -33,7 +31,7 @@ if __name__ == '__main__':
     weights[0] = conv1_filters
 
     # initialize updated model
-    updated_model = ecg_feature_extractor(arch=args.arch, stages=args.stages)
+    updated_model = ecg_feature_extractor(stages=args.stages)
     inputs = tf.keras.layers.Input((256, args.channels), dtype='float32')
     updated_model(inputs)
 

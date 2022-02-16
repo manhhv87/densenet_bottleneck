@@ -75,8 +75,6 @@ if __name__ == '__main__':
                              'that will be moved from train to validation.')
     parser.add_argument('--val-size', type=int, default=None,
                         help='Size of the validation set when collecting data from train directory.')
-    parser.add_argument('--arch', default='resnet18', help='Architecture of the ECG feature extractor: '
-                                                           '`resnet18`, `resnet34` or `resnet50`.')
     parser.add_argument('--stages', type=int, default=None, help='Stages of the densenet network '
                                                                  'that will be pretrained.')
     parser.add_argument('--frame-size', type=int, default=2048, help='Frame size.')
@@ -193,7 +191,7 @@ if __name__ == '__main__':
 
     with strategy.scope():
         print('[INFO] Building model ...')
-        model = task_solver(task=args.task, arch=args.arch, stages=args.stages)
+        model = task_solver(task=args.task, stages=args.stages)
 
         model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                       optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR,
