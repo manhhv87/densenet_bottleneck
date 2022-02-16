@@ -176,8 +176,8 @@ if __name__ == '__main__':
             model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
 
             # initialize the weights of the model
-            # inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
-            # model(inputs)  # complete model
+            inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
+            model(inputs)  # complete model
 
             print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
 
