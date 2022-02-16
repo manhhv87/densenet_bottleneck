@@ -174,12 +174,9 @@ if __name__ == '__main__':
             model = ecg_feature_extractor(arch=args.arch)
             model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
 
-            model.build(input_shape=(None, 16384, 1))
-            model.call(tf.keras.layers.Input(shape=(16384, 1)))
-
             # initialize the weights of the model
-            # inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
-            # model(inputs)  # complete model
+            inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
+            model(inputs)  # complete model
 
             print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
 
