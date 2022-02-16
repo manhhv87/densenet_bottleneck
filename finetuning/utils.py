@@ -10,8 +10,7 @@ def ecg_feature_extractor(arch=None, input_layer=None, stages=None):
     # which we have observed to outperform the suggested smaller 3 × 3 filters.
     # See Table 1 in Deep Residual Learning for Image Recognition
     if arch is None or arch == 'resnet18':
-        resnet = _DenseNet(input_layer=input_layer,
-                           num_outputs=None,
+        resnet = _DenseNet(num_outputs=None,
                            blocks=(6, 4, 6, 0)[:stages],
                            first_num_channels=16,
                            growth_rate=8,
@@ -22,7 +21,8 @@ def ecg_feature_extractor(arch=None, input_layer=None, stages=None):
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
 
-    feature_extractor = tf.keras.Sequential([resnet,
+    feature_extractor = tf.keras.Sequential([input_layer,
+                                             resnet,
                                              tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
     return feature_extractor
 
