@@ -108,14 +108,11 @@ class _DenseNet(tf.keras.Model):
         include_top (bool) - yes or no include top layer
     """
 
-    def __init__(self, input_layer=None, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
+    def __init__(self, num_outputs=1, blocks=(6, 12, 24, 16), first_num_channels=64, growth_rate=32,
                  kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
                  bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
         super(_DenseNet, self).__init__(**kwargs)
-
-        # Add input layer
-        self.input_layer = input_layer
 
         # Built Convolution layer
         self.conv = tf.keras.layers.Conv1D(filters=first_num_channels, kernel_size=7, padding='same',
@@ -156,16 +153,6 @@ class _DenseNet(tf.keras.Model):
             out_act = 'sigmoid' if num_outputs == 1 else 'softmax'
             self.classifier = tf.keras.layers.Dense(num_outputs, out_act)
 
-        self.out = self.call(self.input_layer)
-
-        # Reinitial
-        super(_DenseNet, self).__init__(inputs=self.input_layer, outputs=self.out, **kwargs)
-
-    def build(self):
-        # Initialize the graph
-        self._is_graph_network = True
-        self._init_graph_network(inputs=self.input_layer, outputs=self.out)
-
     def call(self, x, include_top=None, **kwargs):
         if include_top is None:
             include_top = self.include_top
@@ -188,6 +175,3 @@ class _DenseNet(tf.keras.Model):
             x = self.global_pool(x)
             x = self.classifier(x)
         return x
-
-    # def dense_model(self):
-    #     return tf.keras.Model(inputs=[self.input_layer], outputs=self.call(self.input_layer))
