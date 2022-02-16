@@ -15,9 +15,8 @@ def ecg_feature_extractor(stages=None):
                        dropout_rate=None,
                        include_top=False)
 
-    # feature_extractor = tf.keras.Sequential([resnet,
-    #                                          tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
-    feature_extractor = resnet.add(tf.keras.layers.GlobalAveragePooling1D())
+    feature_extractor = tf.keras.Sequential([resnet,
+                                             tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
     return feature_extractor
 
 
