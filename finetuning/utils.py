@@ -22,8 +22,7 @@ def ecg_feature_extractor(arch=None, input_layer=None, stages=None):
     else:
         raise ValueError('unknown architecture: {}'.format(arch))
 
-    feature_extractor = tf.keras.Sequential([input_layer,
-                                             resnet,
+    feature_extractor = tf.keras.Sequential([resnet,
                                              tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
     return feature_extractor
 
