@@ -112,8 +112,9 @@ class _DenseNet(tf.keras.Model):
                  kernel_size=(3, 3, 3, 3), block_fn1=_DenseBlock, block_fn2=_TransitionBlock,
                  bottleneck=False, dropout_rate=None, include_top=True, **kwargs):  # constructor
 
-        super().__init__(**kwargs)
+        super(_DenseNet, self).__init__(**kwargs)
 
+        # Add input layer
         self.input_layer = input_layer
 
         # Built Convolution layer
@@ -156,6 +157,14 @@ class _DenseNet(tf.keras.Model):
             self.classifier = tf.keras.layers.Dense(num_outputs, out_act)
 
         self.out = self.call(self.input_layer)
+
+        # Reinitial
+        super(_DenseNet, self).__init__(inputs=self.input_layer, outputs=self.out, **kwargs)
+
+    def build(self):
+        # Initialize the graph
+        self._is_graph_network = True
+        self._init_graph_network(inputs=self.input_layer, outputs=self.out)
 
     def call(self, x, include_top=None, **kwargs):
         if include_top is None:
