@@ -5,17 +5,18 @@ import tensorflow as tf
 from transplant.modules.densenet1d import _DenseNet
 
 
-def ecg_feature_extractor(stages=None):
-    resnet = _DenseNet(num_outputs=None,
-                       blocks=(6, 4, 6, 0)[:stages],
-                       first_num_channels=16,
-                       growth_rate=8,
-                       kernel_size=(8, 6, 8, 4),
-                       bottleneck=True,
-                       dropout_rate=None,
-                       include_top=False).model()
+def ecg_feature_extractor(input_shape=None, stages=None):
+    base_model = _DenseNet(input_shape=input_shape,
+                           num_outputs=None,
+                           blocks=(6, 4, 6, 0)[:stages],
+                           first_num_channels=16,
+                           growth_rate=8,
+                           kernel_size=(8, 6, 8, 4),
+                           bottleneck=True,
+                           dropout_rate=None,
+                           include_top=False).model()
 
-    feature_extractor = tf.keras.Sequential([resnet,
+    feature_extractor = tf.keras.Sequential([base_model,
                                              tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
     return feature_extractor
 
