@@ -155,6 +155,8 @@ class _DenseNet(tf.keras.Model):
             out_act = 'sigmoid' if num_outputs == 1 else 'softmax'
             self.classifier = tf.keras.layers.Dense(num_outputs, out_act)
 
+        self.out = self.call(self.input_layer)
+
     def call(self, x, include_top=None, **kwargs):
         if include_top is None:
             include_top = self.include_top
@@ -178,5 +180,5 @@ class _DenseNet(tf.keras.Model):
             x = self.classifier(x)
         return x
 
-    def dense_model(self):
-        return tf.keras.Model(inputs=[self.input_layer], outputs=self.call(self.input_layer))
+    # def dense_model(self):
+    #     return tf.keras.Model(inputs=[self.input_layer], outputs=self.call(self.input_layer))
