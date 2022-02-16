@@ -175,3 +175,7 @@ class _DenseNet(tf.keras.Model):
             x = self.global_pool(x)
             x = self.classifier(x)
         return x
+
+    def model(self):
+        x = tf.keras.Input(shape=(16384, 1))
+        return tf.keras.models.Model(inputs=[x], outputs=self.call(x))
