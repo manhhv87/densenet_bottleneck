@@ -16,7 +16,7 @@ def ecg_feature_extractor(arch=None, num_classes=1, activation='sigmoid', stages
                            kernel_size=(8, 6, 8, 4),
                            bottleneck=True,
                            dropout_rate=None,
-                           include_top=False,
+                           include_top=True,
                            num_classes=num_classes,
                            activation=activation)
     else:
