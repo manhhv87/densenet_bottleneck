@@ -176,3 +176,6 @@ class _DenseNet(tf.keras.Model):
             x = self.classifier(x)
         return x
 
+    def get_config(self):
+        config = super(_DenseNet, self).get_config()
+        return config
