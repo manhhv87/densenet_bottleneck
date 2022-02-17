@@ -16,10 +16,6 @@ def ecg_feature_extractor(input_layer=None, stages=None):
                                dropout_rate=None,
                                include_top=False).model()
 
-    # backbone_model_input = backbone_model.input
-    # backbone_model_output = backbone_model.output
-
-    # return backbone_model_input, backbone_model_output
     return backbone_model
 
     # feature_extractor = tf.keras.Sequential([base_model,

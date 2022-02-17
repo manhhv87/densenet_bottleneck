@@ -177,12 +177,11 @@ if __name__ == '__main__':
             # model(inputs)  # complete model
 
             # not include fc layer
-            backbone_model = ecg_feature_extractor(input_layer=tf.keras.layers.Input(shape=train['x'].shape[1:],
-                                                                                     dtype=train['x'].dtype))
+            inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
+            backbone_model = ecg_feature_extractor(input_layer=inputs)
             x = tf.keras.layers.GlobalAveragePooling1D()(backbone_model.output)
             x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
             model = tf.keras.models.Model(inputs=backbone_model.input, outputs=x)
-            model.summary()
 
             print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
 
