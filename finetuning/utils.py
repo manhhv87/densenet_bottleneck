@@ -5,8 +5,9 @@ import tensorflow as tf
 from transplant.modules.densenet1d import _DenseNet
 
 
-def ecg_feature_extractor(stages=None):
-    base_model = _DenseNet(num_outputs=None,
+def ecg_feature_extractor(input_layer=None, stages=None):
+    base_model = _DenseNet(input_layer=input_layer,
+                           num_outputs=None,
                            blocks=(6, 4, 6, 0)[:stages],
                            first_num_channels=16,
                            growth_rate=8,
