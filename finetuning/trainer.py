@@ -169,13 +169,14 @@ if __name__ == '__main__':
                 accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
 
             # not include fc layer
-            x = ecg_feature_extractor()
+            x = ecg_feature_extractor(input_layer=tf.keras.layers.Input(shape=train['x'].shape[1:],
+                                                                        dtype=train['x'].dtype))
+
             # model.add(tf.keras.layers.Dense(units=num_classes, activation=activation))
 
             x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
             model = tf.keras.models.Model(inputs=tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype),
                                           outputs=x)
-
 
             # initialize the weights of the model
             # inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
