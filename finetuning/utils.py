@@ -6,22 +6,24 @@ from transplant.modules.densenet1d import _DenseNet
 
 
 def ecg_feature_extractor(input_layer=None, stages=None):
-    base_model = _DenseNet(input_layer=input_layer,
-                           num_outputs=None,
-                           blocks=(6, 4, 6, 0)[:stages],
-                           first_num_channels=16,
-                           growth_rate=8,
-                           kernel_size=(8, 6, 8, 4),
-                           bottleneck=True,
-                           dropout_rate=None,
-                           include_top=False).model()
+    backbone_model = _DenseNet(input_layer=input_layer,
+                               num_outputs=None,
+                               blocks=(6, 4, 6, 0)[:stages],
+                               first_num_channels=16,
+                               growth_rate=8,
+                               kernel_size=(8, 6, 8, 4),
+                               bottleneck=True,
+                               dropout_rate=None,
+                               include_top=False).model()
 
-    feature_extractor = base_model.output
-    feature_extractor = tf.keras.layers.GlobalAveragePooling1D()(feature_extractor)
+    backbone_model_input = backbone_model.input
+    backbone_model_output = backbone_model.output
+
+    return backbone_model_input, backbone_model_output
 
     # feature_extractor = tf.keras.Sequential([base_model,
     #                                          tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
-    return feature_extractor
+    # return feature_extractor
 
 
 def train_test_split(data_set, **options):
