@@ -144,9 +144,17 @@ if __name__ == '__main__':
 
         print('[INFO] Train data shape:', train['x'].shape)
 
-        train_data = _create_dataset_from_data(train).shuffle(len(train['x'])).batch(args.batch_size)
-        val_data = _create_dataset_from_data(val).batch(args.batch_size) if val else None
-        test_data = _create_dataset_from_data(test).batch(args.batch_size) if test else None
+        # train_data = _create_dataset_from_data(train).shuffle(len(train['x'])).batch(args.batch_size)
+        # val_data = _create_dataset_from_data(val).batch(args.batch_size) if val else None
+        # test_data = _create_dataset_from_data(test).batch(args.batch_size) if test else None
+
+        # Disable AutoShard.
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+        train_data = _create_dataset_from_data(train).with_options(options).shuffle(len(train['x'])).batch(
+            args.batch_size)
+        val_data = _create_dataset_from_data(val).with_options(options).batch(args.batch_size) if val else None
+        test_data = _create_dataset_from_data(test).with_options(options).batch(args.batch_size) if test else None
 
         train_size = len(train['x'])
         val_size = len(val['x'])
@@ -306,10 +314,10 @@ if __name__ == '__main__':
             callbacks.append(clr)
 
             # Disable AutoShard.
-            options = tf.data.Options()
-            options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
-            train_data = train_data.with_options(options)
-            val_data = val_data.with_options(options)
+            # options = tf.data.Options()
+            # options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
+            # train_data = train_data.with_options(options)
+            # val_data = val_data.with_options(options)
 
             model.fit(train_data, epochs=args.epochs, verbose=1, validation_data=val_data, callbacks=callbacks)
 
