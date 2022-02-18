@@ -345,6 +345,21 @@ if __name__ == '__main__':
                                                             record_ids=test['record_ids'])
                 test_predictions.to_csv(path_or_buf=args.job_dir / 'test_predictions.csv', index=False)
 
+                test_pre = read_predictions(str(args.job_dir) + '/test_predictions.csv')
+                y_true = test_pre['y_true']
+                y_prob = test_pre['y_prob']
+
+                # Evaluation on F1
+                if args.val_metric == 'f1':
+                    macro_f1 = f1(y_true, y_prob)
+                    print('[INFO] macro f1 for is {}'.format(macro_f1))
+
+                    f1_each_class = f1_classes(y_true, y_prob)
+                    print('[INFO] f1 for each class for fold is {}'.format(f1_each_class))
+
+                    test_mse, test_mae = model.evaluate(val_data, verbose=1)
+                    print('[INFO] Validation MSE and MAE ars {} and {}'.format(test_mse, test_mae))
+
     else:  # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
         data_set = load_pkl(file=str(args.train))
