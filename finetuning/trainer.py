@@ -368,6 +368,31 @@ if __name__ == '__main__':
                     test_mse, test_mae = model.evaluate(val_data, verbose=1)
                     print('[INFO] Validation MSE and MAE ars {} and {}'.format(test_mse, test_mae))
 
+                # Evaluation on AUC
+                if args.val_metric == 'auc':
+                    macro_auc = auc(y_true, y_prob)
+                    print('[INFO] macro AUC is {}'.format(macro_auc))
+
+                # Evaluation on Fmax
+                if args.val_metric == 'fmax':
+                    f_max = f_max(y_true, y_prob)
+                    print('[INFO] f_max is {}'.format(f_max))
+
+                # Evaluation on Fbeta=2
+                if args.val_metric == 'fmetric':
+                    f_beta = f_beta_metric(y_true, y_prob)
+                    print('[INFO] f_beta is {}'.format(f_beta))
+
+                # Evaluation on Gbeta=2
+                if args.val_metric == 'gmetric':
+                    g_beta = g_beta_metric(y_true, y_prob)
+                    print('[INFO] g_beta is {}'.format(g_beta))
+
+                # Evaluation on f2018
+                if args.val_metric == 'f2018':
+                    f2018 = f1_2018(y_true, y_prob)
+                    print('[INFO] f2018 is {}'.format(f2018))
+
     else:  # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
         data_set = load_pkl(file=str(args.train))
