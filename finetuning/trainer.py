@@ -352,7 +352,7 @@ if __name__ == '__main__':
                 # Evaluation on F1
                 if args.val_metric == 'f1':
                     macro_f1 = f1(y_true, y_prob)
-                    print('[INFO] macro f1 for is {}'.format(macro_f1))
+                    print('[INFO] macro f1 is {}'.format(macro_f1))
 
                     f1_each_class = f1_classes(y_true, y_prob)
                     print('[INFO] f1 for each class is {}'.format(f1_each_class))
