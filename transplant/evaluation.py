@@ -177,8 +177,6 @@ def challenge2020_scores(y_true, y_prob):
 def f1_2018(y_true, y_prob):
     A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
 
-    print(A)
-
     F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
     F12 = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
     F13 = 2 * A[2][2] / (np.sum(A[2, :]) + np.sum(A[:, 2]))
