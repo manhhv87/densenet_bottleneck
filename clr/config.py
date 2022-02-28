@@ -6,7 +6,7 @@ import os
 MIN_LR = 1e-5
 MAX_LR = 1e-3
 STEP_SIZE = 8
-CLR_METHOD = "triangular"
+CLR_METHOD = "exp_range"
 
 # define the path to the output learning rate finder plot, training
 # history plot and cyclical learning rate plot
