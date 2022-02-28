@@ -176,6 +176,7 @@ def challenge2020_scores(y_true, y_prob):
 
 def f1_2018(y_true, y_prob):
     A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
+
     print(A)
 
     F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
@@ -188,6 +189,18 @@ def f1_2018(y_true, y_prob):
     F18 = 2 * A[7][7] / (np.sum(A[7, :]) + np.sum(A[:, 7]))
     F19 = 2 * A[8][8] / (np.sum(A[8, :]) + np.sum(A[:, 8]))
     F1 = (F11 + F12 + F13 + F14 + F15 + F16 + F17 + F18 + F19) / 9
+    Faf = F12
+    Fblock = 2 * (A[2][2] + A[3][3] + A[4][4]) / (np.sum(A[2, :]) + np.sum(A[:, 2]) +
+                                                  np.sum(A[3, :]) + np.sum(A[:, 3]) +
+                                                  np.sum(A[4, :]) + np.sum(A[:, 4]))
+    Fpc = 2 * (A[5][5] + A[6][6]) / (np.sum(A[5, :]) + np.sum(A[:, 5]) +
+                                     np.sum(A[6, :]) + np.sum(A[:, 6]))
+    Fst = 2 * (A[7][7] + A[8][8]) / (np.sum(A[7, :]) + np.sum(A[:, 7]) +
+                                     np.sum(A[8, :]) + np.sum(A[:, 8]))
+
+    print("Value for F11 --> Fst is: {} {} {} {} {} {} {} {} {} {} {} {} {} {}".
+          format(F11, F12, F13, F14, F15, F16, F17, F18, F19, F1, Faf, Fblock, Fpc, Fst))
+
     return F1
 
 
