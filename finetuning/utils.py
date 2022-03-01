@@ -8,10 +8,11 @@ from transplant.modules.densenet1d import _DenseNet
 def ecg_feature_extractor(input_layer=None, stages=None):
     backbone_model = _DenseNet(input_layer=input_layer,
                                num_outputs=None,
-                               blocks=(6, 4, 6, 0)[:stages],
+                               # blocks=(6, 4, 6, 0)[:stages],
+                               blocks=(6, 12, 24, 16)[:stages],
                                first_num_channels=16,
                                growth_rate=8,
-                               kernel_size=(8, 6, 8, 4),
+                               kernel_size=(3, 3, 3, 3),
                                bottleneck=True,
                                dropout_rate=None,
                                include_top=False).model()
