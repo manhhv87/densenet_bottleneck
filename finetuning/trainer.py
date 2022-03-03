@@ -298,7 +298,7 @@ if __name__ == '__main__':
             callbacks.append(checkpoint)
 
             if val:
-                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=15,
+                early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30,
                                                                   min_delta=0.001, verbose=1)
                 callbacks.append(early_stopping)
 
