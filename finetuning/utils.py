@@ -9,7 +9,7 @@ def ecg_feature_extractor(input_layer=None, stages=None):
     backbone_model = _DenseNet(input_layer=input_layer,
                                num_outputs=None,
                                # blocks=(6, 4, 6, 0)[:stages],
-                               blocks=(6, 12, 32, 32)[:stages],
+                               blocks=(6, 12, 24, 16)[:stages],
                                # first_num_channels=16,
                                first_num_channels=64,
                                # growth_rate=8,
