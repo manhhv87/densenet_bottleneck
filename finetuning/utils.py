@@ -8,7 +8,7 @@ from transplant.modules.densenet1d import _DenseNet
 def ecg_feature_extractor(input_layer=None, stages=None):
     backbone_model = _DenseNet(input_layer=input_layer,
                                num_outputs=None,
-                               # blocks=(6, 4, 6, 0)[:stages],
+                               # blocks=(6, 4, 6, 0)[:stages],      # Own model
                                # blocks=(6, 12, 24, 16)[:stages],   # DenseNet-121
                                # blocks=(6, 12, 32, 32)[:stages],     # DenseNet-169
                                blocks=(6, 12, 48, 32)[:stages],  # DenseNet-201
