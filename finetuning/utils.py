@@ -10,8 +10,8 @@ def ecg_feature_extractor(input_layer=None, stages=None):
                                num_outputs=None,
                                # blocks=(6, 4, 6, 0)[:stages],      # Own model
                                # blocks=(6, 12, 24, 16)[:stages],   # DenseNet-121
-                               blocks=(6, 12, 32, 32)[:stages],     # DenseNet-169
-                               # blocks=(6, 12, 48, 32)[:stages],  # DenseNet-201
+                               # blocks=(6, 12, 32, 32)[:stages],     # DenseNet-169
+                               blocks=(6, 12, 48, 32)[:stages],  # DenseNet-201
                                # blocks=(6, 12, 64, 48)[:stages],  # DenseNet-264
                                # first_num_channels=16,
                                first_num_channels=64,
