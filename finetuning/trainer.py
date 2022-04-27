@@ -202,7 +202,7 @@ if __name__ == '__main__':
             x = tf.keras.layers.Dense(units=64, activation='relu')(x)
             x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
             model = tf.keras.models.Model(inputs=backbone_model.input, outputs=x)
-            model.summary()
+            # model.summary()
 
             print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
 
