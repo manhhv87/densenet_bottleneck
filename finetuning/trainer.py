@@ -197,8 +197,8 @@ if __name__ == '__main__':
             # x = tf.keras.layers.Activation('relu')(x)
             x = Bidirectional(LSTM(units=64, return_sequences=True,
                                    dropout=0.5, recurrent_dropout=0.1))(backbone_model.output)
-            x = tf.keras.layers.GlobalMaxPooling1D()(x)
-            # x = tf.keras.layers.GlobalAveragePooling1D()(backbone_model.output)
+            # x = tf.keras.layers.GlobalMaxPooling1D()(x)
+            x = tf.keras.layers.GlobalAveragePooling1D()(backbone_model.output)
             x = tf.keras.layers.Dense(units=64, activation='relu')(x)
             x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
             model = tf.keras.models.Model(inputs=backbone_model.input, outputs=x)
