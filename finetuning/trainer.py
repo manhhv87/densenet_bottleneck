@@ -199,7 +199,7 @@ if __name__ == '__main__':
                                    dropout=0.2, recurrent_dropout=0.1))(backbone_model.output)
             # x = tf.keras.layers.GlobalMaxPooling1D()(x)
             x = tf.keras.layers.GlobalAveragePooling1D()(backbone_model.output)
-            x = tf.keras.layers.Dense(units=16, activation='relu')(x)
+            x = tf.keras.layers.Dense(units=64, activation='relu')(x)
             x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
             model = tf.keras.models.Model(inputs=backbone_model.input, outputs=x)
             # model.summary()
