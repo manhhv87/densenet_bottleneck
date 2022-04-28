@@ -195,7 +195,7 @@ if __name__ == '__main__':
 
             # x = tf.keras.layers.BatchNormalization()(backbone_model.output)
             # x = tf.keras.layers.Activation('relu')(x)
-            x = Bidirectional(LSTM(units=128, return_sequences=True,
+            x = Bidirectional(LSTM(units=256, return_sequences=True,
                                    dropout=0.2, recurrent_dropout=0.1))(backbone_model.output)
             # x = tf.keras.layers.GlobalMaxPooling1D()(x)
             x = tf.keras.layers.GlobalAveragePooling1D()(backbone_model.output)
