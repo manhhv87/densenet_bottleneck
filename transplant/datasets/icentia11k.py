@@ -30,8 +30,8 @@ ds_rhythm_names = {
 
 # _HI_PRIO_RHYTHMS = [0, 4, 5]  # undefined / afib / aflut
 # _LO_PRIO_RHYTHMS = [1, 2, 3]  # end / noise / normal
-_HI_PRIO_RHYTHMS = [4, 5]  # undefined / afib / aflut
-_LO_PRIO_RHYTHMS = [0, 1, 2, 3]  # end / noise / normal
+_HI_PRIO_RHYTHMS = [0, 4, 5]  # undefined / afib / aflut
+_LO_PRIO_RHYTHMS = [1, 2, 3]  # end / noise / normal
 
 _HI_PRIO_BEATS = [2, 3, 4]  # pac / aberrated / pvc
 _LO_PRIO_BEATS = [0, 1]     # undefined / normal
