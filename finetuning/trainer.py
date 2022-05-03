@@ -195,15 +195,15 @@ if __name__ == '__main__':
 
             # x = tf.keras.layers.BatchNormalization()(backbone_model.output)
             # x = tf.keras.layers.Activation('relu')(x)
-            x = Bidirectional(LSTM(units=64, return_sequences=True))(backbone_model.output)
-            # x = tf.keras.layers.GlobalMaxPooling1D()(x)
-            x = tf.keras.layers.GlobalAveragePooling1D()(x)
-            # x = tf.keras.layers.BatchNormalization()(x)
-            # x = tf.keras.layers.Dropout(0.2)(x)
-            x = tf.keras.layers.Dense(units=64, activation='gelu')(x)
+            x = Bidirectional(LSTM(units=32, return_sequences=True))(backbone_model.output)
+            x = tf.keras.layers.GlobalMaxPooling1D()(x)
+            # x = tf.keras.layers.GlobalAveragePooling1D()(x)
+            x = tf.keras.layers.BatchNormalization()(x)
+            x = tf.keras.layers.Dropout(0.2)(x)
+            x = tf.keras.layers.Dense(units=32, activation='relu')(x)
             x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
             model = tf.keras.models.Model(inputs=backbone_model.input, outputs=x)
-            model.summary()
+            # model.summary()
 
             print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
 
@@ -213,8 +213,7 @@ if __name__ == '__main__':
                 print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
                 model.load_weights(str(args.weights_file))
 
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
-                                                             beta_2=0.98, epsilon=1e-9),
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                           loss=loss,
                           metrics=[accuracy])
 
