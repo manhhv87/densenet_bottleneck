@@ -200,7 +200,7 @@ if __name__ == '__main__':
             # x = tf.keras.layers.GlobalAveragePooling1D()(x)
             # x = tf.keras.layers.BatchNormalization()(x)
             # x = tf.keras.layers.Dropout(0.2)(x)
-            x = tf.keras.layers.Dense(units=32, activation='relu')(x)
+            # x = tf.keras.layers.Dense(units=32, activation='relu')(x)
             # x = tf.keras.layers.Dense(units=16, activation='relu')(x)
             x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
             model = tf.keras.models.Model(inputs=backbone_model.input, outputs=x)
