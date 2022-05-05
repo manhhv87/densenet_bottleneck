@@ -195,7 +195,7 @@ if __name__ == '__main__':
 
             # x = tf.keras.layers.BatchNormalization()(backbone_model.output)
             # x = tf.keras.layers.Activation('relu')(x)
-            x = Bidirectional(LSTM(units=32, return_sequences=True))(backbone_model.output)
+            x = Bidirectional(LSTM(units=16, return_sequences=True))(backbone_model.output)
             x = tf.keras.layers.GlobalMaxPooling1D()(x)
             # x = tf.keras.layers.GlobalAveragePooling1D()(x)
             # x = tf.keras.layers.BatchNormalization()(x)
@@ -214,7 +214,8 @@ if __name__ == '__main__':
                 print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
                 model.load_weights(str(args.weights_file))
 
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR,
+                                                             beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                           loss=loss,
                           metrics=[accuracy])
 
