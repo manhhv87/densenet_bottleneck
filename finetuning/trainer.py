@@ -189,11 +189,13 @@ if __name__ == '__main__':
             # not include fc layer
             inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
             backbone_model = ecg_feature_extractor(input_layer=inputs)
-            # x = tf.keras.layers.GlobalMaxPooling1D()(backbone_model.output)
+            x = tf.keras.layers.GlobalMaxPooling1D()(backbone_model.output)
             # x = tf.keras.layers.GlobalAveragePooling1D()(backbone_model.output)
-            x = Bidirectional(LSTM(units=64, return_sequences=True))(backbone_model.output)
-            x = tf.keras.layers.GlobalMaxPooling1D()(x)
+
+            # x = Bidirectional(LSTM(units=64, return_sequences=True))(backbone_model.output)
+            # x = tf.keras.layers.GlobalMaxPooling1D()(x)
             # x = tf.keras.layers.GlobalAveragePooling1D()(x)
+
             x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
             model = tf.keras.models.Model(inputs=backbone_model.input, outputs=x)
             model.summary()
