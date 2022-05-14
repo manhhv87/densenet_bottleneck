@@ -404,6 +404,12 @@ if __name__ == '__main__':
                     f2018 = f1_2018(y_true, y_prob)
                     print('[INFO] f2018 is {}'.format(f2018))
 
+            tf.compat.v1.reset_default_graph()
+            del model
+            gc.collect()
+            tf.keras.backend.clear_session()
+
+
     else:  # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
         data_set = load_pkl(file=str(args.train))
