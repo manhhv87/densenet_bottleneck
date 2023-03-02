@@ -2,20 +2,16 @@ import argparse
 import os
 from pathlib import Path
 
-from tensorflow.keras.layers import Bidirectional, LSTM
-
-import numpy as np
 import tensorflow as tf
+import numpy as np
 from sklearn.model_selection import KFold
 
 from transplant.utils import read_predictions
-
 from finetuning.utils import (ecg_feature_extractor, train_test_split)
 from transplant.evaluation import (auc, f1, f1_classes, multi_f1, CustomCheckpoint, f_max, f_beta_metric, g_beta_metric,
                                    f1_2018, f_af, f_block, f_pc, f_st)
 from transplant.utils import (create_predictions_frame, load_pkl, is_multiclass)
 
-from clr.learningratefinder import LearningRateFinder
 from clr.clr_callback import CyclicLR
 from clr import config
 
@@ -44,7 +40,7 @@ def _create_model(n_classes, act, dat_x, weights_file):
 
     print('[INFO] Model parameters: {:,d}'.format(old_model.count_params()))
 
-    if weights_file:  # Sử dụng trọng số đã được pre-trained
+    if weights_file:  # pre-trained weigh
         print('[INFO] Loading weights from file {} ...'.format(weights_file))
         old_model.load_weights(str(weights_file))
 
@@ -63,31 +59,42 @@ def _init_weight(same_old_model, first_weights):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--job-dir', type=Path, required=True, help='Job output directory.')
-    parser.add_argument('--train', type=Path, required=True, help='Path to the train file.')
-    parser.add_argument('--val', type=Path, help='Path to the validation file.\n'
-                                                 'Overrides --val-size.')
-    parser.add_argument('--test', type=Path, help='Path to the test file.')
-    parser.add_argument('--weights-file', type=Path, help='Path to pretrained weights or a checkpoint of the model.')
+
+    parser.add_argument('--job-dir', type=Path, required=True,
+                        help='Job output directory.')
+    parser.add_argument('--train', type=Path, required=True,
+                        help='Path to the train file.')
+    parser.add_argument('--val', type=Path,
+                        help='Path to the validation file. Overrides --val-size.')
+    parser.add_argument('--test', type=Path,
+                        help='Path to the test file.')
+    parser.add_argument('--weights-file', type=Path,
+                        help='Path to pretrained weights or a checkpoint of the model.')
     parser.add_argument('--val-size', type=float, default=None,
                         help='Size of the validation set or proportion of the train set.')
-    parser.add_argument('--subset', type=float, default=None, help='Size of a subset of the train set '
-                                                                   'or proportion of the train set.')
-    parser.add_argument('--batch-size', type=int, default=32, help='Batch size.')
+    parser.add_argument('--subset', type=float, default=None,
+                        help='Size of a subset of the train set or proportion of the train set.')
+    parser.add_argument('--batch-size', type=int, default=32,
+                        help='Batch size.')
     parser.add_argument('--val-metric', default='loss',
                         help='Validation metric used to find the best model at each epoch. Supported metrics are:'
                              '`loss`, `acc`, `f1`, `auc`, `fmax`, `fmetric`, `gmetric`, `f2018`, `faf`, `fblock`, '
                              '`fpc`, `fst`.')
-    parser.add_argument('--channel', type=int, default=None, help='Use only the selected channel. '
-                                                                  'By default use all available channels.')
-    parser.add_argument('--epochs', type=int, default=1, help='Number of epochs.')
-    parser.add_argument('--seed', type=int, default=None, help='Random state.')
-    parser.add_argument('--verbose', action='store_true', help='Show debug messages.')
-    parser.add_argument('--k-fold', type=int, default=None, help='k-fold cross validation')
+    parser.add_argument('--channel', type=int, default=None,
+                        help='Use only the selected channel. By default use all available channels.')
+    parser.add_argument('--epochs', type=int, default=50,
+                        help='Number of epochs.')
+    parser.add_argument('--seed', type=int, default=None,
+                        help='Random state.')
+    parser.add_argument('--verbose', action='store_true',
+                        help='Show debug messages.')
+    parser.add_argument('--k-fold', type=int, default=None,
+                        help='k-fold cross validation')
+
     args, _ = parser.parse_known_args()
 
-    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric', 'gmetric', 'f2018', 'faf', 'fblock',
-                               'fpc', 'fst']:
+    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric',
+                               'gmetric', 'f2018', 'faf', 'fblock', 'fpc', 'fst']:
         raise ValueError('Unknown metric: {}'.format(args.val_metric))
 
     os.makedirs(name=str(args.job_dir), exist_ok=True)
@@ -193,8 +200,9 @@ if __name__ == '__main__':
             # x = tf.keras.layers.GlobalAveragePooling1D()(backbone_model.output)
             # x = tf.keras.layers.Flatten()(backbone_model.output)
 
-            x = Bidirectional(LSTM(units=64, return_sequences=True))(backbone_model.output)
-            # x = LSTM(units=64, return_sequences=True)(backbone_model.output)
+            x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=64, return_sequences=True))(
+                backbone_model.output)
+            # x = tf.keras.layers.LSTM(units=64, return_sequences=True)(backbone_model.output)
             x = tf.keras.layers.GlobalMaxPooling1D()(x)
             # x = tf.keras.layers.GlobalAveragePooling1D()(x)
 
@@ -348,61 +356,61 @@ if __name__ == '__main__':
             #                                              record_ids=train['record_ids'])
             # train_predictions.to_csv(path_or_buf=args.job_dir / 'train_predictions.csv', index=False)
             #
-            # if val:
-            #     print('[INFO] Predicting validation data ...')
-            #     val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
-            #     val_predictions = create_predictions_frame(y_prob=val_y_prob, y_true=val['y'],
-            #                                                class_names=train['classes'],
-            #                                                record_ids=val['record_ids'])
-            #     val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
+            if val:
+                print('[INFO] Predicting validation data ...')
+                val_y_prob = model.predict(x=val['x'], batch_size=args.batch_size)
+                val_predictions = create_predictions_frame(y_prob=val_y_prob, y_true=val['y'],
+                                                           class_names=train['classes'],
+                                                           record_ids=val['record_ids'])
+                val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
 
-            if test:
-                print('[INFO] Predicting test data ...')
-                test_y_prob = model.predict(x=test['x'], batch_size=args.batch_size)
-                test_predictions = create_predictions_frame(y_prob=test_y_prob, y_true=test['y'],
-                                                            class_names=train['classes'],
-                                                            record_ids=test['record_ids'])
-                test_predictions.to_csv(path_or_buf=args.job_dir / 'test_predictions.csv', index=False)
-
-                test_pre = read_predictions(str(args.job_dir) + '/test_predictions.csv')
-                y_true = test_pre['y_true']
-                y_prob = test_pre['y_prob']
-
-                # Evaluation on F1
-                if args.val_metric == 'f1':
-                    macro_f1 = f1(y_true, y_prob)
-                    print('[INFO] macro f1 is {}'.format(macro_f1))
-
-                    f1_each_class = f1_classes(y_true, y_prob)
-                    print('[INFO] f1 for each class is {}'.format(f1_each_class))
-
-                    test_mse, test_mae = model.evaluate(val_data, verbose=1)
-                    print('[INFO] Validation MSE and MAE ars {} and {}'.format(test_mse, test_mae))
-
-                # Evaluation on AUC
-                if args.val_metric == 'auc':
-                    macro_auc = auc(y_true, y_prob)
-                    print('[INFO] macro AUC is {}'.format(macro_auc))
-
-                # Evaluation on Fmax
-                if args.val_metric == 'fmax':
-                    f_max = f_max(y_true, y_prob)
-                    print('[INFO] f_max is {}'.format(f_max))
-
-                # Evaluation on Fbeta=2
-                if args.val_metric == 'fmetric':
-                    f_beta = f_beta_metric(y_true, y_prob)
-                    print('[INFO] f_beta is {}'.format(f_beta))
-
-                # Evaluation on Gbeta=2
-                if args.val_metric == 'gmetric':
-                    g_beta = g_beta_metric(y_true, y_prob)
-                    print('[INFO] g_beta is {}'.format(g_beta))
-
-                # Evaluation on f2018
-                if args.val_metric == 'f2018':
-                    f2018 = f1_2018(y_true, y_prob)
-                    print('[INFO] f2018 is {}'.format(f2018))
+            # if test:
+            #     print('[INFO] Predicting test data ...')
+            #     test_y_prob = model.predict(x=test['x'], batch_size=args.batch_size)
+            #     test_predictions = create_predictions_frame(y_prob=test_y_prob, y_true=test['y'],
+            #                                                 class_names=train['classes'],
+            #                                                 record_ids=test['record_ids'])
+            #     test_predictions.to_csv(path_or_buf=args.job_dir / 'test_predictions.csv', index=False)
+            #
+            #     test_pre = read_predictions(str(args.job_dir) + '/test_predictions.csv')
+            #     y_true = test_pre['y_true']
+            #     y_prob = test_pre['y_prob']
+            #
+            #     # Evaluation on F1
+            #     if args.val_metric == 'f1':
+            #         macro_f1 = f1(y_true, y_prob)
+            #         print('[INFO] macro f1 is {}'.format(macro_f1))
+            #
+            #         f1_each_class = f1_classes(y_true, y_prob)
+            #         print('[INFO] f1 for each class is {}'.format(f1_each_class))
+            #
+            #         test_mse, test_mae = model.evaluate(val_data, verbose=1)
+            #         print('[INFO] Validation MSE and MAE ars {} and {}'.format(test_mse, test_mae))
+            #
+            #     # Evaluation on AUC
+            #     if args.val_metric == 'auc':
+            #         macro_auc = auc(y_true, y_prob)
+            #         print('[INFO] macro AUC is {}'.format(macro_auc))
+            #
+            #     # Evaluation on Fmax
+            #     if args.val_metric == 'fmax':
+            #         f_max = f_max(y_true, y_prob)
+            #         print('[INFO] f_max is {}'.format(f_max))
+            #
+            #     # Evaluation on Fbeta=2
+            #     if args.val_metric == 'fmetric':
+            #         f_beta = f_beta_metric(y_true, y_prob)
+            #         print('[INFO] f_beta is {}'.format(f_beta))
+            #
+            #     # Evaluation on Gbeta=2
+            #     if args.val_metric == 'gmetric':
+            #         g_beta = g_beta_metric(y_true, y_prob)
+            #         print('[INFO] g_beta is {}'.format(g_beta))
+            #
+            #     # Evaluation on f2018
+            #     if args.val_metric == 'f2018':
+            #         f2018 = f1_2018(y_true, y_prob)
+            #         print('[INFO] f2018 is {}'.format(f2018))
 
     else:  # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
