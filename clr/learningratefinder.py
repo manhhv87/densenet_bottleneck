@@ -51,8 +51,8 @@ class LearningRateFinder:
         self.lrs.append(lr)
 
         # grab the loss at the end of this batch, increment the total
-        # number of batches processed, compute the average average
-        # loss, smooth it, and update the losses list with the
+        # number of batches processed, compute the average loss,
+        # smooth it, and update the losses list with the
         # smoothed value
         l = logs["loss"]
         self.batchNum += 1
