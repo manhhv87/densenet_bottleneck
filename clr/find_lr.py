@@ -1,7 +1,5 @@
 import argparse
-import os
 from pathlib import Path
-
 import tensorflow as tf
 import numpy as np
 
@@ -22,34 +20,6 @@ def _create_dataset_from_data(data):
     return: data and label
     """
     return tf.data.Dataset.from_tensor_slices((data['x'], data['y']))
-
-
-def _create_model(n_classes, act, dat_x, weights_file):
-    # include fc layer
-    old_model = ecg_feature_extractor()
-    old_model.add(tf.keras.layers.Dense(units=n_classes, activation=act))
-
-    # initialize the weights of the model
-    inputs_func = tf.keras.layers.Input(shape=dat_x.shape[1:], dtype=dat_x.dtype)
-    old_model(inputs_func)
-
-    print('[INFO] Model parameters: {:,d}'.format(old_model.count_params()))
-
-    if weights_file:  # pre-trained weigh
-        print('[INFO] Loading weights from file {} ...'.format(weights_file))
-        old_model.load_weights(str(weights_file))
-
-    old_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR, beta_1=0.9,
-                                                         beta_2=0.98, epsilon=1e-9),
-                      loss=loss,
-                      metrics=[accuracy])
-
-    return old_model, old_model.get_weights()
-
-
-# we initialize it multiple times
-def _init_weight(same_old_model, first_weights):
-    same_old_model.set_weights(first_weights)
 
 
 def parse_args():
@@ -115,15 +85,10 @@ if __name__ == '__main__':
         # Creating model
         inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
         backbone_model = ecg_feature_extractor(input_layer=inputs)
-        # x = tf.keras.layers.GlobalMaxPooling1D()(backbone_model.output)
-        # x = tf.keras.layers.GlobalAveragePooling1D()(backbone_model.output)
-        # x = tf.keras.layers.Flatten()(backbone_model.output)
 
         x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=64, return_sequences=True))(
             backbone_model.output)
-        # x = tf.keras.layers.LSTM(units=64, return_sequences=True)(backbone_model.output)
         x = tf.keras.layers.GlobalMaxPooling1D()(x)
-        # x = tf.keras.layers.GlobalAveragePooling1D()(x)
 
         x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
         model = tf.keras.models.Model(inputs=backbone_model.input, outputs=x)
