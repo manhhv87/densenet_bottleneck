@@ -29,14 +29,10 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--job-dir', type=Path, required=True,
-                        help='Job output directory.')
     parser.add_argument('--train', type=Path, required=True,
                         help='Path to the train file.')
     parser.add_argument('--batch-size', type=int, default=32,
                         help='Batch size.')
-    parser.add_argument('--epochs', type=int, default=50,
-                        help='Number of epochs.')
     parser.add_argument('--seed', type=int, default=None,
                         help='Random state.')
     parser.add_argument('--verbose', action='store_true',
@@ -98,6 +94,8 @@ if __name__ == '__main__':
 
         # use the learning rate finder to find a suitable range to train our network
         lrf = LearningRateFinder(model)
-        lrf.find(trainData=train_data, startLR=1e-10, endLR=1e+1,
+        lrf.find(trainData=train_data,
+                 startLR=1e-10, endLR=1e+1,
                  stepsPerEpoch=config.STEP_SIZE * len(train['x']) // args.batch_size,
-                 batchSize=config.BATCH_SIZE)
+                 batchSize=args.batch_size,
+                 verbose=args.verbose)
