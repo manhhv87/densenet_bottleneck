@@ -202,30 +202,6 @@ def f1_2018(y_true, y_prob):
     return F1
 
 
-def f_af(y_true, y_prob):
-    A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
-    Faf = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
-    return Faf
-
-
-def f_block(y_true, y_prob):
-    A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
-    Fblock = 2 * (A[2][2] + A[3][3] + A[4][4]) / (np.sum(A[2:5, :]) + np.sum(A[:, 2:5]))
-    return Fblock
-
-
-def f_pc(y_true, y_prob):
-    A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
-    Fpc = 2 * (A[5][5] + A[6][6]) / (np.sum(A[5:7, :]) + np.sum(A[:, 5:7]))
-    return Fpc
-
-
-def f_st(y_true, y_prob):
-    A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
-    Fst = 2 * (A[7][7] + A[8][8]) / (np.sum(A[7:9, :]) + np.sum(A[:, 7:9]))
-    return Fst
-
-
 def _one_hot(x, depth):
     x_one_hot = np.zeros((x.size, depth))
     x_one_hot[np.arange(x.size), x] = 1

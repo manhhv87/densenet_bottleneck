@@ -25,10 +25,6 @@ def ecg_feature_extractor(input_layer=None, stages=None):
 
     return backbone_model
 
-    # feature_extractor = tf.keras.Sequential([base_model,
-    #                                          tf.keras.layers.GlobalAveragePooling1D()])  # not fc layer
-    # return feature_extractor
-
 
 def train_test_split(data_set, **options):
     x, y, record_ids, classes = data_set['x'], data_set['y'], data_set['record_ids'], data_set['classes']
