@@ -6,6 +6,11 @@ import tensorflow as tf
 import numpy as np
 from sklearn.model_selection import KFold
 
+# set the matplotlib backend so figures can be saved in the background
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
 from finetuning.utils import (ecg_feature_extractor, train_test_split)
 from transplant.evaluation import (auc, f1, multi_f1, CustomCheckpoint, f_max,
                                    f_beta_metric, g_beta_metric, f1_2018)
@@ -15,7 +20,6 @@ from clr.clr_callback import CyclicLR
 from clr import config
 
 import gc
-from warnings import warn
 
 
 def _create_dataset_from_data(data):
@@ -68,6 +72,7 @@ def parse_args():
                         help='Job output directory.')
     parser.add_argument('--train', type=Path, required=True,
                         help='Path to the train file.')
+    parser.add_argument('--test', type=Path, help='Path to the test file.')
     parser.add_argument('--val', type=Path,
                         help='Path to the validation file. Overrides --val-size.')
     parser.add_argument('--val-size', type=float, default=None,
@@ -96,11 +101,7 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args, unk = parse_args()
-
-    # Check for unknown options
-    if unk:
-        warn("Unknown arguments:" + str(unk) + ".")
+    args, _ = parse_args()
 
     if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric', 'gmetric', 'f2018']:
         raise ValueError('Unknown metric: {}'.format(args.val_metric))
@@ -140,12 +141,6 @@ if __name__ == '__main__':
         else:  # Không sử dụng val set
             val = None
 
-        if args.test:  # Sử dụng test set file riêng biệt
-            print('[INFO] Loading test data from {} ...'.format(args.test))
-            test = load_pkl(str(args.test))
-        else:  # Không sử dụng test set
-            test = None
-
         if args.subset:  # Tiếp tục chia train set sau khi đã chia train dataset ban đầu thành new train set và val set
             original_train_size = len(train['x'])  # Trả về kích thước của train set
             train, _ = train_test_split(train, train_size=args.subset, stratify=train['y'])  # Trả về new train set
@@ -156,8 +151,6 @@ if __name__ == '__main__':
             train['x'] = train['x'][:, :, args.channel:args.channel + 1]
             if val:
                 val['x'] = val['x'][:, :, args.channel:args.channel + 1]
-            if test:
-                test['x'] = test['x'][:, :, args.channel:args.channel + 1]
 
         print('[INFO] Train data shape:', train['x'].shape)
 
@@ -165,9 +158,8 @@ if __name__ == '__main__':
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
         train_data = _create_dataset_from_data(train).with_options(options).shuffle(len(train['x'])).batch(
-            args.batch_size)
-        val_data = _create_dataset_from_data(val).with_options(options).batch(args.batch_size) if val else None
-        test_data = _create_dataset_from_data(test).with_options(options).batch(args.batch_size) if test else None
+            args.batch_size, drop_remainder=True)
+        val_data = _create_dataset_from_data(val).with_options(options).batch(args.batch_size, drop_remainder=True) if val else None
 
         if train:
             train_size = len(train['x'])
@@ -175,9 +167,6 @@ if __name__ == '__main__':
         if val:
             val_size = len(val['x'])
             print('[INFO] Validation size {} ...'.format(val_size))
-        if test:
-            test_size = len(test['x'])
-            print('[INFO] Test size {} ...'.format(test_size))
 
         strategy = tf.distribute.MirroredStrategy()
 
@@ -209,7 +198,7 @@ if __name__ == '__main__':
 
             x = tf.keras.layers.Dense(units=num_classes, activation=activation)(x)
             model = tf.keras.models.Model(inputs=backbone_model.input, outputs=x)
-            model.summary()
+            # model.summary()
 
             print('[INFO] Model parameters: {:,d}'.format(model.count_params()))
 
@@ -217,67 +206,74 @@ if __name__ == '__main__':
                 # initialize weights (excluding the optimizer state) to load the pretrained resnet
                 # the optimizer state is randomly initialized in the `model.compile` function
                 print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
-                model.load_weights(str(args.weights_file))
+                model.load_weights(str(args.weights_file)).expect_partial()
 
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR),
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                           loss=loss, metrics=[accuracy])
 
             callbacks = [tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))]
 
             if args.val_metric in ['loss', 'acc']:
                 monitor = ('val_' + args.val_metric) if val else args.val_metric
-                checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                                                monitor=monitor,
-                                                                save_best_only=True,
-                                                                save_weights_only=True,
-                                                                mode='auto',
-                                                                verbose=1)
+                checkpoint = [tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'backup_model_last.weights')),
+                              tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'backup_best_model.weights'),
+                                                                 monitor=monitor,
+                                                                 save_best_only=True,
+                                                                 save_weights_only=True,
+                                                                 mode='auto',
+                                                                 verbose=1)]
             elif args.val_metric == 'f1':
                 if is_multiclass(train['y']):
                     score_fn = multi_f1
                 else:
                     score_fn = f1
 
-                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']) if val else (train_data, train['y']),
-                                              score_fn=score_fn,
-                                              save_best_only=True,
-                                              verbose=1)
+                checkpoint = [tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'backup_model_last.weights')),
+                              CustomCheckpoint(filepath=str(args.job_dir / 'backup_best_model.weights'),
+                                               data=(val_data, val['y']) if val else (train_data, train['y']),
+                                               score_fn=score_fn,
+                                               save_best_only=True,
+                                               verbose=1)]
 
             elif args.val_metric == 'auc':
-                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']) if val else (train_data, train['y']),
-                                              score_fn=auc,
-                                              save_best_only=True,
-                                              verbose=1)
+                checkpoint = [tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'backup_model_last.weights')),
+                              CustomCheckpoint(filepath=str(args.job_dir / 'backup_best_model.weights'),
+                                               data=(val_data, val['y']) if val else (train_data, train['y']),
+                                               score_fn=auc,
+                                               save_best_only=True,
+                                               verbose=1)]
 
             elif args.val_metric == 'fmax':
-                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
-                                              score_fn=f_max,
-                                              save_best_only=True,
-                                              verbose=1)
+                checkpoint = [tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'backup_model_last.weights')),
+                              CustomCheckpoint(filepath=str(args.job_dir / 'backup_best_model.weights'),
+                                               data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                               score_fn=f_max,
+                                               save_best_only=True,
+                                               verbose=1)]
 
             elif args.val_metric == 'fmetric':
-                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
-                                              score_fn=f_beta_metric,
-                                              save_best_only=True,
-                                              verbose=1)
+                checkpoint = [tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'backup_model_last.weights')),
+                              CustomCheckpoint(filepath=str(args.job_dir / 'backup_best_model.weights'),
+                                               data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                               score_fn=f_beta_metric,
+                                               save_best_only=True,
+                                               verbose=1)]
 
             elif args.val_metric == 'gmetric':
-                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
-                                              score_fn=g_beta_metric,
-                                              save_best_only=True,
-                                              verbose=1)
+                checkpoint = [tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'backup_model_last.weights')),
+                              CustomCheckpoint(filepath=str(args.job_dir / 'backup_best_model.hdf5'),
+                                               data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                               score_fn=g_beta_metric,
+                                               save_best_only=True,
+                                               verbose=1)]
 
             elif args.val_metric == 'f2018':
-                checkpoint = CustomCheckpoint(filepath=str(args.job_dir / 'best_model.weights'),
-                                              data=(val_data, val['y']),  # if val else (train_data, train['y']),
-                                              score_fn=f1_2018,
-                                              save_best_only=True,
-                                              verbose=1)
+                checkpoint = [tf.keras.callbacks.ModelCheckpoint(filepath=str(args.job_dir / 'backup_model_last.weights')),
+                              CustomCheckpoint(filepath=str(args.job_dir / 'backup_best_model.weights'),
+                                               data=(val_data, val['y']),  # if val else (train_data, train['y']),
+                                               score_fn=f1_2018,
+                                               save_best_only=True,
+                                               verbose=1)]
 
             else:
                 raise ValueError('Unknown metric: {}'.format(args.val_metric))
@@ -291,26 +287,31 @@ if __name__ == '__main__':
 
             # otherwise, we have already defined a learning rate space to train over,
             # so compute the step size and initialize the cyclic learning rate method
+            stepSize = config.STEP_SIZE * (train_size // args.batch_size)
             clr = CyclicLR(mode=config.CLR_METHOD,
                            base_lr=config.MIN_LR,
                            max_lr=config.MAX_LR,
-                           step_size=config.STEP_SIZE * train_size // args.batch_size)
+                           step_size=stepSize)
 
             callbacks.append(clr)
 
-            model.fit(train_data,
-                      validation_data=val_data,
-                      epochs=args.epochs,
-                      callbacks=callbacks,
-                      verbose=1)
+            # train the network
+            print("[INFO] Training network...")
+            H = model.fit(train_data,
+                          validation_data=val_data,
+                          steps_per_epoch=train_size // args.batch_size,
+                          epochs=args.epochs,
+                          callbacks=[callbacks],
+                          verbose=1)           
 
-            # load best model for inference
-            print('[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'best_model.weights')))
-            model.load_weights(filepath=str(args.job_dir / 'best_model.weights'))
+            # Load best model for inference
+            print('[INFO] Loading the best weights from file {} ...'.format(str(args.job_dir / 'backup_best_model.weights')))
+            model.load_weights(filepath=str(args.job_dir / 'backup_best_model.weights')).expect_partial()
 
             # Save the entire model as a SavedModel.
             print('[INFO] Saving model ...')
-            model.save(str(args.job_dir / 'best_model'))
+            model.save(str(args.job_dir / 'final_model'))
+
 
             if val:
                 print('[INFO] Predicting validation data ...')
@@ -319,6 +320,32 @@ if __name__ == '__main__':
                                                            class_names=train['classes'],
                                                            record_ids=val['record_ids'])
                 val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
+
+            # construct a plot that plots and saves the training history
+            N = np.arange(0, args.epochs)
+            plt.style.use("ggplot")
+            plt.figure()
+            plt.plot(N, H.history["loss"], label="train_loss")
+            plt.plot(N, H.history["val_loss"], label="val_loss")
+            plt.plot(N, H.history["acc"], label="train_acc")
+            plt.plot(N, H.history["val_acc"], label="val_acc")
+            plt.title("Training Loss and Accuracy")
+            plt.xlabel("Epoch #")
+            plt.ylabel("Loss/Accuracy")
+            plt.legend(loc="lower left")
+            plt.savefig(config.TRAINING_PLOT_PATH)
+
+            # plot the learning rate history
+            N = np.arange(0, len(clr.history["lr"]))
+            plt.figure()
+            plt.plot(N, clr.history["lr"])
+            plt.title("Cyclical Learning Rate (CLR)")
+            plt.xlabel("Training Iterations")
+            plt.ylabel("Learning Rate")
+            plt.savefig(config.CLR_PLOT_PATH)
+            print(clr.history)
+            print(clr.history["lr"])
+            print(clr.history["iterations"])
 
 
     else:  # Đánh giá theo k-fold cross validation
