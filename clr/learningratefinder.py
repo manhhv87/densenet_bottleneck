@@ -1,6 +1,4 @@
-# import the necessary packages
-from tensorflow.keras.callbacks import LambdaCallback
-from tensorflow.keras import backend as K
+import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 import tempfile
@@ -47,7 +45,7 @@ class LearningRateFinder:
     def on_batch_end(self, batch, logs):
         # grab the current learning rate and add log it to the list of
         # learning rates that we've tried
-        lr = K.get_value(self.model.optimizer.lr)
+        lr = tf.keras.backend.get_value(self.model.optimizer.lr)
         self.lrs.append(lr)
 
         # grab the loss at the end of this batch, increment the total
@@ -75,7 +73,7 @@ class LearningRateFinder:
 
         # increase the learning rate
         lr *= self.lrMult
-        K.set_value(self.model.optimizer.lr, lr)
+        tf.keras.backend.set_value(self.model.optimizer.lr, lr)
 
     def find(self, trainData, startLR, endLR, epochs=None, stepsPerEpoch=None,
              batchSize=32, sampleSize=2048, verbose=1):
@@ -135,13 +133,13 @@ class LearningRateFinder:
 
         # grab the *original* learning rate (so we can reset it
         # later), and then set the *starting* learning rate
-        origLR = K.get_value(self.model.optimizer.lr)
-        K.set_value(self.model.optimizer.lr, startLR)
+        origLR = tf.keras.backend.get_value(self.model.optimizer.lr)
+        tf.keras.backend.set_value(self.model.optimizer.lr, startLR)
 
         # construct a callback that will be called at the end of each
         # batch, enabling us to increase our learning rate as training
         # progresses
-        callback = LambdaCallback(on_batch_end=lambda batch, logs:
+        callback = tf.keras.callbacks.LambdaCallback(on_batch_end=lambda batch, logs:
         self.on_batch_end(batch, logs))
 
         # check to see if we are using a data iterator
@@ -163,7 +161,7 @@ class LearningRateFinder:
 
         # restore the original model weights and learning rate
         self.model.load_weights(self.weightsFile)
-        K.set_value(self.model.optimizer.lr, origLR)
+        tf.keras.backend.set_value(self.model.optimizer.lr, origLR)
 
     def plot_loss(self, skipBegin=10, skipEnd=1, title=""):
         # grab the learning rate and losses values to plot
