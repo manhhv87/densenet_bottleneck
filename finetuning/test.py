@@ -59,10 +59,6 @@ if __name__ == '__main__':
     if unk:
         warn("Unknown arguments:" + str(unk) + ".")
 
-    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric',
-                               'gmetric', 'f2018', 'faf', 'fblock', 'fpc', 'fst']:
-        raise ValueError('Unknown metric: {}'.format(args.val_metric))
-
     seed = args.seed or np.random.randint(2 ** 16)
     print('[INFO] Setting random state {}'.format(seed))
     np.random.seed(seed)
