@@ -35,8 +35,6 @@ def parse_args():
                         help='Batch size.')
     parser.add_argument('--seed', type=int, default=None,
                         help='Random state.')
-    parser.add_argument('--verbose', action='store_true',
-                        help='Show debug messages.')
 
     return parser.parse_known_args()
 
@@ -59,7 +57,7 @@ if __name__ == '__main__':
     options = tf.data.Options()
     options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
     train_data = _create_dataset_from_data(train).with_options(options).shuffle(len(train['x'])).batch(
-        args.batch_size)
+        args.batch_size, drop_remainder=True)
 
     print('[INFO] Train size {} ...'.format(len(train['x'])))
 
@@ -96,6 +94,5 @@ if __name__ == '__main__':
         lrf = LearningRateFinder(model)
         lrf.find(trainData=train_data,
                  startLR=1e-10, endLR=1e+1,
-                 stepsPerEpoch=config.STEP_SIZE * len(train['x']) // args.batch_size,
-                 batchSize=args.batch_size,
-                 verbose=args.verbose)
+                 stepsPerEpoch=config.STEP_SIZE * (len(train['x']) // args.batch_size),
+                 batchSize=args.batch_size)
