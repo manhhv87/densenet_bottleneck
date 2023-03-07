@@ -18,7 +18,6 @@ from clr.clr_callback import CyclicLR
 from clr import config
 
 import gc
-from warnings import warn
 
 matplotlib.use("Agg")
 
@@ -106,11 +105,10 @@ if __name__ == '__main__':
            Returns:
                A list of parsed arguments.
     """
-    args, unk = parse_args()
+    args, _ = parse_args()
 
-    # Check for unknown options
-    if unk:
-        warn("Unknown arguments:" + str(unk) + ".")
+    if args.val_metric not in ['loss', 'acc', 'f1', 'auc', 'fmax', 'fmetric', 'gmetric', 'f2018']:
+        raise ValueError('Unknown metric: {}'.format(args.val_metric))
 
     os.makedirs(name=str(args.job_dir), exist_ok=True)
     print('[INFO] Creating working directory in {}'.format(args.job_dir))
