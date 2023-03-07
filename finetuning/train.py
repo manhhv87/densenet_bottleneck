@@ -7,6 +7,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 
 import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from finetuning.utils import (ecg_feature_extractor, train_test_split)
@@ -18,8 +19,8 @@ from clr.clr_callback import CyclicLR
 from clr import config
 
 import gc
-
-matplotlib.use("Agg")
+from absl import logging
+logging.set_verbosity(logging.ERROR)
 
 
 def _create_dataset_from_data(data):
