@@ -163,9 +163,8 @@ if __name__ == '__main__':
         options = tf.data.Options()
         options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
         train_data = _create_dataset_from_data(train).with_options(options).shuffle(len(train['x'])).batch(
-            args.batch_size, drop_remainder=True)
-        val_data = _create_dataset_from_data(val).with_options(options).batch(args.batch_size,
-                                                                              drop_remainder=True) if val else None
+            args.batch_size)
+        val_data = _create_dataset_from_data(val).with_options(options).batch(args.batch_size) if val else None
 
         if train:
             train_size = len(train['x'])
@@ -312,7 +311,7 @@ if __name__ == '__main__':
             print("[INFO] Training network...")
             H = model.fit(train_data,
                           validation_data=val_data,
-                          steps_per_epoch=train_size // args.batch_size,
+                          steps_per_epoch=int(np.ceil(train_size / args.batch_size)),
                           epochs=args.epochs,
                           callbacks=[callbacks],
                           verbose=1)
@@ -335,7 +334,7 @@ if __name__ == '__main__':
                 val_predictions.to_csv(path_or_buf=args.job_dir / 'val_predictions.csv', index=False)
 
             # construct a plot that plots and saves the training history
-            N = np.arange(0, args.epochs)
+            N = np.arange(0, len(H.history["loss"]))
             plt.style.use("ggplot")
             plt.figure()
             plt.plot(N, H.history["loss"], label="train_loss")
