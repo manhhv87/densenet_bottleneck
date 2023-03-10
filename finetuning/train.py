@@ -357,9 +357,6 @@ if __name__ == '__main__':
             plt.xlabel("Training Iterations")
             plt.ylabel("Learning Rate")
             plt.savefig(config.CLR_PLOT_PATH, dpi=1200)
-            print(clr.history)
-            print(clr.history["lr"])
-            print(clr.history["iterations"])
 
     else:  # Đánh giá theo k-fold cross validation
         print('[INFO] Loading train data from {} ...'.format(args.train))
