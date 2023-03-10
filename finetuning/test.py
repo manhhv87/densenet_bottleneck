@@ -8,6 +8,8 @@ from transplant.utils import read_predictions
 from transplant.evaluation import (auc, f1, f1_classes, f_max, f_beta_metric, g_beta_metric, f1_2018)
 from transplant.utils import (create_predictions_frame, load_pkl)
 
+from finetuning.utils import get_optimal_precision_recall
+
 from warnings import warn
 
 
@@ -39,7 +41,7 @@ def parse_args():
                         help='Batch size.')
     parser.add_argument('--val-metric', default='loss',
                         help='Validation metric used to find the best model at each epoch. Supported metrics are:'
-                             '`loss`, `acc`, `f1`, `auc`, `fmax`, `fmetric`, `gmetric`, `f2018`.')
+                             '`loss`, `acc`, `f1`, `auc`, `fmax`, `fbeta`, `gbeta`, `f2018`.')
     parser.add_argument('--seed', type=int, default=None,
                         help='Random state.')
     parser.add_argument('--verbose', action='store_true',
@@ -75,6 +77,17 @@ if __name__ == '__main__':
     # Import model
     model = tf.keras.models.load_model(args.path_to_model, compile=False)
 
+    print('[INFO] Find optimal thresholds on validation data for max F1 ...')
+    val_pre = read_predictions(str(args.job_dir) + '/val_predictions.csv')
+    y_val_true = val_pre['y_true']
+    y_val_prob = val_pre['y_prob']
+
+    opt_precision, opt_recall, threshold = get_optimal_precision_recall(y_val_true, y_val_prob)
+
+    print("Optimal Precision: {}".format(opt_precision))
+    print("Optimal Recall: {}".format(opt_recall))
+    print("Optimal Thresholds: {}".format(threshold))
+
     print('[INFO] Predicting test data ...')
     test_y_prob = model.predict(x=test['x'], batch_size=args.batch_size)
     test_predictions = create_predictions_frame(y_prob=test_y_prob, y_true=test['y'],
@@ -83,38 +96,35 @@ if __name__ == '__main__':
     test_predictions.to_csv(path_or_buf=args.job_dir / 'test_predictions.csv', index=False)
 
     test_pre = read_predictions(str(args.job_dir) + '/test_predictions.csv')
-    y_true = test_pre['y_true']
-    y_prob = test_pre['y_prob']
+    y_test_true = test_pre['y_true']
+    y_test_prob = test_pre['y_prob']
 
     # Evaluation on F1
     if args.val_metric == 'f1':
-        macro_f1 = f1(y_true, y_prob)
-        print('[INFO] macro f1 is {}'.format(macro_f1))
-
-        f1_each_class = f1_classes(y_true, y_prob)
-        print('[INFO] f1 for each class is {}'.format(f1_each_class))
+        mirco_f1 = f1(y_test_true, y_test_prob, True, threshold)
+        print('[INFO] micro f1 is {}'.format(mirco_f1))
 
     # Evaluation on AUC
     if args.val_metric == 'auc':
-        macro_auc = auc(y_true, y_prob)
+        macro_auc = auc(y_test_true, y_test_prob)
         print('[INFO] macro AUC is {}'.format(macro_auc))
 
     # Evaluation on Fmax
     if args.val_metric == 'fmax':
-        f_max = f_max(y_true, y_prob)
+        f_max = f_max(y_test_true, y_test_prob, threshold)
         print('[INFO] f_max is {}'.format(f_max))
 
     # Evaluation on Fbeta=2
-    if args.val_metric == 'fmetric':
-        f_beta = f_beta_metric(y_true, y_prob)
+    if args.val_metric == 'fbeta':
+        f_beta = f_beta_metric(y_test_true, y_test_prob, threshold)
         print('[INFO] f_beta is {}'.format(f_beta))
 
     # Evaluation on Gbeta=2
-    if args.val_metric == 'gmetric':
-        g_beta = g_beta_metric(y_true, y_prob)
+    if args.val_metric == 'gbeta':
+        g_beta = g_beta_metric(y_test_true, y_test_prob, threshold)
         print('[INFO] g_beta is {}'.format(g_beta))
 
     # Evaluation on f2018
     if args.val_metric == 'f2018':
-        f2018 = f1_2018(y_true, y_prob)
+        f2018 = f1_2018(y_test_true, y_test_prob, threshold)
         print('[INFO] f2018 is {}'.format(f2018))
