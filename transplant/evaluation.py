@@ -10,7 +10,7 @@ def auc(y_true, y_prob):
         raise ValueError('y_prob must be a 2d matrix with class probabilities for each sample')
     if y_true.shape != y_prob.shape:
         raise ValueError('shapes do not match')
-    return roc_auc_score(y_true, y_prob, average='macro')
+    return roc_auc_score(y_true, y_prob, average='micro')
 
 
 def f1(y_true, y_prob, multiclass=False, threshold=None):
@@ -31,7 +31,7 @@ def f1(y_true, y_prob, multiclass=False, threshold=None):
     else:
         y_pred = y_prob >= np.max(y_prob, axis=1)[:, None]
 
-    return f1_score(y_true, y_pred, average='macro')
+    return f1_score(y_true, y_pred, average='micro')
 
 
 def f1_classes(y_true, y_prob, multiclass=False, threshold=None):
@@ -55,12 +55,12 @@ def f1_classes(y_true, y_prob, multiclass=False, threshold=None):
     return f1_score(y_true, y_pred, average=None)
 
 
-def f_max(y_true, y_prob, thresholds=None):
+def f_max(y_true, y_prob, threshold=None):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
-    if thresholds is None:
-        thresholds = np.linspace(0, 1, 100)
+    if threshold is None:
+        threshold = np.linspace(0, 1, 100)
 
-    pr, rc = macro_precision_recall(y_true, y_prob, thresholds)
+    pr, rc = macro_precision_recall(y_true, y_prob, threshold)
     f1s = (2 * pr * rc) / (pr + rc)
     i = np.nanargmax(f1s)
 
@@ -68,12 +68,12 @@ def f_max(y_true, y_prob, thresholds=None):
     return f1s[i]
 
 
-def macro_precision_recall(y_true, y_prob, thresholds):  # multi-class multi-output
+def macro_precision_recall(y_true, y_prob, threshold=None):  # multi-class multi-output
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
     # expand analysis to the number of thresholds
-    y_true = np.repeat(y_true[None, :, :], len(thresholds), axis=0)
-    y_prob = np.repeat(y_prob[None, :, :], len(thresholds), axis=0)
-    y_pred = y_prob >= thresholds[:, None, None]
+    y_true = np.repeat(y_true[None, :, :], len(threshold), axis=0)
+    y_prob = np.repeat(y_prob[None, :, :], len(threshold), axis=0)
+    y_pred = y_prob >= threshold[:, None, None]
 
     # compute true positives
     tp = np.sum(np.logical_and(y_true, y_pred), axis=2)
@@ -94,7 +94,7 @@ def macro_precision_recall(y_true, y_prob, thresholds):  # multi-class multi-out
     return av_precision, av_recall
 
 
-def apply_thresholds(pred, thresholds):
+def apply_thresholds(pred, threshold=None):
     """
     Apply class-wise thresholds to prediction score in order to get binary format.
     BUT: if no score is above threshold, pick maximum. This is needed due to metric issues.
@@ -102,7 +102,7 @@ def apply_thresholds(pred, thresholds):
 
     tmp = []
     for p in pred:
-        tmp_p = (p > thresholds).astype(int)
+        tmp_p = (p > threshold).astype(int)
         if np.sum(tmp_p) == 0:
             tmp_p[np.argmax(p)] = 1
         tmp.append(tmp_p)
@@ -110,12 +110,12 @@ def apply_thresholds(pred, thresholds):
     return tmp
 
 
-def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None, single=False):
+def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None, single=False, threshold=None):
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking/blob/516740dd2964d67c213ab6df9eba5d50b2245d00/code/utils/utils.py#L100 """
     f_beta = 0
     g_beta = 0
 
-    y_pred = apply_thresholds(y_prob, 0.5)
+    y_pred = apply_thresholds(y_prob, threshold)
     num_samples, num_classes = y_true.shape
 
     if single:  # if evaluating single class in case of threshold-optimization
@@ -145,19 +145,19 @@ def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None
     return f_beta, g_beta
 
 
-def f_beta_metric(y_true, y_prob):
-    f_beta, _ = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
+def f_beta_metric(y_true, y_prob, threshold=None):
+    f_beta, _ = challenge2020_metrics(y_true=y_true, y_prob=y_prob, threshold=threshold)
     return f_beta
 
 
-def g_beta_metric(y_true, y_prob):
-    _, g_beta = challenge2020_metrics(y_true=y_true, y_prob=y_prob)
+def g_beta_metric(y_true, y_prob, threshold=None):
+    _, g_beta = challenge2020_metrics(y_true=y_true, y_prob=y_prob, threshold=threshold)
     return g_beta
 
 
-def challenge2020_scores(y_true, y_prob):
+def challenge2020_scores(y_true, y_prob, threshold=None):
     A = np.zeros((9, 9), dtype=np.int)
-    y_pred = apply_thresholds(y_prob, 0.5)
+    y_pred = apply_thresholds(y_prob, threshold)
     num_samples, num_classes = y_true.shape
     print(num_samples)
 
@@ -174,8 +174,8 @@ def challenge2020_scores(y_true, y_prob):
     return A
 
 
-def f1_2018(y_true, y_prob):
-    A = challenge2020_scores(y_true=y_true, y_prob=y_prob)
+def f1_2018(y_true, y_prob, threshold=None):
+    A = challenge2020_scores(y_true=y_true, y_prob=y_prob, threshold=threshold)
 
     F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
     F12 = 2 * A[1][1] / (np.sum(A[1, :]) + np.sum(A[:, 1]))
@@ -208,8 +208,8 @@ def _one_hot(x, depth):
     return x_one_hot
 
 
-def multi_f1(y_true, y_prob):
-    return f1(y_true, y_prob, multiclass=True, threshold=0.5)
+def multi_f1(y_true, y_prob, threshold=None):
+    return f1(y_true, y_prob, multiclass=True, threshold=threshold)
 
 
 class CustomCheckpoint(tf.keras.callbacks.Callback):
