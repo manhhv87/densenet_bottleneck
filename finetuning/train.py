@@ -185,8 +185,10 @@ if __name__ == '__main__':
                 accuracy = tf.keras.metrics.BinaryAccuracy(name='acc')
             else:
                 activation = 'softmax'
-                loss = tf.keras.losses.CategoricalCrossentropy()
-                accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
+                # loss = tf.keras.losses.CategoricalCrossentropy()
+                loss = tf.keras.losses.SparseCategoricalCrossentropy()
+                # accuracy = tf.keras.metrics.CategoricalAccuracy(name='acc')
+                accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='acc')
 
             # Creating model
             inputs = tf.keras.layers.Input(shape=train['x'].shape[1:], dtype=train['x'].dtype)
