@@ -345,7 +345,7 @@ if __name__ == '__main__':
             plt.xlabel("Epoch #")
             plt.ylabel("Loss/Accuracy")
             plt.legend(loc="lower left")
-            plt.savefig(config.TRAINING_PLOT_PATH)
+            plt.savefig(config.TRAINING_PLOT_PATH, dpi=1200)
 
             # plot the learning rate history
             N = np.arange(0, len(clr.history["lr"]))
@@ -354,7 +354,7 @@ if __name__ == '__main__':
             plt.title("Cyclical Learning Rate (CLR)")
             plt.xlabel("Training Iterations")
             plt.ylabel("Learning Rate")
-            plt.savefig(config.CLR_PLOT_PATH)
+            plt.savefig(config.CLR_PLOT_PATH, dpi=1200)
             print(clr.history)
             print(clr.history["lr"])
             print(clr.history["iterations"])
