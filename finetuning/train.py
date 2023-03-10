@@ -213,7 +213,7 @@ if __name__ == '__main__':
                 print('[INFO] Loading weights from file {} ...'.format(args.weights_file))
                 model.load_weights(str(args.weights_file)).expect_partial()
 
-            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=config.MIN_LR),
                           loss=loss, metrics=[accuracy])
 
             callbacks = [tf.keras.callbacks.CSVLogger(filename=str(args.job_dir / 'history.csv'))]
