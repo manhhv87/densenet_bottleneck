@@ -1,6 +1,9 @@
 import numpy as np
 import sklearn.model_selection
 import tensorflow as tf
+from sklearn.metrics import (confusion_matrix,
+                             precision_score, recall_score, f1_score,
+                             precision_recall_curve, average_precision_score)
 
 from transplant.modules.densenet1d import _DenseNet
 
@@ -8,7 +11,7 @@ from transplant.modules.densenet1d import _DenseNet
 def ecg_feature_extractor(input_layer=None, stages=None):
     backbone_model = _DenseNet(input_layer=input_layer,
                                num_outputs=None,
-                               blocks=(6, 4, 6, 0)[:stages],      # Own model
+                               blocks=(6, 4, 6, 0)[:stages],  # Own model
                                # blocks=(6, 12, 24, 16)[:stages],   # DenseNet-121
                                # blocks=(6, 12, 32, 32)[:stages],     # DenseNet-169
                                # blocks=(6, 12, 48, 32)[:stages],  # DenseNet-201
@@ -41,3 +44,25 @@ def train_test_split(data_set, **options):
             'classes': classes}
     return train, test
 
+
+def get_optimal_precision_recall(y_true, y_score):
+    """Find precision and recall values that maximize f1 score."""
+    n = np.shape(y_true)[1]
+    opt_precision = []
+    opt_recall = []
+    opt_threshold = []
+    for k in range(n):
+        # Get precision-recall curve
+        precision, recall, threshold = precision_recall_curve(y_true[:, k], y_score[:, k])
+
+        # Compute f1 score for each point (use nan_to_num to avoid nans messing up the results)
+        f1_score = np.nan_to_num(2 * precision * recall / (precision + recall))
+
+        # Select threshold that maximize f1 score
+        index = np.argmax(f1_score)
+        opt_precision.append(precision[index])
+        opt_recall.append(recall[index])
+        # t = threshold[index-1] if index != 0 else threshold[0]-1e-10
+        opt_threshold.append(threshold[index])
+
+    return np.array(opt_precision), np.array(opt_recall), np.array(opt_threshold)
