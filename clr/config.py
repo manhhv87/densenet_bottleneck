@@ -11,5 +11,5 @@ CLR_METHOD = "triangular2"
 # define the path to the output learning rate finder plot, training
 # history plot and cyclical learning rate plot
 LRFIND_PLOT_PATH = os.path.sep.join(["output", "lrfind_plot.png"])
-TRAINING_PLOT_PATH = os.path.sep.join(["output", "training_plot.png"])
-CLR_PLOT_PATH = os.path.sep.join(["output", "clr_plot.png"])
+TRAINING_PLOT_PATH = os.path.sep.join(["output", "training_plot.pdf"])
+CLR_PLOT_PATH = os.path.sep.join(["output", "clr_plot.pdf"])
