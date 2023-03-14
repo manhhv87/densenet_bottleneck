@@ -39,7 +39,7 @@ def parse_args():
                         help='Path to the test file.')
     parser.add_argument('--batch-size', type=int, default=32,
                         help='Batch size.')
-    parser.add_argument('--val-metric', default='loss',
+    parser.add_argument('--test-metric', default='loss',
                         help='Validation metric used to find the best model at each epoch. Supported metrics are:'
                              '`loss`, `acc`, `f1`, `auc`, `fmax`, `fbeta`, `gbeta`, `f2018`.')
     parser.add_argument('--seed', type=int, default=None,
@@ -100,31 +100,31 @@ if __name__ == '__main__':
     y_test_prob = test_pre['y_prob']
 
     # Evaluation on F1
-    if args.val_metric == 'f1':
+    if args.test_metric == 'f1':
         mirco_f1 = f1(y_test_true, y_test_prob, True, threshold)
         print('[INFO] micro f1 is {}'.format(mirco_f1))
 
     # Evaluation on AUC
-    if args.val_metric == 'auc':
+    if args.test_metric == 'auc':
         macro_auc = auc(y_test_true, y_test_prob)
         print('[INFO] macro AUC is {}'.format(macro_auc))
 
     # Evaluation on Fmax
-    if args.val_metric == 'fmax':
+    if args.test_metric == 'fmax':
         f_max = f_max(y_test_true, y_test_prob, threshold)
         print('[INFO] f_max is {}'.format(f_max))
 
     # Evaluation on Fbeta=2
-    if args.val_metric == 'fbeta':
+    if args.test_metric == 'fbeta':
         f_beta = f_beta_metric(y_test_true, y_test_prob, threshold)
         print('[INFO] f_beta is {}'.format(f_beta))
 
     # Evaluation on Gbeta=2
-    if args.val_metric == 'gbeta':
+    if args.test_metric == 'gbeta':
         g_beta = g_beta_metric(y_test_true, y_test_prob, threshold)
         print('[INFO] g_beta is {}'.format(g_beta))
 
     # Evaluation on f2018
-    if args.val_metric == 'f2018':
+    if args.test_metric == 'f2018':
         f2018 = f1_2018(y_test_true, y_test_prob, threshold)
         print('[INFO] f2018 is {}'.format(f2018))
