@@ -26,7 +26,7 @@ y_true = pd.read_csv('./data/gold_standard.csv').values
 
 # get y_score for different models
 y_score_list = [pd.read_csv('./dnn_predicts/model_' + str(i + 1) + '.csv').values for i in range(10)]
-y_score_list = [y_score[:, 10:] for y_score in y_score_list]
+y_score_list = [y_score[:, 10:].astype(np.float64) for y_score in y_score_list]
 
 # %% Get average model
 # Get micro average precision (return micro average precision (mAP) between 0.946 and 0.961; we choose the one
@@ -34,40 +34,38 @@ y_score_list = [y_score[:, 10:] for y_score in y_score_list]
 micro_avg_precision = [average_precision_score(y_true, y_score, average='micro')
                        for y_score in y_score_list]                       
 
-# # get ordered index
-# # These realizations have micro average precision (mAP) between 0.946 and 0.961
+# get ordered index
+# These realizations have micro average precision (mAP) between 0.946 and 0.961
 index = np.argsort(micro_avg_precision)  # sorting the data in ascending order and return data's index in array
 print('Micro average precision')
 print(np.array(micro_avg_precision)[index])
 
-# # get 6th best model (immediately above median) out 10 different models
-# # we choose the one with mAP immediately above the median value of all executions (the one with mAP = 0.951)
-# # (We could not choose the model with mAP equal to the median value because 10 is an even number;
-# # hence, there is no single middle value.)
-# k_dnn_best = index[5]
-# y_score_best = y_score_list[k_dnn_best]  # score of the best model (6th model)
+# get 6th best model (immediately above median) out 10 different models
+# we choose the one with mAP immediately above the median value of all executions (the one with mAP = 0.951)
+# (We could not choose the model with mAP equal to the median value because 10 is an even number;
+# hence, there is no single middle value.)
+k_dnn_best = index[5]
+y_score_best = y_score_list[k_dnn_best]  # score of the best model (6th model)
 
-# # We consider our model to have predicted the abnormality when its output—a number between 0 and 1—is above a threshold.
-# # Note: changing on own dataset
-# mask = y_score_best > threshold
+# We consider our model to have predicted the abnormality when its output—a number between 0 and 1—is above a threshold.
+# Note: changing on own dataset
+mask = y_score_best > threshold
 
-# # Get neural network prediction
-# # This data was also saved in './data/annotations/dnn.csv'
-# y_neuralnet = np.zeros_like(y_score_best)  # return an array of zeros with the same shape and type as a given array.
-# y_neuralnet[mask] = 1   # return an array with 1 value if each of mask's element is true
+# Get neural network prediction
+# This data was also saved in './data/annotations/dnn.csv'
+y_neuralnet = np.zeros_like(y_score_best)  # return an array of zeros with the same shape and type as a given array.
+y_neuralnet[mask] = 1   # return an array with 1 value if each of mask's element is true
 
-# # %% Generate table with scores for the average model (Table 2)
-# scores_list = generate_table(y_true=y_true, score_fun=score_fun, diagnosis=diagnosis, y_neuralnet=y_neuralnet,
-#                              y_cardio=y_cardio, y_emerg=y_emerg, y_student=y_student)
+# %% Generate table with scores for the average model (Table 2)
+# scores_list = generate_table(y_true=y_true, score_fun=score_fun, diagnosis=diagnosis, y_neuralnet=y_neuralnet)
 
 # # %% Plot precision recall curves (Figure 2)
 # plot_pre_rec_curve(y_true=y_true, k_dnn_best=k_dnn_best, diagnosis=diagnosis,
 #                    y_score_list=y_score_list, scores_list=scores_list,
 #                    predictor_names=predictor_names)
 
-# # %% Confusion matrices (Supplementary Table 1)
-# plot_confusion_matrix(y_true=y_true, nclasses=nclasses, diagnosis=diagnosis, y_neuralnet=y_neuralnet, y_cardio=y_cardio,
-#                       y_emerg=y_emerg, y_student=y_student)
+# %% Confusion matrices (Supplementary Table 1)
+plot_confusion_matrix(y_true=y_true, nclasses=nclasses, diagnosis=diagnosis, y_neuralnet=y_neuralnet)
 
 # # %% Compute scores and bootstraped version of these scores
 # scores_percentiles_list, scores_resampled_list = compute_score_bootstraped(y_true=y_true,
