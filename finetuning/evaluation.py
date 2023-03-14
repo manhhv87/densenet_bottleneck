@@ -57,36 +57,27 @@ y_neuralnet = np.zeros_like(y_score_best)  # return an array of zeros with the s
 y_neuralnet[mask] = 1   # return an array with 1 value if each of mask's element is true
 
 # %% Generate table with scores for the average model (Table 2)
-# scores_list = generate_table(y_true=y_true, score_fun=score_fun, diagnosis=diagnosis, y_neuralnet=y_neuralnet)
-
-# # %% Plot precision recall curves (Figure 2)
-# plot_pre_rec_curve(y_true=y_true, k_dnn_best=k_dnn_best, diagnosis=diagnosis,
-#                    y_score_list=y_score_list, scores_list=scores_list,
-#                    predictor_names=predictor_names)
+scores_list = generate_table(y_true=y_true, score_fun=score_fun, diagnosis=diagnosis, y_neuralnet=y_neuralnet)
 
 # %% Confusion matrices (Supplementary Table 1)
 plot_confusion_matrix(y_true=y_true, nclasses=nclasses, diagnosis=diagnosis, y_neuralnet=y_neuralnet)
 
-# # %% Compute scores and bootstraped version of these scores
-# scores_percentiles_list, scores_resampled_list = compute_score_bootstraped(y_true=y_true,
-#                                                                            nclasses=nclasses,
-#                                                                            score_fun=score_fun,
-#                                                                            percentiles=percentiles,
-#                                                                            bootstrap_nsamples=bootstrap_nsamples,
-#                                                                            y_neuralnet=y_neuralnet,
-#                                                                            y_cardio=y_cardio,
-#                                                                            y_emerg=y_emerg,
-#                                                                            y_student=y_student,
-#                                                                            diagnosis=diagnosis,
-#                                                                            predictor_names=predictor_names)
+# %% Compute scores and bootstraped version of these scores
+scores_percentiles_list, scores_resampled_list = compute_score_bootstraped(y_true=y_true,
+                                                                           nclasses=nclasses,
+                                                                           score_fun=score_fun,
+                                                                           percentiles=percentiles,
+                                                                           bootstrap_nsamples=bootstrap_nsamples,
+                                                                           y_neuralnet=y_neuralnet,
+                                                                           diagnosis=diagnosis,
+                                                                           predictor_names=predictor_names)
 
-# # %% Print box plot (Supplementary Figure 1)
-# plot_box(scores_resampled_list=scores_resampled_list, predictor_names=predictor_names,
-#          bootstrap_nsamples=bootstrap_nsamples, score_fun=score_fun)
+# %% Print box plot (Supplementary Figure 1)
+plot_box(scores_resampled_list=scores_resampled_list, predictor_names=predictor_names,
+         bootstrap_nsamples=bootstrap_nsamples, score_fun=score_fun)
 
-# # %% McNemar test (Supplementary Table 3)
-# McNemar_score(y_true=y_true, y_neuralnet=y_neuralnet, y_cardio=y_cardio,
-#               y_emerg=y_emerg, y_student=y_student, diagnosis=diagnosis)
+# %% McNemar test (Supplementary Table 3)
+# McNemar_score(y_true=y_true, y_neuralnet=y_neuralnet, diagnosis=diagnosis)
 
 # # %% Kappa score classifiers (Supplementary Table 2(a))
 # kappa_score_dnn_cardio_emerg_stud(names=["DNN", "cardio.", "emerg.", "stud."],
