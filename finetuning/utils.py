@@ -146,8 +146,8 @@ def generate_table(y_true, score_fun, diagnosis, y_neuralnet):
     scores_all_df = scores_all_df.reindex(level=0, columns=score_fun.keys())
 
     # Save results
-    scores_all_df.to_excel("./output/tables/scores.xlsx", float_format='%.3f')
-    scores_all_df.to_csv("./output/tables/scores.csv", float_format='%.3f')
+    scores_all_df.to_excel("./outputs/tables/scores.xlsx", float_format='%.3f')
+    scores_all_df.to_csv("./outputs/tables/scores.csv", float_format='%.3f')
 
     return scores_list
 
@@ -228,7 +228,7 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
             ax.legend().remove()
 
         plt.tight_layout()
-        plt.savefig('./output/figures/precision_recall_{0}.pdf'.format(name))
+        plt.savefig('./outputs/figures/precision_recall_{0}.pdf'.format(name))
 
 
 # %% Confusion matrices (Supplementary Table 1)
@@ -249,8 +249,8 @@ def plot_confusion_matrix(y_true, nclasses, diagnosis, y_neuralnet):
     confusion_matrices = confusion_matrices.unstack()
     confusion_matrices = confusion_matrices['n']
 
-    confusion_matrices.to_excel("./output/tables/confusion_matrices.xlsx", float_format='%.3f')
-    confusion_matrices.to_csv("./output/tables/confusion_matrices.csv", float_format='%.3f')
+    confusion_matrices.to_excel("./outputs/tables/confusion_matrices.xlsx", float_format='%.3f')
+    confusion_matrices.to_csv("./outputs/tables/confusion_matrices.csv", float_format='%.3f')
 
 
 # %% Compute scores and bootstraped version of these scores

@@ -1,14 +1,18 @@
-# %% Import packages
 import pandas as pd
 import numpy as np
-from sklearn.metrics import (precision_score, recall_score, f1_score, average_precision_score)
+
+from sklearn.metrics import (confusion_matrix,
+                             precision_score, recall_score, f1_score,
+                             precision_recall_curve, average_precision_score)
+
+from transplant.evaluation import (auc, f_max, f_beta_metric, g_beta_metric, f1_2018)
 from finetuning.utils import (specificity_score, generate_table, plot_pre_rec_curve, plot_confusion_matrix,
-                   compute_score_bootstraped, plot_box, McNemar_score, kappa_score_dnn_cardio_emerg_stud,
-                   kappa_score_cert_card, compute_score_bootstraped_splits, plot_box_splits)
+                              compute_score_bootstraped, plot_box, McNemar_score, kappa_score_dnn_cardio_emerg_stud,
+                              kappa_score_cert_card, compute_score_bootstraped_splits, plot_box_splits)
 
 # %% Constants
-score_fun = {'Precision': precision_score, 'Recall': recall_score,
-             'Specificity': specificity_score, 'F1 score': f1_score}
+score_fun = {'AUC': auc, 'Fmax': f_max, 'Fbeta': f_beta_metric,
+             'Gbeta': g_beta_metric, 'F2018': f1_2018}
 diagnosis = ['Normal', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
 nclasses = len(diagnosis)
 predictor_names = ['DNN']
@@ -18,11 +22,12 @@ percentiles = [2.5, 97.5]
 
 # Get threshold that yield the best precision recall using "get_optimal_precision_recall" on validation set
 # (we rounded it up to three decimal cases to make it easier to read...)
-threshold = np.array([0.510, 0.856, 0.570, 0.484, 0.556, 0.200, 0.633, 0.278, 0.611])  # corresponding to 'Normal', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE'
+threshold = np.array([0.510, 0.856, 0.570, 0.484, 0.556, 0.200, 0.633, 0.278,
+                      0.611])  # corresponding to 'Normal', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE'
 
 # %% Read datasets
 # Get true values
-y_true = pd.read_csv('./data/gold_standard.csv').values
+y_true = pd.read_csv('./data/annotations/gold_standard.csv').values
 
 # get y_score for different models
 y_score_list = [pd.read_csv('./dnn_predicts/model_' + str(i + 1) + '.csv').values for i in range(10)]
@@ -32,7 +37,7 @@ y_score_list = [y_score[:, 10:].astype(np.float64) for y_score in y_score_list]
 # Get micro average precision (return micro average precision (mAP) between 0.946 and 0.961; we choose the one
 # with mAP immediately above the median value of all executions (the one with mAP = 0.951))
 micro_avg_precision = [average_precision_score(y_true, y_score, average='micro')
-                       for y_score in y_score_list]                       
+                       for y_score in y_score_list]
 
 # get ordered index
 # These realizations have micro average precision (mAP) between 0.946 and 0.961
@@ -54,7 +59,7 @@ mask = y_score_best > threshold
 # Get neural network prediction
 # This data was also saved in './data/annotations/dnn.csv'
 y_neuralnet = np.zeros_like(y_score_best)  # return an array of zeros with the same shape and type as a given array.
-y_neuralnet[mask] = 1   # return an array with 1 value if each of mask's element is true
+y_neuralnet[mask] = 1  # return an array with 1 value if each of mask's element is true
 
 # %% Generate table with scores for the average model (Table 2)
 scores_list = generate_table(y_true=y_true, score_fun=score_fun, diagnosis=diagnosis, y_neuralnet=y_neuralnet)
