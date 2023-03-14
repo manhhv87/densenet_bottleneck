@@ -187,18 +187,16 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
         precision_min = []
         precision_max = []
 
-        print(recall_all)
+        # for r in recall_all:
+        #     p_max = [max(precision[recall == r]) for recall, precision in zip(recall_list, precision_list)]
+        #     p_min = [min(precision[recall == r]) for recall, precision in zip(recall_list, precision_list)]
+        #     recall_vec += [r, r]
+        #     precision_min += [min(p_max), min(p_min)]
+        #     precision_max += [max(p_max), max(p_min)]
 
-        for r in recall_all:
-            p_max = [max(precision[recall == r]) for recall, precision in zip(recall_list, precision_list)]
-            p_min = [min(precision[recall == r]) for recall, precision in zip(recall_list, precision_list)]
-            recall_vec += [r, r]
-            precision_min += [min(p_max), min(p_min)]
-            precision_max += [max(p_max), max(p_min)]
-
-        ax.plot(recall_vec, precision_min, color='blue', alpha=0.3)
-        ax.plot(recall_vec, precision_max, color='blue', alpha=0.3)
-        ax.fill_between(recall_vec, precision_min, precision_max, facecolor="blue", alpha=0.3)
+        # ax.plot(recall_vec, precision_min, color='blue', alpha=0.3)
+        # ax.plot(recall_vec, precision_max, color='blue', alpha=0.3)
+        # ax.fill_between(recall_vec, precision_min, precision_max, facecolor="blue", alpha=0.3)
 
         # Plot iso-f1 curves
         f_scores = np.linspace(0.1, 0.95, num=15)
@@ -256,12 +254,11 @@ def plot_confusion_matrix(y_true, nclasses, diagnosis, y_neuralnet):
 
 
 # %% Compute scores and bootstraped version of these scores
-def compute_score_bootstraped(y_true, nclasses, score_fun, percentiles, bootstrap_nsamples, y_neuralnet, y_cardio,
-                              y_emerg, y_student, diagnosis, predictor_names):
+def compute_score_bootstraped(y_true, nclasses, score_fun, percentiles, bootstrap_nsamples, y_neuralnet, diagnosis, predictor_names):
     scores_resampled_list = []
     scores_percentiles_list = []
 
-    for y_pred in [y_neuralnet, y_cardio, y_emerg, y_student]:
+    for y_pred in [y_neuralnet]:
         # Compute bootstraped samples
         np.random.seed(123)  # NEVER change this =P
         n, _ = np.shape(y_true)
@@ -308,7 +305,7 @@ def plot_box(scores_resampled_list, predictor_names, bootstrap_nsamples, score_f
                                        dims=['predictor', 'n', 'diagnosis', 'score_fun'],
                                        coords={'predictor': predictor_names,
                                                'n': range(bootstrap_nsamples),
-                                               'diagnosis': ['1dAVb', 'RBBB', 'LBBB', 'SB', 'AF', 'ST'],
+                                               'diagnosis': ['Normal', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE'],
                                                'score_fun': list(score_fun.keys())})
 
     # Remove everything except f1_score
@@ -332,9 +329,9 @@ def plot_box(scores_resampled_list, predictor_names, bootstrap_nsamples, score_f
         else:
             ax.legend().remove()
         plt.tight_layout()
-        plt.savefig('./outputs/figures/boxplot_bootstrap_{}.pdf'.format(sf))
+        plt.savefig('./output/figures/boxplot_bootstrap_{}.pdf'.format(sf))
 
-    scores_resampled_xr.to_dataframe(name='score').to_csv('./outputs/figures/boxplot_bootstrap_data.txt')
+    scores_resampled_xr.to_dataframe(name='score').to_csv('./output/figures/boxplot_bootstrap_data.txt')
 
 
 # %% McNemar test  (Supplementary Table 3)
@@ -546,5 +543,5 @@ def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
     plt.ylim([0.4, 1.05])
     plt.xlim([-0.5, 5.5])
     plt.tight_layout()
-    plt.savefig('./output/figures/boxplot_bootstrap_other_splits_{0}.pdf'.format(sf))
-    f1_score_resampled_df.to_csv('./output/figures/boxplot_bootstrap_other_splits_data.txt', index=False)
+    plt.savefig('./outputs/figures/boxplot_bootstrap_other_splits_{0}.pdf'.format(sf))
+    f1_score_resampled_df.to_csv('./outputs/figures/boxplot_bootstrap_other_splits_data.txt', index=False)
