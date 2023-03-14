@@ -160,7 +160,7 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
         threshold_list = []
         average_precision_list = []
         fig, ax = plt.subplots()
-        t = ['bo', 'rv', 'gs', 'kd']
+        t = ['bo']
 
         for j, y_score in enumerate(y_score_list):
             # Get precision-recall curve
@@ -187,14 +187,19 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
         precision_min = []
         precision_max = []
 
-        print(recall_all)
+        for r in recall_all:           
+            print(r)
+            
+            for recall, precision in zip(recall_list, precision_list):
+                p_max = [max(precision[recall == r]) if len(precision[recall == r])>0 else max(precision)]
+                p_min = [min(precision[recall == r]) if len(precision[recall == r])>0 else min(precision)]
 
-        for r in recall_all:
-            p_max = [max(precision[recall == r]) for recall, precision in zip(recall_list, precision_list)]
-            p_min = [min(precision[recall == r]) for recall, precision in zip(recall_list, precision_list)]
-            recall_vec += [r, r]
-            precision_min += [min(p_max), min(p_min)]
-            precision_max += [max(p_max), max(p_min)]
+                # p_max = [max(precision[recall == r]) for recall, precision in zip(recall_list, precision_list)]
+                # p_min = [min(precision[recall == r]) for recall, precision in zip(recall_list, precision_list)]
+                
+                recall_vec += [r, r]
+                precision_min += [min(p_max), min(p_min)]
+                precision_max += [max(p_max), max(p_min)]
 
         ax.plot(recall_vec, precision_min, color='blue', alpha=0.3)
         ax.plot(recall_vec, precision_max, color='blue', alpha=0.3)
@@ -207,8 +212,8 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
             y = f_score * x / (2 * x - f_score)
             ax.plot(x[y >= 0], y[y >= 0], color='gray', ls=':', lw=0.7, alpha=0.25)
 
-        # Plot values in
-        for npred in range(4):
+        # # Plot values in
+        for npred in range(1):
             ax.plot(scores_list[npred]['Recall'][k],
                     scores_list[npred]['Precision'][k],
                     t[npred], label=predictor_names[npred])
@@ -218,9 +223,9 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
         ax.set_xlim([0.0, 1.0])
         ax.set_ylim([0.0, 1.02])
 
-        if k in [3, 4, 5]:
+        if k in [6, 7, 8]:
             ax.set_xlabel('Recall (Sensitivity)', fontsize=17)
-        if k in [0, 3]:
+        if k in [0, 3, 6]:
             ax.set_ylabel('Precision (PPV)', fontsize=17)
 
         # plt.title('Precision-Recall curve (' + name + ')')
