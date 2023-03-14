@@ -146,8 +146,8 @@ def generate_table(y_true, score_fun, diagnosis, y_neuralnet):
     scores_all_df = scores_all_df.reindex(level=0, columns=score_fun.keys())
 
     # Save results
-    scores_all_df.to_excel("./outputs/tables/scores.xlsx", float_format='%.3f')
-    scores_all_df.to_csv("./outputs/tables/scores.csv", float_format='%.3f')
+    scores_all_df.to_excel("./output/tables/scores.xlsx", float_format='%.3f')
+    scores_all_df.to_csv("./output/tables/scores.csv", float_format='%.3f')
 
     return scores_list
 
@@ -160,7 +160,7 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
         threshold_list = []
         average_precision_list = []
         fig, ax = plt.subplots()
-        t = ['bo', 'rv', 'gs', 'kd']
+        t = ['bo']
 
         for j, y_score in enumerate(y_score_list):
             # Get precision-recall curve
@@ -208,7 +208,7 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
             ax.plot(x[y >= 0], y[y >= 0], color='gray', ls=':', lw=0.7, alpha=0.25)
 
         # Plot values in
-        for npred in range(4):
+        for npred in range(1):
             ax.plot(scores_list[npred]['Recall'][k],
                     scores_list[npred]['Precision'][k],
                     t[npred], label=predictor_names[npred])
@@ -218,9 +218,9 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
         ax.set_xlim([0.0, 1.0])
         ax.set_ylim([0.0, 1.02])
 
-        if k in [3, 4, 5]:
+        if k in [6, 7, 8]:
             ax.set_xlabel('Recall (Sensitivity)', fontsize=17)
-        if k in [0, 3]:
+        if k in [0, 3, 6]:
             ax.set_ylabel('Precision (PPV)', fontsize=17)
 
         # plt.title('Precision-Recall curve (' + name + ')')
@@ -230,7 +230,7 @@ def plot_pre_rec_curve(y_true, k_dnn_best, diagnosis, y_score_list, scores_list,
             ax.legend().remove()
 
         plt.tight_layout()
-        plt.savefig('./outputs/figures/precision_recall_{0}.pdf'.format(name))
+        plt.savefig('./output/figures/precision_recall_{0}.pdf'.format(name))
 
 
 # %% Confusion matrices (Supplementary Table 1)
@@ -251,8 +251,8 @@ def plot_confusion_matrix(y_true, nclasses, diagnosis, y_neuralnet):
     confusion_matrices = confusion_matrices.unstack()
     confusion_matrices = confusion_matrices['n']
 
-    confusion_matrices.to_excel("./outputs/tables/confusion_matrices.xlsx", float_format='%.3f')
-    confusion_matrices.to_csv("./outputs/tables/confusion_matrices.csv", float_format='%.3f')
+    confusion_matrices.to_excel("./output/tables/confusion_matrices.xlsx", float_format='%.3f')
+    confusion_matrices.to_csv("./output/tables/confusion_matrices.csv", float_format='%.3f')
 
 
 # %% Compute scores and bootstraped version of these scores
@@ -546,5 +546,5 @@ def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
     plt.ylim([0.4, 1.05])
     plt.xlim([-0.5, 5.5])
     plt.tight_layout()
-    plt.savefig('./outputs/figures/boxplot_bootstrap_other_splits_{0}.pdf'.format(sf))
-    f1_score_resampled_df.to_csv('./outputs/figures/boxplot_bootstrap_other_splits_data.txt', index=False)
+    plt.savefig('./output/figures/boxplot_bootstrap_other_splits_{0}.pdf'.format(sf))
+    f1_score_resampled_df.to_csv('./output/figures/boxplot_bootstrap_other_splits_data.txt', index=False)
