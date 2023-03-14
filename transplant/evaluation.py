@@ -68,7 +68,7 @@ def f_max(y_true, y_prob, threshold=None):
     return f1s[i]
 
 
-def macro_precision_recall(y_true, y_prob, threshold=None):  # multi-class multi-output
+def macro_precision_recall(y_true, y_prob, threshold):  # multi-class multi-output
     """ source: https://github.com/helme/ecg_ptbxl_benchmarking """
     # expand analysis to the number of thresholds
     y_true = np.repeat(y_true[None, :, :], len(threshold), axis=0)
@@ -94,7 +94,7 @@ def macro_precision_recall(y_true, y_prob, threshold=None):  # multi-class multi
     return av_precision, av_recall
 
 
-def apply_thresholds(pred, threshold=None):
+def apply_thresholds(pred, threshold):
     """
     Apply class-wise thresholds to prediction score in order to get binary format.
     BUT: if no score is above threshold, pick maximum. This is needed due to metric issues.
@@ -145,12 +145,12 @@ def challenge2020_metrics(y_true, y_prob, beta_f=2, beta_g=2, class_weights=None
     return f_beta, g_beta
 
 
-def f_beta_metric(y_true, y_prob, threshold=None):
+def f_beta_metric(y_true, y_prob, threshold=0.5):
     f_beta, _ = challenge2020_metrics(y_true=y_true, y_prob=y_prob, threshold=threshold)
     return f_beta
 
 
-def g_beta_metric(y_true, y_prob, threshold=None):
+def g_beta_metric(y_true, y_prob, threshold=0.5):
     _, g_beta = challenge2020_metrics(y_true=y_true, y_prob=y_prob, threshold=threshold)
     return g_beta
 
@@ -174,7 +174,7 @@ def challenge2020_scores(y_true, y_prob, threshold=None):
     return A
 
 
-def f1_2018(y_true, y_prob, threshold=None):
+def f1_2018(y_true, y_prob, threshold=0.5):
     A = challenge2020_scores(y_true=y_true, y_prob=y_prob, threshold=threshold)
 
     F11 = 2 * A[0][0] / (np.sum(A[0, :]) + np.sum(A[:, 0]))
@@ -208,7 +208,7 @@ def _one_hot(x, depth):
     return x_one_hot
 
 
-def multi_f1(y_true, y_prob, threshold=None):
+def multi_f1(y_true, y_prob, threshold=0.5):
     return f1(y_true, y_prob, multiclass=True, threshold=threshold)
 
 
