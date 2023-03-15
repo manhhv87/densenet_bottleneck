@@ -67,8 +67,7 @@ scores_resampled_list = compute_score_bootstraped(y_true=y_true,
                                                   threshold=threshold)
 
 # %% Print box plot (Supplementary Figure 1)
-plot_box(scores_resampled_list=scores_resampled_list, predictor_names=predictor_names,
-         bootstrap_nsamples=bootstrap_nsamples, score_fun=score_fun)
+plot_box(scores_resampled_list=scores_resampled_list, bootstrap_nsamples=bootstrap_nsamples, score_fun=score_fun)
 
 # # %% Compute scores and bootstraped version of these scores on alternative splits
 # scores_resampled_list = compute_score_bootstraped_splits(y_true=y_true, y_score_best=y_score_best,

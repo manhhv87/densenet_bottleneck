@@ -196,7 +196,7 @@ def compute_score_bootstraped(y_true, y_prob, nclasses, score_fun, bootstrap_nsa
 
 
 # %% Print box plot (Supplementary Figure 1)
-def plot_box(scores_resampled_list, predictor_names, bootstrap_nsamples, score_fun):
+def plot_box(scores_resampled_list, bootstrap_nsamples, score_fun):
     # Convert to xarray
     scores_resampled_xr = xr.DataArray(np.array(scores_resampled_list),
                                        dims=['n', 'score_fun'],
