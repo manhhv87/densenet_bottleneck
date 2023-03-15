@@ -159,7 +159,6 @@ def challenge2020_scores(y_true, y_prob, threshold=None):
     A = np.zeros((9, 9), dtype=np.int)
     y_pred = apply_thresholds(y_prob, threshold)
     num_samples, num_classes = y_true.shape
-    print(num_samples)
 
     for class_i in range(num_classes):
         for i in range(num_samples):
@@ -196,8 +195,8 @@ def f1_2018(y_true, y_prob, threshold=0.5):
     Fst = 2 * (A[7][7] + A[8][8]) / (np.sum(A[7, :]) + np.sum(A[:, 7]) +
                                      np.sum(A[8, :]) + np.sum(A[:, 8]))
 
-    print("Value for F11 --> Fst is: {} {} {} {} {} {} {} {} {} {} {} {} {} {}".
-          format(F11, F12, F13, F14, F15, F16, F17, F18, F19, F1, Faf, Fblock, Fpc, Fst))
+    # print("Value for F11 --> Fst is: {} {} {} {} {} {} {} {} {} {} {} {} {} {}".
+    #       format(F11, F12, F13, F14, F15, F16, F17, F18, F19, F1, Faf, Fblock, Fpc, Fst))
 
     return F1
 

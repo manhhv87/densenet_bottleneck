@@ -6,9 +6,8 @@ from sklearn.metrics import (confusion_matrix,
                              precision_recall_curve, average_precision_score)
 
 from transplant.evaluation import (auc, f_max, f_beta_metric, g_beta_metric, f1_2018)
-from finetuning.utils import (specificity_score, generate_table, plot_pre_rec_curve, plot_confusion_matrix,
-                              compute_score_bootstraped, plot_box, McNemar_score, kappa_score_dnn_cardio_emerg_stud,
-                              kappa_score_cert_card, compute_score_bootstraped_splits, plot_box_splits)
+from finetuning.utils import (generate_table, plot_confusion_matrix, compute_score_bootstraped,
+                              plot_box, compute_score_bootstraped_splits, plot_box_splits)
 
 # %% Constants
 score_fun = {'AUC': auc, 'Fmax': f_max, 'Fbeta': f_beta_metric,
@@ -17,7 +16,7 @@ diagnosis = ['Normal', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE'
 nclasses = len(diagnosis)
 predictor_names = ['DNN']
 
-bootstrap_nsamples = 1000
+bootstrap_nsamples = 100
 percentiles = [2.5, 97.5]
 
 # Get threshold that yield the best precision recall using "get_optimal_precision_recall" on validation set
@@ -49,49 +48,27 @@ print(np.array(micro_avg_precision)[index])
 # we choose the one with mAP immediately above the median value of all executions (the one with mAP = 0.951)
 # (We could not choose the model with mAP equal to the median value because 10 is an even number;
 # hence, there is no single middle value.)
-k_dnn_best = index[5]
+k_dnn_best = index[8]
 y_score_best = y_score_list[k_dnn_best]  # score of the best model (6th model)
 
-# We consider our model to have predicted the abnormality when its output—a number between 0 and 1—is above a threshold.
-# Note: changing on own dataset
-mask = y_score_best > threshold
-
-# Get neural network prediction
-# This data was also saved in './data/annotations/dnn.csv'
-y_neuralnet = np.zeros_like(y_score_best)  # return an array of zeros with the same shape and type as a given array.
-y_neuralnet[mask] = 1  # return an array with 1 value if each of mask's element is true
-
 # %% Generate table with scores for the average model (Table 2)
-scores_list = generate_table(y_true=y_true, score_fun=score_fun, diagnosis=diagnosis, y_neuralnet=y_neuralnet)
+# scores_list = generate_table(y_true=y_true, y_prob=y_score_best, score_fun=score_fun, threshold=threshold, diagnosis=predictor_names)
 
 # %% Confusion matrices (Supplementary Table 1)
-plot_confusion_matrix(y_true=y_true, nclasses=nclasses, diagnosis=diagnosis, y_neuralnet=y_neuralnet)
+# plot_confusion_matrix(y_true=y_true, y_prod=y_score_best, nclasses=nclasses, diagnosis=diagnosis,
+#                       predictor_names=predictor_names, threshold=threshold)
 
 # %% Compute scores and bootstraped version of these scores
-scores_percentiles_list, scores_resampled_list = compute_score_bootstraped(y_true=y_true,
-                                                                           nclasses=nclasses,
-                                                                           score_fun=score_fun,
-                                                                           percentiles=percentiles,
-                                                                           bootstrap_nsamples=bootstrap_nsamples,
-                                                                           y_neuralnet=y_neuralnet,
-                                                                           diagnosis=diagnosis,
-                                                                           predictor_names=predictor_names)
+scores_resampled_list = compute_score_bootstraped(y_true=y_true,
+                                                  y_prob=y_score_best,
+                                                  nclasses=nclasses,
+                                                  score_fun=score_fun,
+                                                  bootstrap_nsamples=bootstrap_nsamples,
+                                                  threshold=threshold)
 
 # %% Print box plot (Supplementary Figure 1)
 plot_box(scores_resampled_list=scores_resampled_list, predictor_names=predictor_names,
          bootstrap_nsamples=bootstrap_nsamples, score_fun=score_fun)
-
-# %% McNemar test (Supplementary Table 3)
-# McNemar_score(y_true=y_true, y_neuralnet=y_neuralnet, diagnosis=diagnosis)
-
-# # %% Kappa score classifiers (Supplementary Table 2(a))
-# kappa_score_dnn_cardio_emerg_stud(names=["DNN", "cardio.", "emerg.", "stud."],
-#                                   predictors=[y_neuralnet, y_cardio, y_emerg, y_student],
-#                                   diagnosis=diagnosis)
-
-# # %% Kappa score dataset generation (Supplementary Table 2(b))
-# kappa_score_cert_card(y_neuralnet=y_neuralnet, y_cardiologist1=y_cardiologist1,
-#                       y_cardiologist2=y_cardiologist2, diagnosis=diagnosis)
 
 # # %% Compute scores and bootstraped version of these scores on alternative splits
 # scores_resampled_list = compute_score_bootstraped_splits(y_true=y_true, y_score_best=y_score_best,
