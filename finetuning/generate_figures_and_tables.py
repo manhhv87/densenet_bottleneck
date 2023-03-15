@@ -16,7 +16,7 @@ diagnosis = ['Normal', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE'
 nclasses = len(diagnosis)
 predictor_names = ['DNN']
 
-bootstrap_nsamples = 100
+bootstrap_nsamples = 1000
 percentiles = [2.5, 97.5]
 
 # Get threshold that yield the best precision recall using "get_optimal_precision_recall" on validation set

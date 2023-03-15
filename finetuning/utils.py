@@ -198,26 +198,30 @@ def compute_score_bootstraped(y_true, y_prob, nclasses, score_fun, bootstrap_nsa
 # %% Print box plot (Supplementary Figure 1)
 def plot_box(scores_resampled_list, predictor_names, bootstrap_nsamples, score_fun):
     # Convert to xarray
-    scores_resampled_xr = xr.DataArray(np.array(scores_resampled_list),
-                                       dims=['n', 'score_fun'],
-                                       coords={'n': range(bootstrap_nsamples),
+    scores_resampled_xr = xr.DataArray(np.expand_dims(np.array(scores_resampled_list), axis=0),
+                                       dims=['predictor', 'n', 'score_fun'],
+                                       coords={'predictor': predictor_names,
+                                               'n': range(bootstrap_nsamples),
                                                'score_fun': list(score_fun.keys())})
 
-    # Convert to dataframe
-    scores_resampled_df = scores_resampled_xr.to_dataframe().reset_index(level=[0, 1, 2])
+    for sf in score_fun:
+        fig, ax = plt.subplots()
 
-    fig, ax = plt.subplots()
+        f1_score_resampled_xr = scores_resampled_xr.sel(score_fun=sf)
 
-    # Plot seaborn
-    ax = sns.boxplot(data=scores_resampled_df)
+        # Convert to dataframe
+        f1_score_resampled_df = f1_score_resampled_xr.to_dataframe(name=sf).reset_index(level=[0, 1])
 
-    # Save results
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-    plt.xlabel("")
-    plt.ylabel("", fontsize=16)
-    plt.tight_layout()
-    plt.savefig('./output/figures/boxplot_bootstrap{}.pdf')
+        # Plot seaborn
+        ax = sns.boxplot(y=sf, hue="predictor", data=f1_score_resampled_df)
+
+        # Save results
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.xlabel("")
+        plt.ylabel("", fontsize=16)
+        plt.tight_layout()
+        plt.savefig('./output/figures/boxplot_bootstrap_{}.pdf'.format(sf))
 
     # scores_resampled_xr.to_dataframe(name='score').to_csv('./output/figures/boxplot_bootstrap_data.txt')
 
