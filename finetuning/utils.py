@@ -224,7 +224,7 @@ def plot_box(scores_resampled_list, predictor_names, bootstrap_nsamples, score_f
     plt.yticks(fontsize=16)
     plt.xlabel("")
     plt.ylabel("", fontsize=16)
-    plt.ylim(0, 1)
+    plt.ylim(0.5, 1)
     plt.tight_layout()
     plt.savefig('./output/figures/boxplot_bootstrap.pdf')
 
