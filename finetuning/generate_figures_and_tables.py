@@ -9,7 +9,7 @@ from finetuning.utils import (generate_table, plot_confusion_matrix, compute_sco
 
 # %% Constants
 score_fun = {'AUC': auc, 'Fmax': f_max, 'Fbeta': f_beta_metric,
-             'Gbeta': g_beta_metric, 'F2018': f1_2018}
+             'Gbeta': g_beta_metric, 'F1': f1_2018}
 diagnosis = ['Normal', 'AF', 'I-AVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
 nclasses = len(diagnosis)
 predictor_names = ['DNN']
