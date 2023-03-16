@@ -217,10 +217,10 @@ def plot_box(scores_resampled_list, bootstrap_nsamples, score_fun):
     ax = sns.boxplot(x='variable', y='value', data=df_melted)
 
     # Save results
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
     plt.xlabel("")
-    plt.ylabel("", fontsize=16)
+    plt.ylabel("", fontsize=14)
     plt.ylim(0.5, 1)
     plt.tight_layout()
     plt.savefig('./outputs/figures/boxplot_bootstrap.pdf')
@@ -309,10 +309,10 @@ def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
     ax = sns.boxplot(x="location", y="value", hue="train set", data=mdf, palette=sns.color_palette("Set1", n_colors=8))
 
     # Save results
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=121)
     plt.xlabel("")
-    plt.ylabel("Scores", fontsize=16)
+    plt.ylabel("Scores", fontsize=14)
     plt.legend(fontsize=9)
     plt.ylim([0.5, 1.0])
     plt.xlim([-0.5, 4.5])
