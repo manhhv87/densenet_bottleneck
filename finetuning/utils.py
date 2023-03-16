@@ -212,6 +212,7 @@ def plot_box(scores_resampled_list, bootstrap_nsamples, score_fun):
     df_melted = pd.melt(scores_resampled_concat_df)
     df_melted = df_melted.drop(df_melted[df_melted['variable'] == 'score_fun'].index)
 
+    fig, ax = plt.subplots()
     # Plot seaborn
     ax = sns.boxplot(x='variable', y='value', data=df_melted)
 
@@ -301,6 +302,8 @@ def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
 
     cdf = pd.concat([data[i] for i in range(5)])
     mdf = pd.melt(cdf, id_vars=['location'], var_name=['train set'])
+
+    fig, ax = plt.subplots()
 
     # Plot seaborn
     ax = sns.boxplot(x="location", y="value", hue="train set", data=mdf, palette=sns.color_palette("Set1", n_colors=8))
