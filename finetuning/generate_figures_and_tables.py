@@ -27,7 +27,7 @@ threshold = np.array([0.510, 0.856, 0.570, 0.484, 0.556, 0.200, 0.633, 0.278,
 y_true = pd.read_csv('./data/annotations/gold_standard.csv').values
 
 # get y_score for different models
-y_score_list = [pd.read_csv('./dnn_predicts/other_seeds/model_' + str(i + 1) + '.csv').values for i in range(10)]
+y_score_list = [pd.read_csv('./data/dnn_predicts/other_seeds/model_' + str(i + 1) + '.csv').values for i in range(10)]
 y_score_list = [y_score[:, 10:].astype(np.float64) for y_score in y_score_list]
 
 # %% Get average model
