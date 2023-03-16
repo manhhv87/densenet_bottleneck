@@ -1,4 +1,4 @@
-# Transfer Learning for ECG Classification
+# ECG Classification
 
 Make sure that your virtual environment satisfies the following requirements before running any code:
 
