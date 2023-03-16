@@ -1,0 +1,21 @@
+predictor,,DNN,DNN
+predicted label,,not present,present
+diagnosis,true label,,
+Normal,not present,1220,16
+Normal,present,22,118
+AF,not present,1121,11
+AF,present,26,218
+I-AVB,not present,1323,5
+I-AVB,present,10,38
+LBBB,not present,1320,13
+LBBB,present,22,21
+RBBB,not present,1219,12
+RBBB,present,20,125
+PAC,not present,1216,36
+PAC,present,10,114
+PVC,not present,1157,35
+PVC,present,33,151
+STD,not present,1167,35
+STD,present,33,141
+STE,not present,982,23
+STE,present,22,349
