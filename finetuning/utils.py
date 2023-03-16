@@ -216,6 +216,8 @@ def plot_box(scores_resampled_list, bootstrap_nsamples, score_fun):
     df_melted = pd.melt(scores_resampled_concat_df)
     df_melted = df_melted.drop(df_melted[df_melted['variable'] == 'score_fun'].index)
 
+    fig, ax = plt.subplots()
+
     # Plot seaborn
     ax = sns.boxplot(x='variable', y='value', data=df_melted)
 
@@ -287,20 +289,20 @@ def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
         # Convert to dataframe
         score_resampled_df = score_resampled_xr.to_dataframe(name=sf).reset_index(level=[0, 1])
 
-        df_train_75 = score_resampled_df.loc[score_resampled_df['predictor'] == 'train_75'].drop(
-            columns=['predictor', 'n', 'score_fun'])
-        df_train_25 = score_resampled_df.loc[score_resampled_df['predictor'] == 'train_25'].drop(
-            columns=['predictor', 'n', 'score_fun'])
+        df_train_75 = score_resampled_df.loc[score_resampled_df['predictor'] == 'train_75'].drop(columns=['predictor', 'n', 'score_fun'])
+        df_train_25 = score_resampled_df.loc[score_resampled_df['predictor'] == 'train_25'].drop(columns=['predictor', 'n', 'score_fun'])
         data = {'train_75': df_train_75.values.flatten(), 'train_25': df_train_25.values.flatten()}
         score_resampled_list_df.append(pd.DataFrame(data))
+        
 
-    for idx in range(len(score_resampled_list_df)):
-        data[idx] = pd.DataFrame(score_resampled_list_df[idx].to_numpy(), columns=['75%', '25%']).assign(
-            location=list(score_fun.keys())[idx])
+    for idx in range(len(score_resampled_list_df)):        
+        data[idx] = pd.DataFrame(score_resampled_list_df[idx].to_numpy(), columns=['75%', '25%']).assign(location=list(score_fun.keys())[idx])
 
     cdf = pd.concat([data[i] for i in range(5)])
-    mdf = pd.melt(cdf, id_vars=['location'], var_name=['train set'])
+    mdf = pd.melt(cdf, id_vars=['location'], var_name=['train set'])    
 
+    fig, ax = plt.subplots()
+    
     # Plot seaborn
     ax = sns.boxplot(x="location", y="value", hue="train set", data=mdf, palette=sns.color_palette("Set1", n_colors=8))
 
@@ -314,4 +316,3 @@ def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
     plt.xlim([-0.5, 4.5])
     plt.tight_layout()
     plt.savefig('./outputs/figures/boxplot_bootstrap_other_splits.pdf')
-    
