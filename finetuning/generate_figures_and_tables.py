@@ -29,7 +29,7 @@ threshold = np.array([0.510, 0.856, 0.570, 0.484, 0.556, 0.200, 0.633, 0.278,
 y_true = pd.read_csv('./data/annotations/gold_standard.csv').values
 
 # get y_score for different models
-y_score_list = [pd.read_csv('./dnn_predicts/model_' + str(i + 1) + '.csv').values for i in range(10)]
+y_score_list = [pd.read_csv('./dnn_predicts/other_seeds/model_' + str(i + 1) + '.csv').values for i in range(10)]
 y_score_list = [y_score[:, 10:].astype(np.float64) for y_score in y_score_list]
 
 # %% Get average model
@@ -52,11 +52,11 @@ k_dnn_best = index[8]
 y_score_best = y_score_list[k_dnn_best]  # score of the best model (6th model)
 
 # %% Generate table with scores for the average model (Table 2)
-# scores_list = generate_table(y_true=y_true, y_prob=y_score_best, score_fun=score_fun, threshold=threshold, diagnosis=predictor_names)
+scores_list = generate_table(y_true=y_true, y_prob=y_score_best, score_fun=score_fun, threshold=threshold, diagnosis=predictor_names)
 
 # %% Confusion matrices (Supplementary Table 1)
-# plot_confusion_matrix(y_true=y_true, y_prod=y_score_best, nclasses=nclasses, diagnosis=diagnosis,
-#                       predictor_names=predictor_names, threshold=threshold)
+plot_confusion_matrix(y_true=y_true, y_prod=y_score_best, nclasses=nclasses, diagnosis=diagnosis,
+                      predictor_names=predictor_names, threshold=threshold)
 
 # %% Compute scores and bootstraped version of these scores
 scores_resampled_list = compute_score_bootstraped(y_true=y_true,
@@ -69,12 +69,11 @@ scores_resampled_list = compute_score_bootstraped(y_true=y_true,
 # %% Print box plot (Supplementary Figure 1)
 plot_box(scores_resampled_list=scores_resampled_list, bootstrap_nsamples=bootstrap_nsamples, score_fun=score_fun)
 
-# # %% Compute scores and bootstraped version of these scores on alternative splits
-# scores_resampled_list = compute_score_bootstraped_splits(y_true=y_true, y_score_best=y_score_best,
-#                                                          score_fun=score_fun, bootstrap_nsamples=bootstrap_nsamples,
-#                                                          percentiles=percentiles, diagnosis=diagnosis)
+# %% Compute scores and bootstraped version of these scores on alternative splits
+scores_resampled_list = compute_score_bootstraped_splits(y_true=y_true, score_fun=score_fun,
+                                                         bootstrap_nsamples=bootstrap_nsamples)
 
-# # %% Print box plot on alternative splits (Supplementary Figure 2 (a))
-# plot_box_splits(scores_resampled_list=scores_resampled_list,
-#                 bootstrap_nsamples=bootstrap_nsamples,
-#                 score_fun=score_fun)
+# %% Print box plot on alternative splits (Supplementary Figure 2 (a))
+plot_box_splits(scores_resampled_list=scores_resampled_list,
+                bootstrap_nsamples=bootstrap_nsamples,
+                score_fun=score_fun)
