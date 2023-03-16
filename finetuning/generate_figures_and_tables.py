@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.metrics import (confusion_matrix,
-                             precision_score, recall_score, f1_score,
-                             precision_recall_curve, average_precision_score)
+from sklearn.metrics import (average_precision_score)
 
 from transplant.evaluation import (auc, f_max, f_beta_metric, g_beta_metric, f1_2018)
 from finetuning.utils import (generate_table, plot_confusion_matrix, compute_score_bootstraped,
@@ -29,7 +27,7 @@ threshold = np.array([0.510, 0.856, 0.570, 0.484, 0.556, 0.200, 0.633, 0.278,
 y_true = pd.read_csv('./data/annotations/gold_standard.csv').values
 
 # get y_score for different models
-y_score_list = [pd.read_csv('./data/dnn_predicts/other_seeds/model_' + str(i + 1) + '.csv').values for i in range(10)]
+y_score_list = [pd.read_csv('./dnn_predicts/other_seeds/model_' + str(i + 1) + '.csv').values for i in range(10)]
 y_score_list = [y_score[:, 10:].astype(np.float64) for y_score in y_score_list]
 
 # %% Get average model
@@ -70,7 +68,7 @@ scores_resampled_list = compute_score_bootstraped(y_true=y_true,
 plot_box(scores_resampled_list=scores_resampled_list, bootstrap_nsamples=bootstrap_nsamples, score_fun=score_fun)
 
 # %% Compute scores and bootstraped version of these scores on alternative splits
-scores_resampled_list = compute_score_bootstraped_splits(y_true=y_true, score_fun=score_fun, 
+scores_resampled_list = compute_score_bootstraped_splits(y_true=y_true, score_fun=score_fun,
                                                          bootstrap_nsamples=bootstrap_nsamples)
 
 # %% Print box plot on alternative splits (Supplementary Figure 2 (a))
