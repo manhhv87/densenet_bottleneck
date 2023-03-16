@@ -229,11 +229,11 @@ def plot_box(scores_resampled_list, bootstrap_nsamples, score_fun):
 def compute_score_bootstraped_splits(y_true, score_fun, bootstrap_nsamples):
     scores_resampled_list = []
 
-    for name in ['train_75', 'train_25']:
+    for name in ['train_75', 'train_50', 'train_25']:
         # Get data
         yn_true = y_true
 
-        yn_pred = pd.read_csv('./dnn_predicts/other_splits/model_' + name + '.csv').values
+        yn_pred = pd.read_csv('./data/dnn_predicts/other_splits/model_' + name + '.csv').values
         yn_pred = yn_pred[:, 10:].astype(np.float64)
 
         # Compute threshold
@@ -241,7 +241,9 @@ def compute_score_bootstraped_splits(y_true, score_fun, bootstrap_nsamples):
 
         if name == 'train_75':
             threshold = np.array([0.510, 0.856, 0.570, 0.484, 0.556, 0.200, 0.633, 0.278, 0.611])
-        elif name == 'train_25':
+        if name == 'train_50':
+            threshold = np.array([0.587, 0.930, 0.765, 0.464, 0.248, 0.135, 0.707, 0.433, 0.704])
+        if name == 'train_25':
             threshold = np.array([0.747, 0.337, 0.413, 0.115, 0.889, 0.411, 0.505, 0.515, 0.568])
 
             # Compute bootstraped samples
@@ -271,7 +273,7 @@ def compute_score_bootstraped_splits(y_true, score_fun, bootstrap_nsamples):
 def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
     scores_resampled_xr = xr.DataArray(np.array(scores_resampled_list),
                                        dims=['predictor', 'n', 'score_fun'],
-                                       coords={'predictor': ['train_75', 'train_25'],
+                                       coords={'predictor': ['train_75', 'train_50', 'train_25'],
                                                'n': range(bootstrap_nsamples),
                                                'score_fun': list(score_fun.keys())})
 
@@ -285,13 +287,16 @@ def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
 
         df_train_75 = score_resampled_df.loc[score_resampled_df['predictor'] == 'train_75'].drop(
             columns=['predictor', 'n', 'score_fun'])
+        df_train_50 = score_resampled_df.loc[score_resampled_df['predictor'] == 'train_50'].drop(
+            columns=['predictor', 'n', 'score_fun'])
         df_train_25 = score_resampled_df.loc[score_resampled_df['predictor'] == 'train_25'].drop(
             columns=['predictor', 'n', 'score_fun'])
-        data = {'train_75': df_train_75.values.flatten(), 'train_25': df_train_25.values.flatten()}
+
+        data = {'train_75': df_train_75.values.flatten(), 'train_50': df_train_50.values.flatten(), 'train_25': df_train_25.values.flatten()}
         score_resampled_list_df.append(pd.DataFrame(data))
 
     for idx in range(len(score_resampled_list_df)):
-        data[idx] = pd.DataFrame(score_resampled_list_df[idx].to_numpy(), columns=['75%', '25%']).assign(
+        data[idx] = pd.DataFrame(score_resampled_list_df[idx].to_numpy(), columns=['75%', '50%', '25%']).assign(
             location=list(score_fun.keys())[idx])
 
     cdf = pd.concat([data[i] for i in range(5)])
