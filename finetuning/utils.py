@@ -139,8 +139,8 @@ def generate_table(y_true, y_prob, score_fun, threshold, diagnosis):
     scores_df = pd.DataFrame(scores, index=score_fun.keys(), columns=diagnosis)
 
     # Save results
-    scores_df.to_excel("./output/tables/scores.xlsx", float_format='%.3f')
-    scores_df.to_csv("./output/tables/scores.csv", float_format='%.3f')
+    scores_df.to_excel("./outputs/tables/scores.xlsx", float_format='%.3f')
+    scores_df.to_csv("./outputs/tables/scores.csv", float_format='%.3f')
 
     return scores_df
 
@@ -170,8 +170,8 @@ def plot_confusion_matrix(y_true, y_prod, nclasses, predictor_names, diagnosis, 
     confusion_matrices = confusion_matrices.unstack()
     confusion_matrices = confusion_matrices['n']
 
-    confusion_matrices.to_excel("./output/tables/confusion_matrices.xlsx", float_format='%.3f')
-    confusion_matrices.to_csv("./output/tables/confusion_matrices.csv", float_format='%.3f')
+    confusion_matrices.to_excel("./outputs/tables/confusion_matrices.xlsx", float_format='%.3f')
+    confusion_matrices.to_csv("./outputs/tables/confusion_matrices.csv", float_format='%.3f')
 
 
 # %% Compute scores and bootstraped version of these scores
@@ -226,65 +226,47 @@ def plot_box(scores_resampled_list, bootstrap_nsamples, score_fun):
     plt.ylabel("", fontsize=16)
     plt.ylim(0.5, 1)
     plt.tight_layout()
-    plt.savefig('./output/figures/boxplot_bootstrap.pdf')
-
-    scores_resampled_xr.to_dataframe(name='score').to_csv('./output/figures/boxplot_bootstrap_data.txt')
+    plt.savefig('./outputs/figures/boxplot_bootstrap.pdf')
 
 
 # %% Compute scores and bootstraped version of these scores on alternative splits
-def compute_score_bootstraped_splits(y_true, y_score_best, score_fun, bootstrap_nsamples, percentiles, diagnosis):
+def compute_score_bootstraped_splits(y_true, score_fun, bootstrap_nsamples):
     scores_resampled_list = []
-    scores_percentiles_list = []
 
-    for name in ['normal_order', 'date_order', 'individual_patients', 'base_model']:
-        print(name)
-
+    for name in ['train_75', 'train_25']:
         # Get data
         yn_true = y_true
-        yn_score = np.load(
-            './dnn_predicts/other_splits/model_' + name + '.npy') if not name == 'base_model' else y_score_best
+
+        yn_pred = pd.read_csv('./dnn_predicts/other_splits/model_' + name + '.csv').values
+        yn_pred = yn_pred[:, 10:].astype(np.float64)
 
         # Compute threshold
         nclasses = np.shape(yn_true)[1]
-        opt_precision, opt_recall, threshold = get_optimal_precision_recall(yn_true, yn_score)
-        mask_n = yn_score > threshold
-        yn_pred = np.zeros_like(yn_score)
-        yn_pred[mask_n] = 1
 
-        # Compute bootstraped samples
+        if name == 'train_75':
+            threshold = np.array([0.510, 0.856, 0.570, 0.484, 0.556, 0.200, 0.633, 0.278, 0.611])
+        elif name == 'train_25':
+            threshold = np.array([0.747, 0.337, 0.413, 0.115, 0.889, 0.411, 0.505, 0.515, 0.568])
+
+            # Compute bootstraped samples
         np.random.seed(123)  # NEVER change this =P
+
         n, _ = np.shape(yn_true)
         samples = np.random.randint(n, size=n * bootstrap_nsamples)
 
         # Get samples
         y_true_resampled = np.reshape(yn_true[samples, :], (bootstrap_nsamples, n, nclasses))
-        y_doctors_resampled = np.reshape(yn_pred[samples, :], (bootstrap_nsamples, n, nclasses))
+        y_pred_resampled = np.reshape(yn_pred[samples, :], (bootstrap_nsamples, n, nclasses))
 
         # Apply functions
-        scores_resampled = np.array([get_scores(y_true_resampled[i, :, :], y_doctors_resampled[i, :, :], score_fun)
-                                     for i in range(bootstrap_nsamples)])
+        scores_resampled = np.array(
+            [get_scores(y_true_resampled[i, :, :], y_pred_resampled[i, :, :], score_fun, threshold)
+             for i in range(bootstrap_nsamples)])
         # Sort scores
         scores_resampled.sort(axis=0)
 
         # Append
         scores_resampled_list.append(scores_resampled)
-
-        # Compute percentiles index
-        i = [int(p / 100.0 * bootstrap_nsamples) for p in percentiles]
-
-        # Get percentiles
-        scores_percentiles = scores_resampled[i, :, :]
-
-        # Convert percentiles to a dataframe
-        scores_percentiles_df = pd.concat([pd.DataFrame(x, index=diagnosis, columns=score_fun.keys())
-                                           for x in scores_percentiles], keys=['p1', 'p2'], axis=1)
-
-        # Change multiindex levels
-        scores_percentiles_df = scores_percentiles_df.swaplevel(0, 1, axis=1)
-        scores_percentiles_df = scores_percentiles_df.reindex(level=0, columns=score_fun.keys())
-
-        # Append
-        scores_percentiles_list.append(scores_percentiles_df)
 
     return scores_resampled_list
 
@@ -292,37 +274,44 @@ def compute_score_bootstraped_splits(y_true, y_score_best, score_fun, bootstrap_
 # %% Print box plot on alternative splits (Supplementary Figure 2 (a))
 def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
     scores_resampled_xr = xr.DataArray(np.array(scores_resampled_list),
-                                       dims=['predictor', 'n', 'diagnosis', 'score_fun'],
-                                       coords={
-                                           'predictor': ['random', 'by date', 'by patient', 'original DNN'],
-                                           'n': range(bootstrap_nsamples),
-                                           'diagnosis': ['1dAVb', 'RBBB', 'LBBB', 'SB', 'AF', 'ST'],
-                                           'score_fun': list(score_fun.keys())})
+                                       dims=['predictor', 'n', 'score_fun'],
+                                       coords={'predictor': ['train_75', 'train_25'],
+                                               'n': range(bootstrap_nsamples),
+                                               'score_fun': list(score_fun.keys())})
 
-    # Remove everything except f1_score
-    sf = 'F1 score'
-    fig, ax = plt.subplots()
-    f1_score_resampled_xr = scores_resampled_xr.sel(score_fun=sf)
+    score_resampled_list_df = []
 
-    # Convert to dataframe
-    f1_score_resampled_df = f1_score_resampled_xr.to_dataframe(name=sf).reset_index(level=[0, 1, 2])
+    for sf in score_fun:
+        score_resampled_xr = scores_resampled_xr.sel(score_fun=sf)
+
+        # Convert to dataframe
+        score_resampled_df = score_resampled_xr.to_dataframe(name=sf).reset_index(level=[0, 1])
+
+        df_train_75 = score_resampled_df.loc[score_resampled_df['predictor'] == 'train_75'].drop(
+            columns=['predictor', 'n', 'score_fun'])
+        df_train_25 = score_resampled_df.loc[score_resampled_df['predictor'] == 'train_25'].drop(
+            columns=['predictor', 'n', 'score_fun'])
+        data = {'train_75': df_train_75.values.flatten(), 'train_25': df_train_25.values.flatten()}
+        score_resampled_list_df.append(pd.DataFrame(data))
+
+    for idx in range(len(score_resampled_list_df)):
+        data[idx] = pd.DataFrame(score_resampled_list_df[idx].to_numpy(), columns=['75%', '25%']).assign(
+            location=list(score_fun.keys())[idx])
+
+    cdf = pd.concat([data[i] for i in range(5)])
+    mdf = pd.melt(cdf, id_vars=['location'], var_name=['train set'])
 
     # Plot seaborn
-    ax = sns.boxplot(x="diagnosis", y=sf, hue="predictor", data=f1_score_resampled_df,
-                     order=['1dAVb', 'SB', 'AF', 'ST', 'RBBB', 'LBBB'],
-                     palette=sns.color_palette("Set1", n_colors=8))
-    plt.axvline(3.5, color='black', ls='--')
-    plt.axvline(5.5, color='black', ls='--')
-    plt.axvspan(3.5, 5.5, alpha=0.1, color='gray')
+    ax = sns.boxplot(x="location", y="value", hue="train set", data=mdf, palette=sns.color_palette("Set1", n_colors=8))
 
     # Save results
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
     plt.xlabel("")
-    plt.ylabel("F1 score", fontsize=16)
-    plt.legend(fontsize=17)
-    plt.ylim([0.4, 1.05])
-    plt.xlim([-0.5, 5.5])
+    plt.ylabel("Scores", fontsize=16)
+    plt.legend(fontsize=9)
+    plt.ylim([0.5, 1.0])
+    plt.xlim([-0.5, 4.5])
     plt.tight_layout()
-    plt.savefig('./outputs/figures/boxplot_bootstrap_other_splits_{0}.pdf'.format(sf))
-    f1_score_resampled_df.to_csv('./outputs/figures/boxplot_bootstrap_other_splits_data.txt', index=False)
+    plt.savefig('./outputs/figures/boxplot_bootstrap_other_splits.pdf')
+    
