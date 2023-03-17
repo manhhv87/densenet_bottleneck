@@ -310,7 +310,7 @@ def plot_box_splits(scores_resampled_list, bootstrap_nsamples, score_fun):
 
     # Save results
     plt.xticks(fontsize=12)
-    plt.yticks(fontsize=121)
+    plt.yticks(fontsize=12)
     plt.xlabel("")
     plt.ylabel("Scores", fontsize=14)
     plt.legend(fontsize=9)
