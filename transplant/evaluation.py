@@ -195,8 +195,8 @@ def f1_2018(y_true, y_prob, threshold=0.5):
     Fst = 2 * (A[7][7] + A[8][8]) / (np.sum(A[7, :]) + np.sum(A[:, 7]) +
                                      np.sum(A[8, :]) + np.sum(A[:, 8]))
 
-    # print("Value for F11 --> Fst is: {} {} {} {} {} {} {} {} {} {} {} {} {} {}".
-    #       format(F11, F12, F13, F14, F15, F16, F17, F18, F19, F1, Faf, Fblock, Fpc, Fst))
+    print("Value for F11 --> Fst is: {} {} {} {} {} {} {} {} {} {} {} {} {} {}".
+          format(F11, F12, F13, F14, F15, F16, F17, F18, F19, F1, Faf, Fblock, Fpc, Fst))
 
     return F1
 
