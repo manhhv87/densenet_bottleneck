@@ -23,7 +23,7 @@ threshold = np.array([0.510, 0.856, 0.570, 0.484, 0.556, 0.200, 0.633, 0.278,
 
 # %% Read datasets
 # Get true values
-y_true = pd.read_csv('./data/annotations/gold_standard.csv').values
+y_true = pd.read_csv('./data/annotations/cspc2018_gold_standard.csv').values
 
 # get y_score for different models
 y_score_list = [pd.read_csv('./data/dnn_predicts/other_seeds/model_' + str(i + 1) + '.csv').values for i in range(10)]
